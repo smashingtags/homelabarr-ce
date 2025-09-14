@@ -1,0 +1,32 @@
+#!/usr/bin/with-contenv bash
+
+# HomelabARR CLI Mount Container Initialization
+
+echo "**** Setting up mount container ****"
+
+# Create necessary directories
+mkdir -p \
+    /config \
+    /logs \
+    /mnt/local \
+    /mnt/cloud \
+    /mnt/union \
+    /tmp/rclone
+
+# Set proper ownership
+chown -R abc:abc \
+    /config \
+    /logs \
+    /mnt \
+    /tmp/rclone
+
+# Set proper permissions
+chmod 755 /app/mount.sh
+chmod 755 /etc/services.d/mount/run
+
+# Ensure FUSE is available
+if [[ ! -c /dev/fuse ]]; then
+    echo "WARNING: FUSE device not available. Container must run with --privileged or --cap-add SYS_ADMIN --device /dev/fuse"
+fi
+
+echo "**** Mount container initialization complete ****"

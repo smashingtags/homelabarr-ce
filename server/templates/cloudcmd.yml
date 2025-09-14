@@ -1,0 +1,17 @@
+version: '3'
+services:
+  cloudcmd:
+    image: coderaiser/cloudcmd:latest
+    container_name: cloudcmd
+    restart: unless-stopped
+    networks:
+      - proxy
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "8000:8000"
+    volumes:
+
+networks:
+  proxy:
+    external: true

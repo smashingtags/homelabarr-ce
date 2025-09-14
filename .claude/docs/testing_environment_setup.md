@@ -1,0 +1,147 @@
+# Testing Environment Setup Guide
+
+## 🎯 **Required Before Testing**
+
+The validation revealed that environment variables need to be configured before testing can proceed.
+
+## 📝 **Required Environment Variables**
+
+Create a `.env` file or export these variables:
+
+### Core Configuration
+```bash
+# Domain Configuration  
+export DOMAIN="yourdomain.com"                    # Your actual domain
+export CLOUDFLARE_EMAIL="your-email@domain.com"   # Cloudflare account email
+export CLOUDFLARE_API_KEY="your-api-key-here"     # Cloudflare API key
+export DOMAIN1_ZONE_ID="your-zone-id"             # Cloudflare Zone ID
+
+# Docker Configuration
+export DOCKERNETWORK="proxy"                      # Network name
+export APPFOLDER="/opt/appdata"                   # Application data folder
+export ID="1000"                                  # User/Group ID
+export TZ="America/New_York"                      # Timezone
+
+# Security Options (Docker)
+export SECURITYOPS="no-new-privileges"
+export SECURITYOPSSET="true"
+```
+
+### Optional Variables (for full testing)
+```bash
+# Application Images (already set to defaults in envmigrate.sh)
+export PLEXIMAGE="lscr.io/linuxserver/plex:latest"
+export SONARRIMAGE="lscr.io/linuxserver/sonarr:latest"
+
+# Restart Policy
+export RESTARTAPP="unless-stopped"
+```
+
+## 🔧 **Quick Setup Methods**
+
+### Method 1: Export Variables (for testing)
+```bash
+# Minimal test setup
+export DOMAIN="test.local"
+export DOCKERNETWORK="proxy"  
+export APPFOLDER="/tmp/homelabarr-test"
+export ID="1000"
+export TZ="UTC"
+export SECURITYOPS="no-new-privileges"
+export SECURITYOPSSET="true"
+
+# Create test directories
+mkdir -p /tmp/homelabarr-test
+```
+
+### Method 2: Use HomelabARR CLI's Environment Migration
+```bash
+# If you have existing HomelabARR CLI setup
+cd /opt/appdata/compose/
+source .env  # Load existing environment variables
+```
+
+### Method 3: Create Test Environment File
+```bash
+# Create a test .env file
+cat > test.env << EOF
+DOMAIN=test.local
+DOCKERNETWORK=proxy
+APPFOLDER=/tmp/homelabarr-test
+ID=1000
+TZ=UTC
+SECURITYOPS=no-new-privileges
+SECURITYOPSSET=true
+CLOUDFLARE_EMAIL=test@example.com
+CLOUDFLARE_API_KEY=test-key
+DOMAIN1_ZONE_ID=test-zone
+EOF
+
+# Source the test environment
+set -a
+source test.env
+set +a
+```
+
+## 🧪 **Pre-Test Network Setup**
+
+The `proxy` network needs to exist:
+
+```bash
+# Create the proxy network if it doesn't exist
+docker network create proxy 2>/dev/null || echo "Network 'proxy' already exists"
+
+# Verify network exists
+docker network ls | grep proxy
+```
+
+## ✅ **Environment Validation**
+
+Run these commands to verify your environment is ready:
+
+```bash
+# Test environment variables
+echo "Domain: $DOMAIN"
+echo "Network: $DOCKERNETWORK"  
+echo "App Folder: $APPFOLDER"
+echo "User ID: $ID"
+
+# Test YAML validation with environment
+cd traefik/templates/compose
+docker-compose config > /dev/null && echo "✅ Traefik config valid"
+
+cd ../../../apps/mediaserver
+docker-compose -f plex.yml config > /dev/null && echo "✅ Plex config valid"
+```
+
+## 🚨 **Important Notes**
+
+### For Real Deployment
+- Use your actual domain name and Cloudflare credentials
+- Ensure `/opt/appdata` exists and has proper permissions
+- Set appropriate user/group IDs for your system
+
+### For Testing Only
+- Can use fake/test values for most variables
+- Cloudflare integration won't work with fake credentials
+- Services may not be externally accessible
+
+## 🔄 **Retry Validation**
+
+Once environment is configured:
+
+```bash
+# Re-run the validation script
+./.claude/scripts/validate_stack.sh
+```
+
+## 🎯 **Next Steps After Environment Setup**
+
+1. **Run Full Validation**: Complete stack testing
+2. **Test Individual Services**: Start services one by one
+3. **Monitor Logs**: Check for any configuration issues
+4. **Performance Testing**: Validate resource limits work correctly
+
+---
+
+**Environment setup is critical for successful testing!** 🔧

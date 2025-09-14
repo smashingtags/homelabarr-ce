@@ -1,0 +1,42 @@
+---
+services:
+  sonarr:
+    hostname: "sonarr"
+    container_name: "sonarr"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "DOCKER_MODS=ghcr.io/themepark-dev/theme.park:sonarr"
+      - "TP_THEME=${SONARRTHEME}"
+    image: "${SONARRIMAGE}"
+    restart: "${RESTARTAPP}"
+    ports:
+      - "8989:8989"
+    networks:
+      - homelabarr-cli-local
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${APPFOLDER}/sonarr:/config:rw"
+      - "unionfs:/mnt"
+    labels:
+      - "dockupdater.enable=true"
+
+      # HomelabARR CLI - Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr-local-template.entrypoints=websecure"
+      - "traefik.http.routers.sonarr-local-template.rule=Host(`sonarr-local-template.${DOMAIN}`)"
+      - "traefik.http.routers.sonarr-local-template.tls=true"
+      - "traefik.http.routers.sonarr-local-template.tls.certresolver=cfdns"
+      - "traefik.http.routers.sonarr-local-template.middlewares=authelia@docker"
+      - "traefik.http.services.sonarr-local-template.loadbalancer.server.port=${SONARR-LOCAL-TEMPLATE_PORT}"
+networks:
+  homelabarr-cli-local:
+    driver: bridge
+
+volumes:
+  unionfs:
+    driver: local
