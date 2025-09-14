@@ -1,0 +1,111 @@
+---
+services:
+  mount-enhanced:
+    hostname: "mount-enhanced"
+    container_name: "mount-enhanced"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      
+      # Enhanced features
+      - "ENHANCED_MODE=true"
+      - "MULTI_PROVIDER=true"
+      - "COST_TRACKING=true"
+      
+      # Provider settings
+      - "GDRIVE_ENABLED=true"
+      - "BACKBLAZE_ENABLED=false"
+      - "ONEDRIVE_ENABLED=false"
+      - "PCLOUD_ENABLED=false"
+      
+      # Performance settings
+      - "UPLOAD_CONCURRENCY=4"
+      - "VFS_CACHE_MODE=writes"
+      - "VFS_CACHE_SIZE=100GB"
+      - "BUFFER_SIZE=48M"
+      
+      # Cost management
+      - "COST_LIMIT_MONTHLY=50"
+      - "PROVIDER_SELECTION=auto"
+      - "COST_ALERTS=enabled"
+      
+      # Web interface
+      - "WEB_UI=enabled"
+      - "WEB_PORT=8080"
+      
+      # Monitoring
+      - "METRICS_ENABLED=true"
+      - "LOG_LEVEL=INFO"
+    image: "ghcr.io/smashingtags/homelabarr-mount-enhanced:latest"
+    restart: "${RESTARTAPP}"
+    
+    # Required privileges for FUSE mounting
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - "/dev/fuse:/dev/fuse"
+    security_opt:
+      - "apparmor:unconfined"
+    
+    networks:
+      - ${DOCKERNETWORK}
+    
+    volumes:
+      - "${APPFOLDER}/mount-enhanced:/config:rw"
+      - "${APPFOLDER}/mount-enhanced/move:/move:rw"
+      - "unionfs:/unionfs:shared"
+      - "${APPFOLDER}/mount-enhanced/data:/data:rw"
+      - "${APPFOLDER}/mount-enhanced/logs:/logs:rw"
+      - "${APPFOLDER}/mount-enhanced/cache:/config/cache:rw"
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Resource management
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.routers.mount-enhanced-rtr.entrypoints=https"
+      - "traefik.http.routers.mount-enhanced-rtr.rule=Host(`mount.${DOMAIN}`)"
+      - "traefik.http.routers.mount-enhanced-rtr.tls=true"
+      - "traefik.http.routers.mount-enhanced-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.mount-enhanced-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.mount-enhanced-rtr.service=mount-enhanced-svc"
+      - "traefik.http.services.mount-enhanced-svc.loadbalancer.server.port=8080"
+      
+      # Monitoring metadata
+      - "monitoring.enable=true"
+      - "monitoring.type=storage"
+      - "monitoring.service=mount-enhanced"
+
+networks:
+  proxy:
+    driver: bridge
+    external: true
+
+volumes:
+  unionfs:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt

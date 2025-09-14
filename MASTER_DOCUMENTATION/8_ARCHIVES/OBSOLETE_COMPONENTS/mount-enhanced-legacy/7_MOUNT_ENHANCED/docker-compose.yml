@@ -1,0 +1,159 @@
+# Enhanced HomelabARR Mount Container
+# Compatible with existing homelabarr-mount while adding multi-provider features
+# Drop-in replacement with enhanced capabilities
+
+services:
+  homelabarr-mount-enhanced:
+    # Build from MVP Dockerfile for testing
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-2.0.0-mvp}
+    # image: ghcr.io/smashingtags/homelabarr-mount-enhanced:latest
+    
+    container_name: homelabarr-mount-enhanced
+    hostname: mount-enhanced
+    restart: unless-stopped
+    
+    # Basic Docker socket access for container management
+    
+    # Environment configuration compatible with homelabarr-mount
+    environment:
+      # Standard HomelabARR variables (follow established patterns)
+      - PUID=${ID:-1000}
+      - PGID=${ID:-1000}
+      - TZ=${TZ:-UTC}
+      - UMASK=${UMASK:-002}
+      
+      # Enhanced features (opt-in)
+      - ENHANCED_MODE=${ENHANCED_MODE:-true}
+      - MULTI_PROVIDER=${MULTI_PROVIDER:-true}
+      - COST_TRACKING=${COST_TRACKING:-true}
+      
+      # Cloud provider settings (backward compatible)
+      - CLOUD_PROVIDER=${CLOUD_PROVIDER:-gdrive}
+      - STORAGE_TIER=${STORAGE_TIER:-standard}
+      
+      # Provider enablement
+      - GDRIVE_ENABLED=${GDRIVE_ENABLED:-true}
+      - BACKBLAZE_ENABLED=${BACKBLAZE_ENABLED:-false}
+      - ONEDRIVE_ENABLED=${ONEDRIVE_ENABLED:-false}
+      - PCLOUD_ENABLED=${PCLOUD_ENABLED:-false}
+      
+      # Performance settings (enhanced but compatible)
+      - UPLOAD_CONCURRENCY=${UPLOAD_CONCURRENCY:-4}
+      - VFS_CACHE_MODE=${VFS_CACHE_MODE:-writes}
+      - VFS_CACHE_SIZE=${VFS_CACHE_SIZE:-100GB}
+      - BUFFER_SIZE=${BUFFER_SIZE:-48M}
+      
+      # Cost management (new feature)
+      - COST_LIMIT_MONTHLY=${COST_LIMIT_MONTHLY:-50}
+      - PROVIDER_SELECTION=${PROVIDER_SELECTION:-auto}
+      - COST_ALERTS=${COST_ALERTS:-enabled}
+      
+      # Web interface (enhanced)
+      - WEB_UI=${WEB_UI:-enabled}
+      - WEB_PORT=${WEB_PORT:-8080}
+      - API_VERSION=${API_VERSION:-v2}
+      
+      # Monitoring (enhanced)
+      - METRICS_ENABLED=${METRICS_ENABLED:-true}
+      - HEALTH_CHECK_INTERVAL=${HEALTH_CHECK_INTERVAL:-60s}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+      # Compatibility with existing homelabarr-mount configs
+      - RCLONE_CONFIG_DIR=${RCLONE_CONFIG_DIR:-/config/rclone}
+      - MOUNT_DIR=${MOUNT_DIR:-/unionfs}
+      - MOVE_DIR=${MOVE_DIR:-/move}
+    
+    # Volume mounts for MVP testing
+    volumes:
+      # Docker socket for container management
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      
+      # Core directories for MVP testing
+      - "${CONFIG_PATH:-./config}:/config"
+      - "${DATA_PATH:-./data}:/data"
+      - "${LOG_PATH:-./logs}:/logs"
+      
+      # System time
+      - "/etc/localtime:/etc/localtime:ro"
+    
+    # Network configuration (compatible with homelabarr ecosystem)
+    networks:
+      - proxy
+    
+    # Port exposure (MVP testing) 
+    ports:
+      - "${WEB_PORT:-8081}:8080"
+    
+    # Traefik labels (compatible with existing homelabarr patterns)
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      
+      # HTTP router for web interface (HomelabARR pattern)
+      - "traefik.http.routers.mount-enhanced-rtr.rule=Host(`mount.${DOMAIN:-localhost.local}`)"
+      - "traefik.http.routers.mount-enhanced-rtr.entrypoints=https"
+      - "traefik.http.routers.mount-enhanced-rtr.tls=true"
+      - "traefik.http.routers.mount-enhanced-rtr.tls.certresolver=dns-cloudflare"
+      
+      # Service configuration (HomelabARR pattern)
+      - "traefik.http.routers.mount-enhanced-rtr.service=mount-enhanced-svc"
+      - "traefik.http.services.mount-enhanced-svc.loadbalancer.server.port=8080"
+      
+      # Middleware (compatible with authelia)
+      - "traefik.http.routers.mount-enhanced-rtr.middlewares=chain-authelia@file"
+      
+      # DockerUpdater integration
+      - "dockupdater.enable=true"
+      
+      # Homepage integration (compatible)
+      - "homepage.group=Storage"
+      - "homepage.name=Cloud Mount Enhanced"
+      - "homepage.icon=cloud-upload"
+      - "homepage.href=https://mount.${DOMAIN:-localhost.local}"
+      - "homepage.description=Multi-provider cloud storage with cost tracking"
+      - "homepage.weight=5"
+      
+      # Enhanced metrics for monitoring
+      - "prometheus.scrape=true"
+      - "prometheus.port=9090"
+      - "prometheus.path=/metrics"
+      - "prometheus.enhanced=true"
+    
+    # Health check (MVP compatible)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Resource limits (reasonable defaults)
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    
+    # No dependencies for MVP testing
+
+# Network configuration (compatible with homelabarr ecosystem)
+networks:
+  proxy:
+    driver: bridge
+    external: true
+
+# Named volumes for MVP (simplified)
+volumes:
+  mount-enhanced-config:
+    driver: local
+  
+  mount-enhanced-logs:
+    driver: local

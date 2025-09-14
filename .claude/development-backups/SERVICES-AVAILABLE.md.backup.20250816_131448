@@ -1,0 +1,245 @@
+# DockServer Local Mode - Available Services
+
+## 🎬 Media Servers
+
+### Plex Media Server ✅ READY
+- **Port**: 32400
+- **Access**: http://localhost:32400
+- **Description**: Premium media server with transcoding, mobile apps, and sharing
+- **Template**: `plex-local-template.yml`
+- **Features**: Theme support, health checks, memory limits, hardware acceleration ready
+
+### Jellyfin Media Server ✅ READY
+- **Port**: 8096
+- **Access**: http://localhost:8096
+- **Description**: Open-source media server, completely free alternative to Plex
+- **Template**: `jellyfin-local-template.yml`
+- **Features**: No premium features, plugin system, live TV support
+
+## 📚 Media Management
+
+### Radarr (Movies) ✅ READY
+- **Port**: 7878
+- **Access**: http://localhost:7878
+- **Description**: Automatic movie downloading and organization
+- **Template**: `radarr-local-template.yml`
+- **Features**: Quality profiles, automatic searching, metadata fetching
+
+### Sonarr (TV Shows) ✅ READY
+- **Port**: 8989
+- **Access**: http://localhost:8989
+- **Description**: Automatic TV show downloading and organization
+- **Template**: `sonarr-local-template.yml`
+- **Features**: Season packs, daily shows, anime support
+
+## ⬇️ Download Clients
+
+### qBittorrent ✅ READY
+- **Port**: 8082
+- **Access**: http://localhost:8082
+- **Description**: Feature-rich torrent client with web interface
+- **Template**: `qbittorrent-local-template.yml`
+- **Features**: RSS feeds, sequential downloading, bandwidth limiting
+
+### SABnzbd ✅ READY
+- **Port**: 8085
+- **Access**: http://localhost:8085
+- **Description**: Usenet binary newsreader with automatic processing
+- **Template**: `sabnzbd-local-template.yml`
+- **Features**: NZB processing, repair and extract, bandwidth scheduling
+
+## 🎫 Request Management
+
+### Overseerr ✅ READY
+- **Port**: 5055
+- **Access**: http://localhost:5055
+- **Description**: Media request and discovery tool for Plex
+- **Template**: `overseerr-local-template.yml`
+- **Features**: User management, request workflows, discovery
+
+## 📊 Monitoring & Analytics
+
+### Tautulli ✅ READY
+- **Port**: 8181
+- **Access**: http://localhost:8181
+- **Description**: Plex monitoring and analytics tool
+- **Template**: `tautulli-local-template.yml`
+- **Features**: User statistics, stream monitoring, notifications
+
+## 🚀 Quick Deployment
+
+### Popular Stack (Recommended)
+Deploy the most common setup with one command:
+```bash
+./install-local.sh
+# Choose option 2: Deploy Popular Stack
+```
+
+**Includes:**
+- Plex Media Server (32400)
+- Radarr Movies (7878)
+- Sonarr TV Shows (8989)
+- qBittorrent Downloads (8082)
+- Overseerr Requests (5055)
+
+### Individual Services
+Deploy any single service:
+```bash
+docker-compose -f SERVICE-local-template.yml --env-file .env up -d
+```
+
+## 🔧 Configuration
+
+### Environment Setup
+All services use the same `.env` file for configuration:
+- Copy `.env.example` to `.env`
+- Customize paths, themes, and settings
+- All services will use the same user ID, timezone, etc.
+
+### Data Storage
+Default data locations:
+- **App configs**: `/opt/appdata/SERVICE/`
+- **Media files**: `/mnt/` (via unionfs volume)
+- **Downloads**: `/mnt/downloads/`
+
+### Theme Customization
+All services support Theme Park themes:
+- `dark` - Dark theme (default)
+- `space-gray` - Space Gray theme  
+- `aquamarine` - Aquamarine theme
+- `hotline` - Hotline theme
+- `organizr` - Organizr theme
+
+## 📋 Service Requirements
+
+### Minimum System Resources
+| Service | RAM | CPU | Storage |
+|---------|-----|-----|---------|
+| Plex | 2GB | 1 core | 1GB |
+| Jellyfin | 1GB | 1 core | 500MB |
+| Radarr | 512MB | 0.5 core | 200MB |
+| Sonarr | 512MB | 0.5 core | 200MB |
+| qBittorrent | 256MB | 0.5 core | 100MB |
+| SABnzbd | 512MB | 0.5 core | 100MB |
+| Overseerr | 256MB | 0.5 core | 100MB |
+| Tautulli | 256MB | 0.5 core | 100MB |
+
+### Full Stack Requirements
+- **Total RAM**: 4-6GB recommended
+- **CPU**: 2-4 cores recommended  
+- **Storage**: 20GB+ for apps, separate storage for media
+
+## 🔗 Service Integration
+
+### Typical Workflow
+1. **Download Client** (qBittorrent/SABnzbd) downloads content
+2. **Media Manager** (Radarr/Sonarr) organizes and renames files
+3. **Media Server** (Plex/Jellyfin) serves content to clients
+4. **Request Tool** (Overseerr) allows users to request new content
+5. **Monitor** (Tautulli) tracks usage and performance
+
+### Connection Setup
+Services can discover each other by container name:
+- Radarr connects to qBittorrent at `http://qbittorrent:8082`
+- Overseerr connects to Plex at `http://plex:32400`
+- All use the same `dockserver-local` network
+
+## 🆚 Comparison with Full DockServer
+
+| Feature | Local Mode | Full DockServer |
+|---------|------------|-----------------|
+| **Services Available** | 8 core services | 100+ services |
+| **Access Method** | Direct IP:PORT | Domain-based |
+| **Authentication** | None | Authelia SSO |
+| **SSL/TLS** | Manual setup | Automatic |
+| **External Access** | Port forwarding | Cloudflare tunnels |
+| **Complexity** | Beginner | Advanced |
+| **Setup Time** | 5 minutes | 30+ minutes |
+
+## 🔮 Coming Soon
+
+### Additional Services in Development
+- **Lidarr** - Music management
+- **Bazarr** - Subtitle management  
+- **Prowlarr** - Indexer management
+- **Jellyseerr** - Jellyfin request management
+- **Heimdall** - Application dashboard
+- **Portainer** - Docker management UI
+
+### Advanced Features
+- Web-based configuration interface
+- Automatic backup and restore
+- Service health monitoring
+- Update management system
+- Migration tools from full DockServer
+
+---
+
+---
+
+## 🎉 **MASSIVE UPDATE: 171+ Services Available!**
+
+### 📁 **Bulk Converted Applications**
+In addition to the carefully crafted templates above, DockServer Local Mode includes **171+ pre-converted applications** in the `apps/local-mode-apps/` directory!
+
+#### **Major Categories Available:**
+- **🎬 Media Servers**: Plex, Jellyfin, Emby, Koel, Mstream
+- **📚 Media Management**: Radarr, Sonarr, Lidarr, Bazarr, Prowlarr, Readarr, LazyLibrarian
+- **⬇️ Download Clients**: qBittorrent, SABnzbd, Deluge, NZBGet, Aria, Transmission
+- **🎫 Request Management**: Overseerr, Petio, Ombi
+- **📊 Monitoring**: Tautulli, Netdata, Glances, Uptime-Kuma, Scrutiny
+- **🛡️ Security**: Fail2Ban, Authelia, Bitwarden
+- **🌐 Networking**: Cloudflared, WireGuard, Gluetun, Pi-hole
+- **💾 Storage & Backup**: Duplicati, Restic, NextCloud, Syncthing
+- **🎮 Gaming & Communication**: Discord, TeamSpeak, Steam
+- **🔧 Development**: Code-Server, GitLab, VS Code, Cloud9
+- **📱 Self-Hosted Apps**: HomeAssistant, Jellyseerr, Firefly III
+- **🎨 Dashboards**: Heimdall, Organizr, Dashy, Flame, Homepage
+
+#### **How to Use Bulk Converted Apps:**
+```bash
+# Deploy any converted app directly
+cd apps/local-mode-apps
+docker-compose -f SERVICE.yml --env-file ../.config/.env up -d
+
+# Examples:
+docker-compose -f heimdall.yml --env-file ../.config/.env up -d
+docker-compose -f nextcloud.yml --env-file ../.config/.env up -d
+docker-compose -f pihole.yml --env-file ../.config/.env up -d
+```
+
+#### **⚠️ Bulk Converted App Notes:**
+- These apps were **automatically converted** from full DockServer configurations
+- Most will work out-of-the-box but may need minor port or configuration adjustments
+- The **8 curated templates** above are tested and guaranteed to work perfectly
+- Bulk converted apps provide access to the **entire DockServer ecosystem** in local mode
+
+#### **🔍 Finding the Right App:**
+With 171+ options, here are some popular choices:
+
+**Essential Self-Hosted Apps:**
+- `nextcloud.yml` - Personal cloud storage
+- `pihole.yml` - Network-wide ad blocking  
+- `heimdall.yml` - Application dashboard
+- `uptime-kuma.yml` - Service monitoring
+- `duplicati.yml` - Backup solution
+
+**Advanced Media Setup:**
+- `prowlarr.yml` - Indexer management
+- `bazarr.yml` - Subtitle management
+- `tdarr.yml` - Media transcoding
+- `gaps.yml` - Plex collection gaps
+
+**Development & Productivity:**
+- `code-server.yml` - VS Code in browser
+- `gitea.yml` - Git repository hosting
+- `recipes.yml` - Recipe management
+- `bookstack.yml` - Documentation wiki
+
+---
+
+**Last Updated**: August 2025  
+**Curated Templates**: 8 services ✅ Production Ready  
+**Bulk Converted Apps**: 171+ services 🚀 Available  
+**Total Available**: **179+ Services!**  
+**Status**: **MASSIVE SUCCESS** 🎉

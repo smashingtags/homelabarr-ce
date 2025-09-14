@@ -1,0 +1,27 @@
+{
+  "rebranding_summary": {
+    "new_project_name": "homelabarr-cli",
+    "new_username": "mrgoober",
+    "timestamp": "2025-08-17T02:15:40.019058",
+    "backup_location": "rebrand_backup_20250817_021537"
+  },
+  "statistics": {
+    "files_processed": 1714,
+    "files_modified": 202,
+    "total_replacements": 1884,
+    "category_counts": {}
+  },
+  "replacement_patterns": {
+    "ghcr\\.io/dockserver/": "ghcr.io/smashingtags/",
+    "/opt/dockserver\\b": "/opt/homelabarr-cli",
+    "/usr/bin/dockserver\\b": "/usr/bin/homelabarr-cli",
+    "/bin/dockserver\\b": "/bin/homelabarr-cli",
+    "\\bdockserver\\b(?=\\s|$|\\.|\\s)": "homelabarr-cli",
+    "dockserver-local": "homelabarr-cli-local",
+    "--name=dockserver\\b": "--name=homelabarr-cli",
+    "\\bmrdoob\\b": "mrgoober",
+    "\\bMrDoob\\b": "Mrgoober",
+    "\\bDockserver\\b": "HomelabarrCli",
+    "\\bDockServer\\b": "HomelabarrCli"
+  }
+}

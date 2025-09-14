@@ -1,0 +1,53 @@
+---
+# TEMPLATE: qBittorrent Download Client
+# Supports both Local and Proxy modes
+services:
+  qbittorrent:
+    hostname: "qbittorrent"
+    container_name: "qbittorrent"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "WEBUI_PORT=8080"
+      - "DOCKER_MODS=ghcr.io/themepark-dev/theme.park:qbittorrent|ghcr.io/dockserver/docker-mod-qbittorrent:v1.0.0"
+      - "TP_THEME=${QBITORRENTTHEME}"
+    image: "${QBITORRENTIMAGE}"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      # LOCAL_MODE: Web UI and torrent ports exposed
+      # PROXY_MODE: Only internal ports for Traefik
+    volumes:
+      - "${APPFOLDER}/qbittorrent:/config:rw"
+      - "unionfs:/mnt"
+    labels:
+      # PROXY_MODE: Traefik labels for reverse proxy routing
+      # LOCAL_MODE: These labels are stripped out
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.routers.qbittorrent-rtr.entrypoints=https"
+      - "traefik.http.routers.qbittorrent-rtr.rule=Host(`qbittorrent.${DOMAIN}`)"
+      - "traefik.http.routers.qbittorrent-rtr.tls=true"
+      - "traefik.http.routers.qbittorrent-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.qbittorrent-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.qbittorrent-rtr.service=qbittorrent-svc"
+      - "traefik.http.services.qbittorrent-svc.loadbalancer.server.port=8080"
+
+# PROXY_MODE: External proxy network for Traefik communication
+# LOCAL_MODE: Uses bridge network for direct access
+networks:
+  proxy:
+    driver: bridge
+    external: true
+
+volumes:
+  unionfs:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt

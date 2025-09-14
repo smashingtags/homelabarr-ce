@@ -1,0 +1,41 @@
+---
+services:
+  overseerr:
+    hostname: "overseerr"
+    container_name: "overseerr"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "DOCKER_MODS=ghcr.io/themepark-dev/theme.park:overseerr"
+      - "TP_THEME=${OVERSEERRTHEME}"
+    image: "${OVERSEERRIMAGE}"
+    restart: "${RESTARTAPP}"
+    ports:
+      - "5055:5055"
+    networks:
+      - homelabarr-cli-local
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${APPFOLDER}/overseerr:/app/config:rw"
+    labels:
+      - "dockupdater.enable=true"
+
+      # HomelabARR CLI - Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.http.routers.overseerr-local-template.entrypoints=websecure"
+      - "traefik.http.routers.overseerr-local-template.rule=Host(`overseerr-local-template.${DOMAIN}`)"
+      - "traefik.http.routers.overseerr-local-template.tls=true"
+      - "traefik.http.routers.overseerr-local-template.tls.certresolver=cfdns"
+      - "traefik.http.routers.overseerr-local-template.middlewares=authelia@docker"
+      - "traefik.http.services.overseerr-local-template.loadbalancer.server.port=${OVERSEERR-LOCAL-TEMPLATE_PORT}"
+networks:
+  homelabarr-cli-local:
+    driver: bridge
+
+volumes:
+  unionfs:
+    driver: local

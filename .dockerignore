@@ -1,0 +1,67 @@
+# Git
+.git
+.gitignore
+.github
+
+# Node modules (will be installed fresh in container)
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs (will be built in container)
+dist
+build
+.next
+out
+
+# Development files
+*.md
+.env*
+!.env.example
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Test files
+coverage
+.nyc_output
+*.test.js
+*.spec.js
+__tests__
+cypress
+
+# Documentation
+docs
+wiki
+*.pdf
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+rebrand_backup*
+
+# HomelabARR specific
+apps/
+scripts/
+traefik/
+preinstall/
+.claude/
+.installer/
+mcp/
+
+# CI/CD
+.circleci
+.travis.yml
+jenkins
+
+# Logs
+logs
+*.log
+
+# OS files
+Thumbs.db
+Desktop.ini

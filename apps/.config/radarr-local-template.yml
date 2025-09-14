@@ -1,0 +1,44 @@
+---
+services:
+  radarr:
+    hostname: "radarr"
+    container_name: "radarr"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "DOCKER_MODS=ghcr.io/themepark-dev/theme.park:radarr"
+      - "TP_THEME=${RADARRTHEME}"
+    image: "${RADARRIMAGE}"
+    restart: "${RESTARTAPP}"
+    ports:
+      - "7878:7878"
+    networks:
+      - homelabarr-cli-local
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${APPFOLDER}/radarr:/config:rw"
+      - "unionfs:/mnt"
+    labels:
+      - "dockupdater.enable=true"
+
+      # HomelabARR CLI - Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr-local-template.entrypoints=websecure"
+      - "traefik.http.routers.radarr-local-template.rule=Host(`radarr-local-template.${DOMAIN}`)"
+      - "traefik.http.routers.radarr-local-template.tls=true"
+      - "traefik.http.routers.radarr-local-template.tls.certresolver=cfdns"
+      - "traefik.http.routers.radarr-local-template.middlewares=authelia@docker"
+      - "traefik.http.services.radarr-local-template.loadbalancer.server.port=${RADARR-LOCAL-TEMPLATE_PORT}"
+networks:
+  homelabarr-cli-local:
+    driver: bridge
+
+volumes:
+  unionfs:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt

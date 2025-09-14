@@ -1,0 +1,52 @@
+[
+  {
+    "id": "session_9k5wnbz0umdbwktdg",
+    "userId": "user_e1b8wsmtnmdbw9dmk",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfZTFiOHdzbXRubWRidzlkbWsiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzUzMDI5NjI3LCJleHAiOjE3NTMxMTYwMjd9.lUqH-g65sNSimEhlhJJ71yRRboZCcVUMCyEaRlVBhxk",
+    "createdAt": "2025-07-20T16:40:27.316Z",
+    "lastActivity": "2025-07-20T16:40:27.316Z",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "ipAddress": "127.0.0.1",
+    "invalidated": false
+  },
+  {
+    "id": "session_vd2zacv1zmel83e6p",
+    "userId": "user_e1b8wsmtnmdbw9dmk",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfZTFiOHdzbXRubWRidzlkbWsiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU1NzY5OTQ3LCJleHAiOjE3NTU4NTYzNDd9.UZNDc9Udrpq549lfdaRd645OAksFeUR1fSHPhC1fAXk",
+    "createdAt": "2025-08-21T09:52:27.794Z",
+    "lastActivity": "2025-08-21T09:52:27.794Z",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ipAddress": "127.0.0.1",
+    "invalidated": false
+  },
+  {
+    "id": "session_fpvvnuqj9mel8huxy",
+    "userId": "user_e1b8wsmtnmdbw9dmk",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfZTFiOHdzbXRubWRidzlkbWsiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU1NzcwNjIyLCJleHAiOjE3NTU4NTcwMjJ9.5QD2Op2hCwYEkEgbApiNuUhKUR6gOpCzpogpy1FNwbg",
+    "createdAt": "2025-08-21T10:03:42.694Z",
+    "lastActivity": "2025-08-21T10:03:42.694Z",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ipAddress": "127.0.0.1",
+    "invalidated": false
+  },
+  {
+    "id": "session_4hlogg83rmel90zi6",
+    "userId": "user_e1b8wsmtnmdbw9dmk",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfZTFiOHdzbXRubWRidzlkbWsiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU1NzcxNTE1LCJleHAiOjE3NTU4NTc5MTV9.ArZN_HMUU5Pab-GqBr6Z0MvVtj2D9nz8DqekYFWpiXM",
+    "createdAt": "2025-08-21T10:18:35.071Z",
+    "lastActivity": "2025-08-21T10:18:35.071Z",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ipAddress": "127.0.0.1",
+    "invalidated": false
+  },
+  {
+    "id": "session_v7expi66dmel9xdxf",
+    "userId": "user_e1b8wsmtnmdbw9dmk",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJfZTFiOHdzbXRubWRidzlkbWsiLCJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU1NzczMDI2LCJleHAiOjE3NTU4NTk0MjZ9.jeo0l66IE2esyt-KQgH3eKd6cWJf82RRJ3RU_g9QFFg",
+    "createdAt": "2025-08-21T10:43:46.756Z",
+    "lastActivity": "2025-08-21T10:43:46.756Z",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ipAddress": "127.0.0.1",
+    "invalidated": false
+  }
+]

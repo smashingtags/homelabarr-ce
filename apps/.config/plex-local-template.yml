@@ -1,0 +1,66 @@
+---
+services:
+  plex:
+    hostname: "plex"
+    container_name: "plex"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "PLEX_CLAIM=PLEX_CLAIM_ID"
+      - "VERSION=${PLEXVERSION}"
+      - "ADVERTISE_IP=http://localhost:32400"
+      - "DOCKER_MODS=ghcr.io/themepark-dev/theme.park:plex|ghcr.io/smashingtags/homelabarr-mod-healthcheck:v1.0.0"
+      - "TP_THEME=${PLEXTHEME}"
+      - "TP_ADDON=${PLEXADDON}"
+    image: "${PLEXIMAGE}"
+    restart: "${RESTARTAPP}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:32400/identity"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    ports:
+      - "32400:32400"
+    networks:
+      - homelabarr-cli-local
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 1G
+    extra_hosts:
+      - "analytics.plex.tv:127.0.0.1"
+      - "metrics.plex.tv:127.0.0.1"
+      - "metric.plex.tv:127.0.0.1"
+      - "mf.svc.nhl.com:127.0.0.1"
+      - "mlb-ws-mf.media.mlb.com:127.0.0.1"
+      - "playback.svcs.mlb.com:127.0.0.1"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${APPFOLDER}/plex/database:/config:rw"
+      - "unionfs:/mnt:ro"
+      - "/dev/shm:/ram_transcode:rw"
+    labels:
+      - "dockupdater.enable=true"
+
+      # HomelabARR CLI - Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.http.routers.plex-local-template.entrypoints=websecure"
+      - "traefik.http.routers.plex-local-template.rule=Host(`plex-local-template.${DOMAIN}`)"
+      - "traefik.http.routers.plex-local-template.tls=true"
+      - "traefik.http.routers.plex-local-template.tls.certresolver=cfdns"
+      - "traefik.http.routers.plex-local-template.middlewares=authelia@docker"
+      - "traefik.http.services.plex-local-template.loadbalancer.server.port=${PLEX-LOCAL-TEMPLATE_PORT}"
+networks:
+  homelabarr-cli-local:
+    driver: bridge
+
+volumes:
+  unionfs:
+    driver: local

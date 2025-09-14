@@ -1,0 +1,91 @@
+---
+services:
+  coder-db:
+    hostname: "coder-db"
+    container_name: "coder-db"
+    ports:
+      - "5432:5432"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "POSTGRES_USER=coder"
+      - "POSTGRES_PASSWORD=${CODER_DB_PASSWORD}"
+      - "POSTGRES_DB=coder"
+    image: "postgres:16-alpine"
+    restart: "${RESTARTAPP}"
+    networks:
+      - homelabarr-cli-local
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    volumes:
+      - "${APPFOLDER}/coder/database:/var/lib/postgresql/data:rw"
+      - "/etc/localtime:/etc/localtime:ro"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coder -d coder"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "dockupdater.enable=true"
+
+  coder:
+    hostname: "coder"
+    container_name: "coder"
+    depends_on:
+      coder-db:
+        condition: service_healthy
+    ports:
+      - "7080:7080"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "CODER_PG_CONNECTION_URL=postgresql://coder:${CODER_DB_PASSWORD}@coder-db:5432/coder?sslmode=disable"
+      - "CODER_HTTP_ADDRESS=0.0.0.0:7080"
+      - "CODER_ACCESS_URL=http://localhost:7080"
+      - "CODER_DISABLE_PASSWORD_AUTH=false"
+      - "CODER_DISABLE_OWNER_WORKSPACE_EXEC=false"
+      - "CODER_MAX_SESSION_TTL=24h"
+      - "CODER_EXPERIMENTAL=true"
+    image: "ghcr.io/coder/coder:v2.16.1"
+    restart: "${RESTARTAPP}"
+    networks:
+      - homelabarr-cli-local
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    volumes:
+      - "${APPFOLDER}/coder/config:/home/coder:rw"
+      - "${APPFOLDER}/coder/templates:/opt/coder/templates:rw"
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
+      - "/etc/localtime:/etc/localtime:ro"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7080/api/v2/buildinfo"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    labels:
+      - "dockupdater.enable=true"
+
+networks:
+  homelabarr-cli-local:
+    driver: bridge

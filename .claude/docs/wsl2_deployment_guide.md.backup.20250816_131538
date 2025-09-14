@@ -1,0 +1,285 @@
+# WSL2 Ubuntu Deployment Guide
+
+## 🎯 **WSL2 Deployment Advantages**
+
+**Perfect for testing HomelabARR CLI because:**
+- ✅ Real Linux environment (Ubuntu 22.04 LTS)
+- ✅ Docker Desktop integration (no complex Docker setup)
+- ✅ Isolated from Windows host system
+- ✅ Easy to reset/restart if issues occur
+- ✅ Proper file permissions and networking
+
+## 🔧 **Pre-Deployment Setup**
+
+### 1. Copy HomelabARR CLI to WSL2
+```bash
+# From Windows PowerShell/CMD
+wsl -d Ubuntu-22.04
+
+# Inside WSL2, create working directory
+sudo mkdir -p /opt/dockserver
+sudo chown $USER:$USER /opt/dockserver
+
+# Copy project files (we'll need to transfer from Windows)
+# Method 1: Access Windows files from WSL2
+cp -r /mnt/f/Coding\ Projects/homelabarr-cli/* /opt/homelabarr-cli/
+cd /opt/dockserver
+
+# OR Method 2: Git clone (if project is in Git)
+# git clone <your-repo> /opt/dockserver
+```
+
+### 2. Create Application Data Directory
+```bash
+# Create appdata directory with proper permissions
+sudo mkdir -p /opt/appdata
+sudo chown -R $USER:$USER /opt/appdata
+sudo chmod -R 755 /opt/appdata
+
+# Create necessary subdirectories
+mkdir -p /opt/appdata/{traefik,authelia,plex,sonarr}
+```
+
+### 3. Set Up Environment Variables
+```bash
+# Create environment configuration
+cat > /opt/homelabarr-cli/.env << 'EOF'
+# Core Configuration
+DOMAIN=localhost              # For testing, or use your real domain
+CLOUDFLARE_EMAIL=test@test.com   # Real email for production
+CLOUDFLARE_API_KEY=test-key      # Real API key for production
+DOMAIN1_ZONE_ID=test-zone-id     # Real zone ID for production
+
+# Docker Configuration
+DOCKERNETWORK=proxy
+APPFOLDER=/opt/appdata
+ID=1000
+TZ=America/New_York
+
+# Security Configuration
+SECURITYOPS=no-new-privileges
+SECURITYOPSSET=true
+
+# Application Configuration
+RESTARTAPP=unless-stopped
+UMASK=022
+
+# For testing with localhost
+PLEXIMAGE=lscr.io/linuxserver/plex:latest
+SONARRIMAGE=lscr.io/linuxserver/sonarr:latest
+EOF
+
+# Load environment
+set -a
+source /opt/homelabarr-cli/.env
+set +a
+```
+
+## 🚀 **Deployment Steps**
+
+### Step 1: Prepare Network
+```bash
+cd /opt/dockserver
+
+# Create proxy network
+docker network create proxy 2>/dev/null || echo "Network already exists"
+
+# Verify network
+docker network ls | grep proxy
+```
+
+### Step 2: Deploy Core Infrastructure
+```bash
+# Start with Traefik (reverse proxy)
+cd traefik/templates/compose
+docker-compose up -d traefik
+
+# Check Traefik startup
+docker logs traefik
+sleep 10
+
+# Test Traefik health check
+docker exec traefik wget -qO- http://localhost:8080/ping
+```
+
+### Step 3: Deploy Authentication
+```bash
+# Start Authelia (authentication)
+docker-compose up -d authelia
+
+# Check Authelia startup
+docker logs authelia
+sleep 30
+
+# Test Authelia health check
+docker exec authelia wget -qO- http://localhost:9091/api/health || echo "Still starting..."
+```
+
+### Step 4: Deploy Applications
+```bash
+# Go back to main directory
+cd /opt/dockserver
+
+# Start Plex (with health checks and resource limits)
+docker-compose -f apps/mediaserver/plex.yml up -d
+
+# Start Sonarr (with health checks and resource limits)  
+docker-compose -f apps/mediamanager/sonarr.yml up -d
+
+# Check application status
+docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"
+```
+
+## 🧪 **Testing & Validation**
+
+### 1. Service Health Checks
+```bash
+# Check all container health
+docker ps --format "table {{.Names}}\\t{{.Status}}"
+
+# Check specific health statuses
+docker inspect traefik | jq '.[0].State.Health'
+docker inspect authelia | jq '.[0].State.Health'
+docker inspect plex | jq '.[0].State.Health'
+```
+
+### 2. Service Connectivity
+```bash
+# Test internal service connectivity
+curl -f http://localhost:8080/ping        # Traefik ping
+curl -f http://localhost:9091/api/health  # Authelia health
+curl -f http://localhost:32400/identity   # Plex identity
+curl -f http://localhost:8989/ping        # Sonarr ping
+```
+
+### 3. Resource Usage Monitoring
+```bash
+# Monitor resource usage (should respect limits)
+docker stats --no-stream
+
+# Check memory limits are working
+docker inspect plex | jq '.[0].HostConfig.Memory'      # Should show 4GB
+docker inspect sonarr | jq '.[0].HostConfig.Memory'    # Should show 1GB
+```
+
+## 🌐 **External Access Testing**
+
+### For Local Testing (using localhost)
+```bash
+# Access services directly
+echo "Traefik Dashboard: http://localhost:8080"
+echo "Authelia: http://localhost:9091"  
+echo "Plex: http://localhost:32400"
+echo "Sonarr: http://localhost:8989"
+```
+
+### For Domain Testing (requires real domain/Cloudflare)
+```bash
+# Update .env with real credentials, then restart services
+# CF-Companion will then create SSL certificates automatically
+docker-compose up -d cf-companion
+
+# Check CF-Companion logs
+docker logs cf-companion
+```
+
+## 🔍 **Monitoring & Logs**
+
+### Real-time Monitoring
+```bash
+# Follow all container logs
+docker-compose logs -f
+
+# Follow specific service logs
+docker logs -f traefik
+docker logs -f authelia
+docker logs -f plex
+```
+
+### Health Status Dashboard
+```bash
+# Create a simple status check script
+cat > /opt/homelabarr-cli/status_check.sh << 'EOF'
+#!/bin/bash
+echo "=== HomelabARR CLI Status ==="
+echo "Date: $(date)"
+echo ""
+
+services=("traefik" "authelia" "plex" "sonarr")
+for service in "${services[@]}"; do
+    if docker ps | grep -q "$service"; then
+        health=$(docker inspect "$service" 2>/dev/null | jq -r '.[0].State.Health.Status // "no-health-check"')
+        echo "✅ $service: Running ($health)"
+    else
+        echo "❌ $service: Not running"
+    fi
+done
+
+echo ""
+echo "=== Resource Usage ==="
+docker stats --no-stream --format "table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.MemPerc}}"
+EOF
+
+chmod +x /opt/homelabarr-cli/status_check.sh
+```
+
+## 🚨 **Troubleshooting**
+
+### Common Issues
+```bash
+# Permission issues
+sudo chown -R $USER:$USER /opt/appdata
+sudo chmod -R 755 /opt/appdata
+
+# Network issues
+docker network prune
+docker network create proxy
+
+# Service startup issues
+docker-compose down
+docker system prune -f
+docker-compose up -d
+```
+
+### Reset Everything
+```bash
+# Nuclear option - reset everything
+docker-compose down
+docker system prune -af
+docker volume prune -f
+sudo rm -rf /opt/appdata/*
+# Then re-run deployment steps
+```
+
+## ✅ **Success Criteria**
+
+### Must Pass
+- [ ] All containers start without errors
+- [ ] Health checks report "healthy" status  
+- [ ] Services respond to direct HTTP requests
+- [ ] Resource limits are respected (check docker stats)
+- [ ] No container restarts/crashes
+
+### Should Pass  
+- [ ] Traefik routes traffic correctly
+- [ ] Authelia authentication works (if domain configured)
+- [ ] SSL certificates generate (if Cloudflare configured)
+- [ ] Performance is acceptable
+
+### Nice to Have
+- [ ] External domain access works
+- [ ] Monitoring dashboards accessible
+- [ ] Automated health recovery works
+
+## 🎯 **Next Steps After Successful Deployment**
+
+1. **Scale Up**: Add more applications gradually
+2. **Monitor**: Set up Prometheus/Grafana monitoring
+3. **Backup**: Implement configuration backup
+4. **Document**: Record lessons learned and configurations
+
+---
+
+**WSL2 provides the perfect testing environment for HomelabARR CLI!** 🚀
+
+Ready to start the deployment? Let's begin with Step 1! 🎯

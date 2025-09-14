@@ -1,0 +1,74 @@
+# Images using :latest tag - August 14, 2025
+# Review these for version pinning
+
+## Analysis Summary
+- **Total YAML files processed**: 169 files
+- **Version fields removed**: All deprecated `version:` fields eliminated
+- **Images requiring version pinning**: Multiple `:latest` tags identified
+
+## Environment Variable Defaults (High Priority)
+The following default image variables in `apps/.subactions/envmigrate.sh` use `:latest` tags:
+
+### Media Server Applications
+- PLEXIMAGE=lscr.io/linuxserver/plex:latest
+- EMBYIMAGE=lscr.io/linuxserver/emby:latest  
+- JELLYFINIMAGE=lscr.io/linuxserver/jellyfin:latest
+
+### Media Management (Arr Stack)
+- BAZARRIMAGE=lscr.io/linuxserver/bazarr:latest
+- BAZARR4KIMAGE=lscr.io/linuxserver/bazarr:latest
+- RADARRIMAGE=lscr.io/linuxserver/radarr:latest
+- RADARR4KIMAGE=lscr.io/linuxserver/radarr:latest
+- RADARRHDRIMAGE=lscr.io/linuxserver/radarr:latest
+- PROWLARRIMAGE=lscr.io/linuxserver/prowlarr:latest
+- PROWLARR4KIMAGE=lscr.io/linuxserver/prowlarr:latest
+- PROWLARRHDRIMAGE=lscr.io/linuxserver/prowlarr:latest
+- SONARRIMAGE=lscr.io/linuxserver/sonarr:latest
+- SONARR4KIMAGE=lscr.io/linuxserver/sonarr:latest
+- SONARRHDRIMAGE=lscr.io/linuxserver/sonarr:latest
+- TAUTULLIIMAGE=lscr.io/linuxserver/tautulli:latest
+
+### Download Clients
+- LIDARRIMAGE=lscr.io/linuxserver/lidarr:latest
+- READARRIMAGE=lscr.io/linuxserver/readarr:latest
+- JACKETTIMAGE=lscr.io/linuxserver/jackett:latest
+- QBITTORRENTIMAGE=lscr.io/linuxserver/qbittorrent:latest
+- SABNZBDIMAGE=lscr.io/linuxserver/sabnzbd:latest
+- NZBGETIMAGE=lscr.io/linuxserver/nzbget:latest
+- DELUGEIMAGE=lscr.io/linuxserver/deluge:latest
+
+## Direct YAML Usage
+Direct `:latest` usage found in various application YAML files (examples):
+- Homepage: ghcr.io/benphelps/homepage:latest
+- Cloudflare DDNS: oznu/cloudflare-ddns:latest  
+- Diun: ghcr.io/crazy-max/diun:latest
+- Many others throughout the apps/ directory
+
+## Traefik Stack
+Already addressed in main Traefik configuration:
+- ✅ Traefik: Updated to 3.5.0
+- ⚠️ Authelia: Still using authelia/authelia:latest
+- ⚠️ CF-Companion: Using tiredofit/docker-traefik-cloudflare-companion:latest
+
+## Recommended Version Pinning Strategy
+
+### Critical Priority (Update First)
+1. **Authelia**: Pin to 4.39.2 (security critical)
+2. **Media servers**: Plex, Jellyfin, Emby
+3. **Core Arr stack**: Sonarr, Radarr, Prowlarr, Bazarr
+
+### Medium Priority  
+1. Download clients (qBittorrent, SABnzbd, etc.)
+2. Monitoring tools (Tautulli, etc.)
+3. Utility applications
+
+### Research Required
+- Check LinuxServer.io for latest stable tags
+- Verify compatibility between pinned versions
+- Test critical applications after version pinning
+
+## Next Steps
+1. Update `apps/.subactions/envmigrate.sh` with pinned versions
+2. Replace direct `:latest` usage in YAML files
+3. Pin Authelia in Traefik configuration  
+4. Test service startup after version changes
