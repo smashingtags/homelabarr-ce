@@ -1,0 +1,16 @@
+---
+# Test users database for Authelia
+
+users:
+  test:
+    password: "$argon2id$v=19$m=65536,t=1,p=8$SjdOTko4VE5Bck8yTUJXTg$Vm8bx2cKjgKf4KuWRYDJWZ/kMuG6gx6gWbUv/Uh1TwQ"  # Password: test123
+    email: test@test.com
+    groups:
+      - admins
+      - dev
+
+  admin:
+    password: "$argon2id$v=19$m=65536,t=1,p=8$SjdOTko4VE5Bck8yTUJXTg$Vm8bx2cKjgKf4KuWRYDJWZ/kMuG6gx6gWbUv/Uh1TwQ"  # Password: test123  
+    email: admin@test.com
+    groups:
+      - admins

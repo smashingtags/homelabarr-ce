@@ -1,0 +1,10 @@
+#!/usr/bin/with-contenv bash
+
+# HomelabARR CLI Health Check Service
+echo "[services.d] Starting health check service..."
+
+# Wait for main application to start
+sleep 10
+
+# Start health check server in background
+exec /docker-mods/healthcheck/usr/local/bin/healthcheck.sh server

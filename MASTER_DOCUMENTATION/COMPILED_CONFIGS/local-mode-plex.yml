@@ -1,0 +1,88 @@
+---
+services:
+  plex:
+    hostname: "plex"
+    container_name: "plex"
+    environment:
+      - "PGID=1000"
+      - "PUID=1000"
+      - "TZ=America/New_York"
+      - "UMASK=002"
+      - "PLEX_CLAIM=PLEX_CLAIM_ID"
+      - "VERSION=docker"
+      # LOCAL MODE: Direct IP access instead of domain
+      - "ADVERTISE_IP=http://192.168.1.100:32400"
+      - "DOCKER_MODS=ghcr.io/themepark-dev/theme.park:plex|ghcr.io/smashingtags/homelabarr-mod-healthcheck:v1.0.0"
+      - "TP_THEME=dark"
+      - "TP_ADDON=none"
+    image: "linuxserver/plex:latest"
+    restart: "unless-stopped"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:32400/identity"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    # LOCAL MODE: Uses bridge network for direct access
+    networks:
+      - bridge
+    security_opt:
+      - "no-new-privileges:true"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 1G
+    extra_hosts:
+      - "analytics.plex.tv:127.0.0.1"
+      - "metrics.plex.tv:127.0.0.1"
+      - "metric.plex.tv:127.0.0.1"
+      - "mf.svc.nhl.com:127.0.0.1"
+      - "mlb-ws-mf.media.mlb.com:127.0.0.1"
+      - "playback.svcs.mlb.com:127.0.0.1"
+    # LOCAL MODE: All Plex ports exposed for direct access
+    ports:
+      - "32400:32400/tcp"    # Main web interface
+      - "3005:3005/tcp"      # Plex Home Theater
+      - "8324:8324/tcp"      # Roku via Plex Companion
+      - "32469:32469/tcp"    # Plex DLNA Server
+      - "1900:1900/udp"      # Plex DLNA Server
+      - "32410:32410/udp"    # GDM network discovery
+      - "32412:32412/udp"    # GDM network discovery
+      - "32413:32413/udp"    # GDM network discovery
+      - "32414:32414/udp"    # GDM network discovery
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/opt/appdata/plex/database:/config:rw"
+      - "unionfs:/mnt:ro"
+      - "/dev/shm:/ram_transcode:rw"
+    # LOCAL MODE: No Traefik labels
+    labels:
+      - "dockupdater.enable=true"
+
+      # HomelabARR CLI - Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.http.routers.local-mode-plex.entrypoints=websecure"
+      - "traefik.http.routers.local-mode-plex.rule=Host(`local-mode-plex.${DOMAIN}`)"
+      - "traefik.http.routers.local-mode-plex.tls=true"
+      - "traefik.http.routers.local-mode-plex.tls.certresolver=cfdns"
+      - "traefik.http.routers.local-mode-plex.middlewares=authelia@docker"
+      - "traefik.http.services.local-mode-plex.loadbalancer.server.port=${LOCAL-MODE-PLEX_PORT}"
+# LOCAL MODE: Uses default bridge network
+networks:
+  bridge:
+    driver: bridge
+
+volumes:
+  unionfs:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt
+
+# LOCAL MODE ACCESS INFORMATION:
+# - Web Interface: http://192.168.1.100:32400/web
+# - No SSL (unless manually configured)
+# - Direct authentication via Plex
+# - All Plex features available
+# - Mobile apps connect via IP:32400

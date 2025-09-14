@@ -1,0 +1,99 @@
+---
+# HomelabARR Enhanced Mount - Local Mode Template
+# Multi-provider cloud storage with cost tracking and modern web interface
+services:
+  mount-enhanced:
+    hostname: "mount-enhanced"
+    container_name: "mount-enhanced"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      
+      # Enhanced features
+      - "ENHANCED_MODE=${ENHANCED_MODE:-true}"
+      - "MULTI_PROVIDER=${MULTI_PROVIDER:-true}"
+      - "COST_TRACKING=${COST_TRACKING:-true}"
+      
+      # Provider settings
+      - "GDRIVE_ENABLED=${GDRIVE_ENABLED}"
+      - "BACKBLAZE_ENABLED=${BACKBLAZE_ENABLED}"
+      - "ONEDRIVE_ENABLED=${ONEDRIVE_ENABLED}"
+      - "PCLOUD_ENABLED=${PCLOUD_ENABLED}"
+      
+      # Performance settings
+      - "UPLOAD_CONCURRENCY=${UPLOAD_CONCURRENCY}"
+      - "VFS_CACHE_MODE=${VFS_CACHE_MODE}"
+      - "VFS_CACHE_SIZE=${VFS_CACHE_SIZE}"
+      - "BUFFER_SIZE=${BUFFER_SIZE}"
+      
+      # Cost management
+      - "COST_LIMIT_MONTHLY=${COST_LIMIT_MONTHLY}"
+      - "PROVIDER_SELECTION=${PROVIDER_SELECTION}"
+      - "COST_ALERTS=${COST_ALERTS}"
+      
+      # Web interface
+      - "WEB_UI=${WEB_UI}"
+      - "WEB_PORT=8080"
+      
+      # Monitoring
+      - "METRICS_ENABLED=${METRICS_ENABLED}"
+      - "LOG_LEVEL=${LOG_LEVEL}"
+    image: "${MOUNT_ENHANCED_IMAGE}"
+    restart: "${RESTARTAPP}"
+    
+    # Required privileges for FUSE mounting
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - "/dev/fuse:/dev/fuse"
+    security_opt:
+      - "apparmor:unconfined"
+    
+    volumes:
+      - "${APPFOLDER}/mount-enhanced:/config:rw"
+      - "${APPFOLDER}/mount-enhanced/move:/move:rw"
+      - "${APPFOLDER}/mount-enhanced/unionfs:/unionfs:shared"
+      - "${APPFOLDER}/mount-enhanced/data:/data:rw"
+      - "${APPFOLDER}/mount-enhanced/logs:/logs:rw"
+      - "${APPFOLDER}/mount-enhanced/cache:/config/cache:rw"
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    
+    ports:
+      - "${MOUNT_ENHANCED_WEB_PORT}:8080"
+      - "${MOUNT_ENHANCED_METRICS_PORT}:9090"
+    
+    networks:
+      - homelabarr-cli-local
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    
+    labels:
+      - "dockupdater.enable=true"
+      - "homelabarr.local=true"
+      - "homelabarr.service=mount-enhanced"
+      - "homelabarr.category=storage"
+      - "homelabarr.port=${MOUNT_ENHANCED_WEB_PORT}"
+      - "homelabarr.url=http://localhost:${MOUNT_ENHANCED_WEB_PORT}"
+
+networks:
+  homelabarr-cli-local:
+    driver: bridge

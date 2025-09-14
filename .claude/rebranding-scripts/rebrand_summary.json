@@ -1,0 +1,27 @@
+{
+  "rebranding_summary": {
+    "new_project_name": "homelabarr-cli",
+    "new_username": "mrgoober",
+    "timestamp": "2025-08-17T02:15:40.019058",
+    "backup_location": "rebrand_backup_20250817_021537"
+  },
+  "statistics": {
+    "files_processed": 1714,
+    "files_modified": 202,
+    "total_replacements": 1884,
+    "category_counts": {}
+  },
+  "replacement_patterns": {
+    "ghcr\\.io/homelabarr/": "ghcr.io/smashingtags/",
+    "/opt/homelabarr\\b": "/opt/homelabarr-cli",
+    "/usr/bin/homelabarr\\b": "/usr/bin/homelabarr-cli",
+    "/bin/homelabarr\\b": "/bin/homelabarr-cli",
+    "\\bhomelabarr\\b(?=\\s|$|\\.|\\s)": "homelabarr-cli",
+    "homelabarr-local": "homelabarr-cli-local",
+    "--name=homelabarr\\b": "--name=homelabarr-cli",
+    "\\bmrdoob\\b": "mrgoober",
+    "\\bMrDoob\\b": "Mrgoober",
+    "\\bHomelabarr\\b": "HomelabarrCli",
+    "\\bHomelabARR\\b": "HomelabarrCli"
+  }
+}
