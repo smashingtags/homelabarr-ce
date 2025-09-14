@@ -1,0 +1,10 @@
+#!/usr/bin/with-contenv bash
+
+# HomelabARR CLI Mount Service
+echo "[services.d] Starting mount service..."
+
+# Ensure proper permissions
+chown -R abc:abc /config /logs 2>/dev/null || true
+
+# Start mount service
+exec s6-setuidgid abc /app/mount.sh start

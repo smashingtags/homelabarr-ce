@@ -1,0 +1,428 @@
+name: Security Audit and Compliance
+on:
+  push:
+    branches: [main, development, feature/*]
+  pull_request:
+    branches: [main, development]
+  workflow_dispatch:
+    inputs:
+      run_docker_scan:
+        description: 'Run Docker image vulnerability scan'
+        required: false
+        default: true
+        type: boolean
+      run_shell_analysis:
+        description: 'Run shell script security analysis'
+        required: false
+        default: true
+        type: boolean
+      run_compose_validation:
+        description: 'Run Docker Compose validation'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  packages: read
+  security-events: write
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Job to detect changes in critical files
+  changes:
+    runs-on: self-hosted
+    outputs:
+      docker: ${{ steps.changes.outputs.docker }}
+      scripts: ${{ steps.changes.outputs.scripts }}
+      compose: ${{ steps.changes.outputs.compose }}
+      security: ${{ steps.changes.outputs.security }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            docker:
+              - '**/Dockerfile*'
+              - '.dockerignore'
+              - 'preinstall/**'
+              - '.github/workflows/security-audit.yml'
+            scripts:
+              - '**/*.sh'
+              - 'scripts/**'
+              - 'preinstall/**'
+              - '.installer/**'
+            compose:
+              - 'apps/**/*.yml'
+              - 'apps/**/*.yaml'
+              - 'docker-compose*.yml'
+              - 'docker-compose*.yaml'
+              - 'traefik/**'
+            security:
+              - 'scripts/security/**'
+              - '.github/workflows/security-audit.yml'
+
+  # Shell script security analysis
+  shell-security-analysis:
+    runs-on: self-hosted
+    needs: [changes]
+    if: needs.changes.outputs.scripts == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install security analysis tools
+        run: |
+          echo "Installing ShellCheck and other security tools..."
+          # Download ShellCheck binary directly
+          SHELLCHECK_VERSION="0.9.0"
+          wget -q https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz
+          tar -xf shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz
+          mkdir -p $HOME/.local/bin
+          mv shellcheck-v${SHELLCHECK_VERSION}/shellcheck $HOME/.local/bin/
+          chmod +x $HOME/.local/bin/shellcheck
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          
+          # Install Python tools in user space
+          python3 -m pip install --user --upgrade pip
+          python3 -m pip install --user semgrep bandit
+
+      - name: Run ShellCheck on all shell scripts
+        run: |
+          echo "Running ShellCheck security analysis..."
+          find . -name "*.sh" -type f | while read -r script; do
+            echo "Analyzing: $script"
+            $HOME/.local/bin/shellcheck -f json "$script" > "shellcheck-$(basename "$script").json" || {
+              echo "::warning::ShellCheck found issues in $script"
+            }
+          done
+          
+          # Combine all results
+          find . -name "shellcheck-*.json" -exec cat {} \; | jq -s '.' > shellcheck-results.json
+
+      - name: Semgrep Shell Script Analysis
+        run: |
+          echo "Running Semgrep security analysis on shell scripts..."
+          semgrep --config=auto --json --output=semgrep-shell-results.json \
+            --include="*.sh" \
+            --include="*.bash" . || {
+            echo "::warning::Semgrep shell analysis completed with findings"
+          }
+
+      - name: Analyze critical security patterns
+        run: |
+          echo "Analyzing shell scripts for security anti-patterns..."
+          
+          # Check for common security issues
+          echo "Checking for hardcoded credentials..."
+          grep -r --include="*.sh" -E "(password|secret|key|token).*=" . > security-patterns.txt || true
+          
+          echo "Checking for unsafe curl usage..."
+          grep -r --include="*.sh" -E "curl.*http://|wget.*http://" . >> security-patterns.txt || true
+          
+          echo "Checking for sudo usage..."
+          grep -r --include="*.sh" "sudo" . >> security-patterns.txt || true
+          
+          if [ -s security-patterns.txt ]; then
+            echo "::warning::Potential security patterns found - review security-patterns.txt"
+          fi
+
+      - name: Upload shell analysis results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shell-security-analysis-${{ github.sha }}
+          path: |
+            shellcheck-results.json
+            semgrep-shell-results.json
+            security-patterns.txt
+          retention-days: 30
+
+  # Docker Compose validation and security
+  compose-security-validation:
+    runs-on: self-hosted
+    needs: [changes]
+    if: needs.changes.outputs.compose == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Docker Compose and validation tools
+        run: |
+          echo "Checking Docker Compose availability..."
+          # Most self-hosted runners should have docker-compose pre-installed
+          if ! command -v docker-compose &> /dev/null; then
+            echo "Docker Compose not found, downloading..."
+            # Download docker-compose binary
+            COMPOSE_VERSION="2.23.3"
+            wget -q https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-x86_64 -O $HOME/.local/bin/docker-compose
+            chmod +x $HOME/.local/bin/docker-compose
+            export PATH="$HOME/.local/bin:$PATH"
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+          fi
+          
+          # Install container security tools in user space
+          python3 -m pip install --user --upgrade pip
+          python3 -m pip install --user semgrep
+
+      - name: Validate Docker Compose files
+        run: |
+          echo "Validating Docker Compose configurations..."
+          find apps -name "*.yml" -o -name "*.yaml" | while read -r compose_file; do
+            echo "Validating: $compose_file"
+            if ! docker-compose -f "$compose_file" config --quiet; then
+              echo "::error::Docker Compose validation failed for $compose_file"
+              exit 1
+            else
+              echo "✅ $compose_file is valid"
+            fi
+          done
+
+      - name: Security analysis of Docker Compose files
+        run: |
+          echo "Running security analysis on Docker Compose files..."
+          
+          # Check for security best practices
+          echo "Checking for privileged containers..."
+          grep -r --include="*.yml" --include="*.yaml" "privileged.*true" . > compose-security-issues.txt || true
+          
+          echo "Checking for host network usage..."
+          grep -r --include="*.yml" --include="*.yaml" "network_mode.*host" . >> compose-security-issues.txt || true
+          
+          echo "Checking for bind mounts to sensitive paths..."
+          grep -r --include="*.yml" --include="*.yaml" -E ":/etc|:/var/run/docker.sock|:/proc|:/sys" . >> compose-security-issues.txt || true
+          
+          echo "Checking for containers running as root..."
+          find apps -name "*.yml" -exec grep -L "user:" {} \; > potential-root-containers.txt || true
+          
+          if [ -s compose-security-issues.txt ]; then
+            echo "::warning::Potential Docker security issues found - review compose-security-issues.txt"
+          fi
+
+      - name: Semgrep Docker analysis
+        run: |
+          echo "Running Semgrep analysis on Docker configurations..."
+          semgrep --config=auto --json --output=semgrep-docker-results.json \
+            --include="*.yml" \
+            --include="*.yaml" \
+            --include="Dockerfile*" . || {
+            echo "::warning::Semgrep Docker analysis completed with findings"
+          }
+
+      - name: Upload compose validation results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compose-security-validation-${{ github.sha }}
+          path: |
+            compose-security-issues.txt
+            potential-root-containers.txt
+            semgrep-docker-results.json
+          retention-days: 30
+
+  # Docker image vulnerability scanning
+  docker-vulnerability-scan:
+    runs-on: self-hosted
+    needs: [changes]
+    if: needs.changes.outputs.docker == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Trivy scanner
+        run: |
+          echo "Installing Trivy vulnerability scanner..."
+          # Download trivy binary directly without requiring sudo
+          TRIVY_VERSION="0.48.0"
+          wget -q https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+          tar zxf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+          chmod +x trivy
+          # Move to user's local bin or use from current directory
+          mkdir -p $HOME/.local/bin
+          mv trivy $HOME/.local/bin/
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          trivy --version || $HOME/.local/bin/trivy --version
+
+      - name: Extract Docker images from compose files
+        run: |
+          echo "Extracting Docker images from compose files..."
+          find apps -name "*.yml" -exec grep -h "image:" {} \; | \
+            sed 's/.*image: *["'"'"']*\([^"'"'"']*\)["'"'"']*.*/\1/' | \
+            grep -E "^[a-zA-Z0-9._/-]+:[a-zA-Z0-9._-]+$" | \
+            sort -u > docker-images.txt || echo "" > docker-images.txt
+          
+          if [ -s docker-images.txt ]; then
+            echo "Found Docker images:"
+            cat docker-images.txt
+          else
+            echo "No Docker images found to scan"
+            echo "Creating empty results for artifact upload"
+            mkdir -p trivy-results
+            echo "{}" > trivy-results/no-images-found.json
+          fi
+
+      - name: Scan HomelabARR container images
+        run: |
+          echo "Scanning container images for vulnerabilities..."
+          mkdir -p trivy-results
+          
+          # Check if there are images to scan
+          if [ ! -s docker-images.txt ]; then
+            echo "No images to scan, skipping vulnerability scanning"
+            echo "{}" > trivy-results/skip-scan.json
+            exit 0
+          fi
+          
+          # Scan each image
+          while IFS= read -r image; do
+            echo "Scanning image: $image"
+            image_name=$(echo "$image" | tr '/' '_' | tr ':' '_')
+            
+            # Scan for vulnerabilities
+            $HOME/.local/bin/trivy image --format json --output "trivy-results/trivy-$image_name.json" \
+              --severity CRITICAL,HIGH,MEDIUM \
+              --ignore-unfixed "$image" || {
+              echo "::warning::Trivy scan found vulnerabilities in $image"
+            }
+            
+            # Also create SARIF format for GitHub Security tab
+            $HOME/.local/bin/trivy image --format sarif --output "trivy-results/trivy-$image_name.sarif" \
+              --severity CRITICAL,HIGH \
+              "$image" || true
+              
+          done < docker-images.txt
+
+      - name: Generate vulnerability summary
+        run: |
+          echo "Generating vulnerability summary..."
+          
+          # Ensure trivy-results directory exists
+          mkdir -p trivy-results
+          
+          # Count vulnerabilities by severity
+          total_critical=0
+          total_high=0
+          total_medium=0
+          
+          # Check if there are any scan results
+          if ! ls trivy-results/*.json >/dev/null 2>&1; then
+            echo "No scan results found"
+            echo "{}" > trivy-results/summary.json
+            exit 0
+          fi
+          
+          for json_file in trivy-results/trivy-*.json; do
+            if [ -f "$json_file" ]; then
+              critical=$(jq '.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL") | .VulnerabilityID' "$json_file" 2>/dev/null | wc -l)
+              high=$(jq '.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH") | .VulnerabilityID' "$json_file" 2>/dev/null | wc -l)
+              medium=$(jq '.Results[]?.Vulnerabilities[]? | select(.Severity == "MEDIUM") | .VulnerabilityID' "$json_file" 2>/dev/null | wc -l)
+              
+              total_critical=$((total_critical + critical))
+              total_high=$((total_high + high))
+              total_medium=$((total_medium + medium))
+              
+              echo "$(basename "$json_file"): Critical: $critical, High: $high, Medium: $medium"
+            fi
+          done
+          
+          echo "Total vulnerabilities - Critical: $total_critical, High: $total_high, Medium: $total_medium"
+          
+          # Fail if critical vulnerabilities found
+          if [ "$total_critical" -gt 0 ]; then
+            echo "::error::Found $total_critical critical vulnerabilities!"
+            exit 1
+          fi
+          
+          if [ "$total_high" -gt 10 ]; then
+            echo "::warning::Found $total_high high severity vulnerabilities (threshold: 10)"
+          fi
+
+      - name: Upload vulnerability scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('trivy-results/*.sarif') != ''
+        with:
+          sarif_file: 'trivy-results/'
+          category: 'trivy-container-scan'
+        continue-on-error: true
+
+      - name: Upload vulnerability reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: docker-vulnerability-scan-${{ github.sha }}
+          path: |
+            trivy-results/
+            docker-images.txt
+          retention-days: 30
+
+  # Security compliance summary
+  security-compliance-summary:
+    runs-on: self-hosted
+    needs: [shell-security-analysis, compose-security-validation, docker-vulnerability-scan]
+    if: always()
+    steps:
+      - name: Download all security artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: security-reports
+
+      - name: Generate security compliance report
+        run: |
+          echo "# HomelabARR Security Compliance Report" > security-summary.md
+          echo "Generated: $(date -u)" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          echo "## Job Status Summary" >> security-summary.md
+          echo "- Shell Security Analysis: ${{ needs.shell-security-analysis.result }}" >> security-summary.md
+          echo "- Compose Security Validation: ${{ needs.compose-security-validation.result }}" >> security-summary.md
+          echo "- Docker Vulnerability Scan: ${{ needs.docker-vulnerability-scan.result }}" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          echo "## Artifacts Generated" >> security-summary.md
+          find security-reports -type f -name "*.json" -o -name "*.txt" -o -name "*.sarif" | while read -r file; do
+            echo "- $(basename "$file")" >> security-summary.md
+          done
+          
+          echo "" >> security-summary.md
+          echo "## Recommendations" >> security-summary.md
+          echo "1. Review all critical and high severity vulnerabilities" >> security-summary.md
+          echo "2. Update container images to latest secure versions" >> security-summary.md
+          echo "3. Address shell script security findings" >> security-summary.md
+          echo "4. Validate Docker Compose security configurations" >> security-summary.md
+          echo "5. Implement automated security monitoring" >> security-summary.md
+          
+          cat security-summary.md
+
+      - name: Upload security compliance summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-compliance-summary-${{ github.sha }}
+          path: security-summary.md
+          retention-days: 90
+
+      - name: Comment PR with security summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('security-summary.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔒 Security Audit Results\n\n${summary}`
+            });

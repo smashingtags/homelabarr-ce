@@ -1,0 +1,10 @@
+time="2025-08-15T21:18:44-04:00" level=warning msg="The \"ID\" variable is not set. Defaulting to a blank string."
+time="2025-08-15T21:18:44-04:00" level=warning msg="The \"ID\" variable is not set. Defaulting to a blank string."
+time="2025-08-15T21:18:44-04:00" level=warning msg="The \"TZ\" variable is not set. Defaulting to a blank string."
+time="2025-08-15T21:18:44-04:00" level=warning msg="The \"UMASK\" variable is not set. Defaulting to a blank string."
+time="2025-08-15T21:18:44-04:00" level=warning msg="The \"PLEXVERSION\" variable is not set. Defaulting to a blank string."
+time="2025-08-15T21:18:44-04:00" level=warning msg="The \"PLEXTHEME\" variable is not set. Defaulting to a blank string."
+time="2025-08-15T21:18:44-04:00" level=warning msg="The \"PLEXADDON\" variable is not set. Defaulting to a blank string."
+time="2025-08-15T21:18:44-04:00" level=warning msg="The \"PLEXIMAGE\" variable is not set. Defaulting to a blank string."
+time="2025-08-15T21:18:44-04:00" level=warning msg="The \"RESTARTAPP\" variable is not set. Defaulting to a blank string."
+service "plex" has neither an image nor a build context specified: invalid compose project
