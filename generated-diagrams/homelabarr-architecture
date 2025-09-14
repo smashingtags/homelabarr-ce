@@ -1,0 +1,93 @@
+digraph "HomelabARR - How 3 Separate Repositories Work Together" {
+	graph [bgcolor=white fontcolor="#2D3436" fontname="Sans-Serif" fontsize=14 label="HomelabARR - How 3 Separate Repositories Work Together" nodesep=0.60 pad=2.0 rankdir=TB ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	f58da86c66114a08a866cd7f314c0f88 [label="End Users" height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/client\users.png" shape=none]
+	"4a6073530f0a4d468f587cea941ac1c5" [label="You (Developer)" height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/client\user.png" shape=none]
+	subgraph "cluster_THREE SEPARATE GITHUB REPOSITORIES" {
+		graph [bgcolor=lightyellow fontname="Sans-Serif" fontsize=12 label="THREE SEPARATE GITHUB REPOSITORIES" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		subgraph "cluster_1. homelabarr-cli (THIS REPO)" {
+			graph [bgcolor=lightblue fontname="Sans-Serif" fontsize=12 label="1. homelabarr-cli (THIS REPO)" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			c02527d65c364b2d88610d18253441eb [label="Main CLI Repository" height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/vcs\github.png" shape=none]
+			"26e7b16eaea84fe8bbd6f00ec653d16c" [label="• install.sh scripts
+• Docker Compose files
+• Traefik configs
+• 100+ app templates
+• NO frontend/backend code" height=3.5 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/programming/language\bash.png" shape=none]
+		}
+		subgraph "cluster_2. homelabarr-web-app" {
+			graph [bgcolor=lightgreen fontname="Sans-Serif" fontsize=12 label="2. homelabarr-web-app" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			ef867edca64745b28121ff04e341bd04 [label="Frontend Repository" height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/vcs\github.png" shape=none]
+			db678b74beef415a818b8c9a5f88552a [label="• React/Next.js UI
+• Runs on port 3000
+• User interface
+• Calls backend API
+• SEPARATE REPO" height=3.5 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/programming/framework\react.png" shape=none]
+		}
+		subgraph "cluster_3. homelabarr-backend" {
+			graph [bgcolor=lightcoral fontname="Sans-Serif" fontsize=12 label="3. homelabarr-backend" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"2a29b2bbce47454ea8eb351a99cd8da0" [label="Backend Repository" height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/vcs\github.png" shape=none]
+			"33cf066b6d9b47e7abda1e125fafc7f3" [label="• Node.js API server
+• Runs on port 38083
+• Docker management
+• Container control
+• SEPARATE REPO" height=3.5 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/programming/language\nodejs.png" shape=none]
+		}
+	}
+	"2d4be347e0da4b45b7b445e8cf177052" [label="height=0.5" height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/generic/blank\blank.png" shape=none]
+	subgraph "cluster_DEVELOPMENT ENVIRONMENT (Your Machine)" {
+		graph [bgcolor=lavender fontname="Sans-Serif" fontsize=12 label="DEVELOPMENT ENVIRONMENT (Your Machine)" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		subgraph "cluster_Docker Desktop" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Docker Desktop" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"2e5343a1279f4b7ea88899fcf4d67cd9" [label="Frontend
+Container
+:3000" height=2.7 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/container\docker.png" shape=none]
+			d7f7fdb998324817826d177cfe678af2 [label="Backend
+Container
+:38083" height=2.7 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/container\docker.png" shape=none]
+			"09fc4966c5f847e6b22ef3f26372f00a" [label="MCP Servers
+(for Claude)" height=2.3 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/container\docker.png" shape=none]
+		}
+	}
+	subgraph "cluster_PRODUCTION LINUX SERVER" {
+		graph [bgcolor=lightgray fontname="Sans-Serif" fontsize=12 label="PRODUCTION LINUX SERVER" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"2b0b6ddeaa3941a0923c87f9afccdfc2" [label=Internet height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/network\internet.png" shape=none]
+		subgraph "cluster_Docker Engine" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Docker Engine" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"2a242bca56054b3c82921d8170fc76d3" [label="Traefik Proxy" height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/network\traefik.png" shape=none]
+			subgraph "cluster_Deployed Apps" {
+				graph [bgcolor="#ECE8F6" fontname="Sans-Serif" fontsize=12 label="Deployed Apps" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+				"974b22075f1e44aaa291a0469e79d6ee" [label=Plex height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/container\docker.png" shape=none]
+				"54944420c56541fa9a464d4a81f12404" [label=Sonarr height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/container\docker.png" shape=none]
+				"4dadb22b82664ba8bb8615e1242fe17c" [label=Radarr height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/container\docker.png" shape=none]
+				d4f8ffcb63fa48d6babcbbd7fffc02e5 [label=Jellyfin height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/container\docker.png" shape=none]
+				"3b14985bdd4d493aae68da4bf2b8fcf6" [label="95+ more apps" height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/onprem/container\docker.png" shape=none]
+			}
+		}
+	}
+	"4a6073530f0a4d468f587cea941ac1c5" -> c02527d65c364b2d88610d18253441eb [label="1. Edits CLI scripts" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=bold]
+	"4a6073530f0a4d468f587cea941ac1c5" -> ef867edca64745b28121ff04e341bd04 [label="2. Edits frontend" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=bold]
+	"4a6073530f0a4d468f587cea941ac1c5" -> "2a29b2bbce47454ea8eb351a99cd8da0" [label="3. Edits backend" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=bold]
+	c02527d65c364b2d88610d18253441eb -> "26e7b16eaea84fe8bbd6f00ec653d16c" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	ef867edca64745b28121ff04e341bd04 -> db678b74beef415a818b8c9a5f88552a [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"2a29b2bbce47454ea8eb351a99cd8da0" -> "33cf066b6d9b47e7abda1e125fafc7f3" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	db678b74beef415a818b8c9a5f88552a -> "2e5343a1279f4b7ea88899fcf4d67cd9" [label="npm run dev" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=dashed]
+	"33cf066b6d9b47e7abda1e125fafc7f3" -> d7f7fdb998324817826d177cfe678af2 [label="npm start" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=dashed]
+	"26e7b16eaea84fe8bbd6f00ec653d16c" -> "09fc4966c5f847e6b22ef3f26372f00a" [label="MCP config" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=dashed]
+	"2e5343a1279f4b7ea88899fcf4d67cd9" -> d7f7fdb998324817826d177cfe678af2 [label="API calls" color=blue dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	d7f7fdb998324817826d177cfe678af2 -> "09fc4966c5f847e6b22ef3f26372f00a" [label="Docker socket
+(broken in WSL)" color=red dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=dashed]
+	"26e7b16eaea84fe8bbd6f00ec653d16c" -> "2a242bca56054b3c82921d8170fc76d3" [label="Deploy to Linux
+(SSH + install.sh)" color=green dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=bold]
+	f58da86c66114a08a866cd7f314c0f88 -> "2b0b6ddeaa3941a0923c87f9afccdfc2" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"2b0b6ddeaa3941a0923c87f9afccdfc2" -> "2a242bca56054b3c82921d8170fc76d3" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"2a242bca56054b3c82921d8170fc76d3" -> "974b22075f1e44aaa291a0469e79d6ee" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"2a242bca56054b3c82921d8170fc76d3" -> "54944420c56541fa9a464d4a81f12404" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"2a242bca56054b3c82921d8170fc76d3" -> "4dadb22b82664ba8bb8615e1242fe17c" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"2a242bca56054b3c82921d8170fc76d3" -> d4f8ffcb63fa48d6babcbbd7fffc02e5 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"2a242bca56054b3c82921d8170fc76d3" -> "3b14985bdd4d493aae68da4bf2b8fcf6" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	be2862d9b5d64681ba33a182e5e43765 [label="" height=1.9 image="C:\Users\micha\AppData\Roaming\Python\Python311\site-packages\resources/generic/blank\blank.png" shape=none]
+	be2862d9b5d64681ba33a182e5e43765 -> "26e7b16eaea84fe8bbd6f00ec653d16c" [label="Frontend & Backend are
+OPTIONAL web UI.
+CLI works standalone!" color=purple dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=bold]
+}

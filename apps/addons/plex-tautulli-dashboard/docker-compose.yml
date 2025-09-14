@@ -1,0 +1,56 @@
+---
+services:
+  plex-tautulli-dashboard:
+    # NOTE: Need to find alternative image source or build our own
+    # cyb3rgh05t is a HomelabARR contributor alongside REMOVED_USER
+    # image: ghcr.io/cyb3rgh05t/plex-tautulli-dashboard:latest
+    image: homelabarr/plex-tautulli-dashboard:latest  # TODO: Build our own
+    container_name: plex-tautulli-dashboard
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ}
+      # Plex Configuration
+      - PLEX_URL=http://plex:32400
+      - PLEX_TOKEN=${PLEX_TOKEN}
+      # Tautulli Configuration  
+      - TAUTULLI_URL=http://tautulli:8181
+      - TAUTULLI_API_KEY=${TAUTULLI_API_KEY}
+      # Dashboard Settings
+      - DASHBOARD_THEME=dark  # Options: dark, light, auto, plus 13 custom themes
+      - REFRESH_INTERVAL=30  # Seconds between dashboard updates
+      - SHOW_RECENTLY_ADDED=true
+      - SHOW_NOW_PLAYING=true
+      - SHOW_STATS=true
+      - SHOW_HISTORY=true
+    volumes:
+      - ${DOCKERCONFDIR}/plex-tautulli-dashboard:/config
+      - ${DOCKERSTORAGEDIR}/plex-tautulli-dashboard:/data
+    ports:
+      - 3005:3005  # Main dashboard port
+      - 3006:3006  # API port
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plex-dashboard.entrypoints=https"
+      - "traefik.http.routers.plex-dashboard.rule=Host(`dashboard.${DOMAIN}`)"
+      - "traefik.http.routers.plex-dashboard.tls=true"
+      - "traefik.http.routers.plex-dashboard.tls.certresolver=cloudflare"
+      - "traefik.http.services.plex-dashboard.loadbalancer.server.port=3005"
+      - "traefik.http.routers.plex-dashboard.middlewares=authelia@docker"
+      - "dockupdater.enable=true"
+      - "homepage.group=Media"
+      - "homepage.name=Plex Dashboard"
+      - "homepage.icon=tautulli.png"
+      - "homepage.href=https://dashboard.${DOMAIN}"
+      - "homepage.description=Advanced Plex & Tautulli monitoring dashboard"
+    depends_on:
+      - plex
+      - tautulli
+
+networks:
+  proxy:
+    driver: bridge
+    external: true

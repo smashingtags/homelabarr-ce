@@ -1,0 +1,111 @@
+
+{
+  "numStartups": 13,
+  "installMethod": "native",
+  "autoUpdates": false,
+  "tipsHistory": {
+    "ide-hotkey": 11,
+    "new-user-warmup": 7,
+    "memory-command": 1,
+    "theme-command": 2,
+    "prompt-queue": 3,
+    "shift-enter": 4,
+    "enter-to-steer-in-relatime": 4,
+    "todo-list": 4,
+    "# for memory": 4,
+    "install-github-app": 4,
+    "drag-and-drop-images": 4,
+    "double-esc": 4,
+    "continue": 4,
+    "shift-tab": 4,
+    "image-paste": 4,
+    "custom-agents": 6,
+    "permissions": 11,
+    "custom-commands": 11
+  },
+  "promptQueueUseCount": 59,
+  "cachedStatsigGates": {
+    "tengu_disable_bypass_permissions_mode": false
+  },
+  "mcpServers": {
+    "shadcn-ui-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "shadcn-ui-mcp-server"
+      ]
+    },
+    "streamableHttp": {
+      "command": "http://127.0.0.1:12306/mcp"
+    },
+    "fireflies": {
+      "url": "https://api.fireflies.ai/mcp"
+    }
+  },
+  "userID": "cf7b0dce87cfe2511ccf02626f8cd6a82668fe86fc98a22847ed922f140c2372",
+  "fallbackAvailableWarningThreshold": 0.5,
+  "firstStartTime": "2025-09-06T18:31:18.295Z",
+  "projects": {
+    "F:\\Coding Projects\\homelabarr-cli": {
+      "allowedTools": [],
+      "history": [
+        {
+          "display": "/exit",
+          "pastedContents": {}
+        },
+        {
+          "display": "/mcp ",
+          "pastedContents": {}
+        }
+      ],
+      "mcpContextUris": [],
+      "mcpServers": {
+        "shadcn-ui-server": {
+          "type": "stdio",
+          "command": "npx",
+          "args": [
+            "shadcn-ui-mcp-server"
+          ],
+          "env": {}
+        },
+        "browser-mcp": {
+          "type": "stdio",
+          "command": "npx",
+          "args": [
+            "@browsermcp/mcp@latest"
+          ],
+          "env": {}
+        },
+        "streamable-mcp-server": {
+          "type": "stdio",
+          "command": "http://127.0.0.1:12306/mcp",
+          "args": [],
+          "env": {}
+        }
+      },
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": true,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "hasCompletedProjectOnboarding": true,
+      "lastTotalWebSearchRequests": 0
+    }
+  },
+  "oauthAccount": {
+    "accountUuid": "19e881b5-8b2f-41c7-8094-6cf68583075c",
+    "emailAddress": "user@example.com",
+    "organizationUuid": "693dc30c-063a-4d2d-9dab-31198db3b2a4",
+    "organizationRole": "admin",
+    "workspaceRole": null,
+    "organizationName": "Michael Ashley"
+  },
+  "claudeCodeFirstTokenDate": "2025-07-20T22:38:55.665603Z",
+  "shiftEnterKeyBindingInstalled": true,
+  "hasCompletedOnboarding": true,
+  "lastOnboardingVersion": "1.0.108",
+  "hasOpusPlanDefault": false,
+  "subscriptionNoticeCount": 0,
+  "hasAvailableSubscription": false,
+  "cachedChangelog": "# Changelog\\n\\n## 1.0.106\\n\\n- Windows: Fixed path permission matching to consistently use POSIX format (e.g., `Read(//c/Users/...)`)\\n\\n## 1.0.97\\n\\n- Settings: /doctor now validates permission rule syntax and suggests corrections\\n\\n## 1.0.94\\n\\n- Vertex: add support for global endpoints for supported models\\n- /memory command now allows direct editing of all imported memory files\\n- SDK: Add custom tools as callbacks\\n- Added /todos command to list current todo items\\n\\n## 1.0.93\\n\\n- Windows: Add alt + v shortcut for pasting images from clipboard\\n- Support NO_PROXY environment variable to bypass proxy for specified hostnames and IPs\\n\\n## 1.0.90\\n\\n- Settings file changes take effect immediately - no restart required\\n\\n## 1.0.88\\n\\n- Fixed issue causing \\\"OAuth authentication is currently not supported\\\"\\n- Status line input now includes `exceeds_200k_tokens`\\n- Fixed incorrect usage tracking in /cost.\\n- Introduced `ANTHROPIC_DEFAULT_SONNET_MODEL` and `ANTHROPIC_DEFAULT_OPUS_MODEL` for controlling model aliases opusplan, opus, and sonnet.\\n- Bedrock: Updated default Sonnet model to Sonnet 4\\n\\n## 1.0.86\\n\\n- Added /context to help users self-serve debug

@@ -1,0 +1,51 @@
+---
+services:
+  n8n:
+    hostname: "n8n"
+    container_name: "n8n"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "N8N_BASIC_AUTH_ACTIVE=true"
+      - "N8N_BASIC_AUTH_USER=${N8N_USER:-admin}"
+      - "N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-changeme}"
+      - "N8N_HOST=n8n.${DOMAIN}"
+      - "N8N_PORT=5678"
+      - "N8N_PROTOCOL=https"
+      - "WEBHOOK_URL=https://n8n.${DOMAIN}"
+      - "N8N_DIAGNOSTICS_ENABLED=false"
+      - "N8N_PERSONALIZATION_ENABLED=false"
+      - "N8N_VERSION_NOTIFICATIONS_ENABLED=false"
+      - "N8N_HIRING_BANNER_ENABLED=false"
+      - "N8N_USER_FOLDER=/home/node"
+      - "NODE_ENV=production"
+      - "EXECUTIONS_PROCESS=main"
+      - "N8N_METRICS=true"
+    image: "n8nio/n8n:latest"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "${DOCKERCONFDIR}/n8n:/home/node/.n8n"
+      - "${DOCKERSTORAGEDIR}/n8n:/data"
+    ports:
+      - "5678:5678"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.routers.n8n-rtr.entrypoints=https"
+      - "traefik.http.routers.n8n-rtr.rule=Host(`n8n.${DOMAIN}`)"
+      - "traefik.http.routers.n8n-rtr.tls=true"
+      - "traefik.http.routers.n8n-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.n8n-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.n8n-rtr.service=n8n-svc"
+      - "traefik.http.services.n8n-svc.loadbalancer.server.port=5678"
+networks:
+  proxy:
+    driver: bridge
+    external: true

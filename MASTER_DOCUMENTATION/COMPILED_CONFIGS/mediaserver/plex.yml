@@ -1,0 +1,77 @@
+---
+services:
+  plex:
+    hostname: "plex"
+    container_name: "plex"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "PLEX_CLAIM=PLEX_CLAIM_ID"
+      - "VERSION=${PLEXVERSION}"
+      # LOCAL_MODE: Direct IP access
+      # PROXY_MODE: Domain-based access
+      - "ADVERTISE_IP=http://plex.${DOMAIN}:443"
+      - "DOCKER_MODS=ghcr.io/themepark-dev/theme.park:plex|ghcr.io/smashingtags/homelabarr-mod-healthcheck:v1.0.0"
+      - "TP_THEME=${PLEXTHEME}"
+      - "TP_ADDON=${PLEXADDON}"
+    image: "${PLEXIMAGE}"
+    restart: "${RESTARTAPP}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:32400/identity"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 1G
+    extra_hosts:
+      - "analytics.plex.tv:127.0.0.1"
+      - "metrics.plex.tv:127.0.0.1"
+      - "metric.plex.tv:127.0.0.1"
+      - "mf.svc.nhl.com:127.0.0.1"
+      - "mlb-ws-mf.media.mlb.com:127.0.0.1"
+      - "playback.svcs.mlb.com:127.0.0.1"
+    ports:
+      # LOCAL_MODE: All ports exposed for direct access
+      # PROXY_MODE: Only internal port 32400 for Traefik routing
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${APPFOLDER}/plex/database:/config:rw"
+      - "unionfs:/mnt:ro"
+      - "/dev/shm:/ram_transcode:rw"
+    labels:
+      # PROXY_MODE: Traefik labels for reverse proxy routing
+      # LOCAL_MODE: These labels are stripped out
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.routers.plex-rtr.entrypoints=https"
+      - "traefik.http.routers.plex-rtr.rule=Host(`plex.${DOMAIN}`)"
+      - "traefik.http.routers.plex-rtr.tls=true"
+      - "traefik.http.routers.plex-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.plex-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.plex-rtr.service=plex-svc"
+      - "traefik.http.services.plex-svc.loadbalancer.server.scheme=https"
+      - "traefik.http.services.plex-svc.loadbalancer.server.port=32400"
+
+# PROXY_MODE: External proxy network for Traefik communication
+# LOCAL_MODE: Uses bridge network for direct access
+networks:
+  proxy:
+    driver: bridge
+    external: true
+
+volumes:
+  unionfs:
+    driver: local-persist
+    driver_opts:

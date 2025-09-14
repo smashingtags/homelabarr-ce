@@ -1,0 +1,73 @@
+{
+  "categories": [
+    {
+      "title": "## 🚀 Features",
+      "labels": ["feat", "feature", "enhancement"]
+    },
+    {
+      "title": "## 🐛 Bug Fixes", 
+      "labels": ["fix", "bug", "bugfix"]
+    },
+    {
+      "title": "## 📚 Documentation",
+      "labels": ["docs", "documentation"]
+    },
+    {
+      "title": "## 🔧 Maintenance",
+      "labels": ["refactor", "perf", "chore", "maintenance"]
+    },
+    {
+      "title": "## 🏗️ Infrastructure",
+      "labels": ["ci", "cd", "build", "deploy"]
+    }
+  ],
+  "ignore_labels": [
+    "ignore",
+    "wontfix",
+    "duplicate",
+    "invalid"
+  ],
+  "sort": "ASC",
+  "template": "${{CHANGELOG}}",
+  "pr_template": "- ${{TITLE}} by @${{AUTHOR}} in #${{NUMBER}}",
+  "empty_template": "- No changes",
+  "label_extractor": [
+    {
+      "pattern": "^(feat|feature)(\\(.+\\))?:",
+      "target": "feat"
+    },
+    {
+      "pattern": "^(fix|bug)(\\(.+\\))?:",
+      "target": "fix"
+    },
+    {
+      "pattern": "^(docs?)(\\(.+\\))?:",
+      "target": "docs"
+    },
+    {
+      "pattern": "^(refactor|perf|chore)(\\(.+\\))?:",
+      "target": "refactor"
+    },
+    {
+      "pattern": "^(ci|cd|build)(\\(.+\\))?:",
+      "target": "ci"
+    }
+  ],
+  "transformers": [
+    {
+      "pattern": "^(feat|feature)(\\(.+\\))?:\\s*(.+)",
+      "target": "$3"
+    },
+    {
+      "pattern": "^(fix|bug)(\\(.+\\))?:\\s*(.+)",
+      "target": "$3"
+    },
+    {
+      "pattern": "^(docs?)(\\(.+\\))?:\\s*(.+)",
+      "target": "$3"
+    }
+  ],
+  "max_tags_to_fetch": 20,
+  "max_pull_requests": 50,
+  "max_back_track_time_days": 90
+}
