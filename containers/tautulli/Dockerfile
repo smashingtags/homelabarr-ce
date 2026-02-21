@@ -18,7 +18,7 @@ RUN apk add --no-cache \
     bash
 
 # Create mod directory structure
-RUN mkdir -p /docker-mods/tautulli
+RUN rm -rf /docker-mods && mkdir -p /docker-mods/tautulli
 
 # Add mod files
 COPY root/ /
