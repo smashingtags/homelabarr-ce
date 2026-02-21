@@ -1,4 +1,4 @@
-# **HomelabARR CLI**
+# **HomelabARR CE**
 
 <p align="center">
     <a href="https://github.com/smashingtags/homelabarr-cli">
@@ -507,3 +507,4 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
