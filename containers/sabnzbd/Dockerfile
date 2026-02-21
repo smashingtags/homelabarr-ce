@@ -1,5 +1,5 @@
 # Docker Mod for SABnzbd enhancements
-FROM ghcr.io/linuxserver/baseimage-alpine:3.19
+FROM lscr.io/linuxserver/baseimage-alpine:3.19
 
 # Labels for metadata
 LABEL maintainer="HomelabARR CLI"
