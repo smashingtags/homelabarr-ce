@@ -139,7 +139,7 @@ jobs:
             org.opencontainers.image.vendor=HomelabARR CLI
             org.opencontainers.image.licenses=MIT
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (amd64)
         uses: docker/build-push-action@v5
         with:
           context: ./containers/${{ matrix.container }}
@@ -148,6 +148,22 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           platforms: linux/amd64
+          build-args: |
+            BASE_TAG=amd64-3.19-bd63dc64-ls1
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Docker image (arm64)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./containers/${{ matrix.container }}
+          file: ./containers/${{ matrix.container }}/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          platforms: linux/arm64
+          build-args: |
+            BASE_TAG=arm64v8-3.19-bd63dc64-ls1
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
