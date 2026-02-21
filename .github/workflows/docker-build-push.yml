@@ -191,3 +191,15 @@ jobs:
         echo "# Deploy" >> $GITHUB_STEP_SUMMARY
         echo "docker-compose -f homelabarr.yml up -d" >> $GITHUB_STEP_SUMMARY
         echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+    - name: Notify Discord (HomelabARR CE build)
+      if: success() && github.event_name != "pull_request"
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_HOMELABARR }}
+      run: |
+        if [ -z "${DISCORD_WEBHOOK}" ]; then
+          echo "DISCORD_WEBHOOK_HOMELABARR not set; skipping Discord notification"
+          exit 0
+        fi
+        content="✅ HomelabARR CE: Docker images built for ${GITHUB_REPOSITORY} (${GITHUB_REF_NAME}) — run #${GITHUB_RUN_NUMBER}"
+        payload=$(printf {content:} "${content}")
+        curl -sS -H "Content-Type: application/json" -d "${payload}" "${DISCORD_WEBHOOK}" || echo "Discord webhook failed"
