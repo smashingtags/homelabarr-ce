@@ -1,5 +1,5 @@
 # Docker Mod for Tautulli enhancements
-FROM lscr.io/linuxserver/baseimage-alpine:3.19
+FROM lscr.io/linuxserver/baseimage-alpine:amd64-3.19-bd63dc64-ls1
 
 # Labels for metadata
 LABEL maintainer="HomelabARR CLI"
