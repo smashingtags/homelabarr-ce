@@ -1,8 +1,8 @@
 # **HomelabARR CE**
 
 <p align="center">
-    <a href="https://github.com/smashingtags/homelabarr-cli">
-      <img src="https://raw.githubusercontent.com/smashingtags/homelabarr-assets/main/homelabber-wiki/homelabarr-header.png" alt="HomelabARR CLI">
+    <a href="https://github.com/smashingtags/homelabarr-ce">
+      <img src="https://raw.githubusercontent.com/smashingtags/homelabarr-assets/main/homelabber-wiki/homelabarr-header.png" alt="HomelabARR CE">
     </a>
 </p>
 
@@ -14,12 +14,12 @@
         <img src="https://img.shields.io/discord/1334411584927301682?label=Discord%20Server&logo=discord&color=5865F2" alt="Join HomelabARR on Discord">
     </a>
     </br>
-    <a href="https://github.com/smashingtags/homelabarr-cli/releases/latest">
-        <img src="https://img.shields.io/github/v/release/smashingtags/homelabarr-cli?include_prereleases&label=Latest%20Release&logo=github" alt="Latest Official Release on GitHub">
+    <a href="https://github.com/smashingtags/homelabarr-ce/releases/latest">
+        <img src="https://img.shields.io/github/v/release/smashingtags/homelabarr-ce?include_prereleases&label=Latest%20Release&logo=github" alt="Latest Official Release on GitHub">
     </a>
     </br>
-    <a href="https://github.com/smashingtags/homelabarr-cli/blob/master/LICENSE">
-        <img src="https://img.shields.io/github/license/smashingtags/homelabarr-cli?label=License&logo=mit" alt="MIT License">
+    <a href="https://github.com/smashingtags/homelabarr-ce/blob/master/LICENSE">
+        <img src="https://img.shields.io/github/license/smashingtags/homelabarr-ce?label=License&logo=mit" alt="MIT License">
     </a>
     </br>
     <a href="https://ko-fi.com/homelabarr">
@@ -50,28 +50,28 @@ _Advanced Docker-based media server stack with two deployment modes: Full mode w
 
 ## 🚀 Quick Deploy
 
-Get started with HomelabARR CLI in minutes:
+Get started with HomelabARR CE in minutes:
 
 ### Full Mode (Domain Required)
 ```bash
 # Clone and deploy with full features
-git clone https://github.com/smashingtags/homelabarr-cli.git
-cd homelabarr-cli
+git clone https://github.com/smashingtags/homelabarr-ce.git
+cd homelabarr-ce
 chmod +x install.sh
 sudo ./install.sh
 ```
 
 ### 🎯 One-Line Deploy (Local Mode)
 ```bash
-cd ~ && sudo rm -rf homelabarr-cli 2>/dev/null; git clone https://github.com/smashingtags/homelabarr-cli.git && cd homelabarr-cli && chmod +x setup-local-mode.sh && ./setup-local-mode.sh
+cd ~ && sudo rm -rf homelabarr-ce 2>/dev/null; git clone https://github.com/smashingtags/homelabarr-ce.git && cd homelabarr-ce && chmod +x setup-local-mode.sh && ./setup-local-mode.sh
 ```
 *Changes to home directory, removes any existing directory, clones fresh repo, and launches local mode setup*
 
 ### Manual Local Mode Setup
 ```bash
 # Clone repository
-git clone https://github.com/smashingtags/homelabarr-cli.git
-cd homelabarr-cli
+git clone https://github.com/smashingtags/homelabarr-ce.git
+cd homelabarr-ce
 
 # Set permissions and configure  
 chmod +x deploy-local.sh
@@ -81,18 +81,18 @@ cp .env.example .env  # Edit with your settings
 ./deploy-local.sh
 ```
 
-**📖 [Complete Documentation](https://github.com/smashingtags/homelabarr-cli/tree/master/wiki)** | **🏠 [Local Mode Guide](https://github.com/smashingtags/homelabarr-cli/blob/master/wiki/docs/install/local-mode.md)** | **🌐 [Full Mode Guide](https://github.com/smashingtags/homelabarr-cli/blob/master/wiki/docs/install/install.md)**
+**📖 [Complete Documentation](https://github.com/smashingtags/homelabarr-ce/tree/master/wiki)** | **🏠 [Local Mode Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/local-mode.md)** | **🌐 [Full Mode Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/install.md)**
 
 ### 📁 Repository Organization
 
-As of August 2025, HomelabARR CLI features a professionally organized repository structure:
+As of August 2025, HomelabARR CE features a professionally organized repository structure:
 
 - **User-facing components** in main directories (`apps/`, `wiki/`, `scripts/`)
 - **Maintenance tools** organized in `.claude/scripts/` (7 active utilities)
 - **Development resources** archived in `.claude/development-scripts/` and `.claude/development-backups/`
 - **863 files organized**, **862 temporary files removed**, **29,785 lines cleaned**
 
-**📋 [Repository Structure Guide](https://github.com/smashingtags/homelabarr-cli/blob/master/wiki/docs/guides/repository-structure.md)** | **🧹 [Cleanup Details](https://github.com/smashingtags/homelabarr-cli/blob/master/wiki/docs/releases/repository-cleanup-v2.2.md)**
+**📋 [Repository Structure Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/guides/repository-structure.md)** | **🧹 [Cleanup Details](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/releases/repository-cleanup-v2.2.md)**
 
 ---
 
@@ -125,21 +125,21 @@ As of August 2025, HomelabARR CLI features a professionally organized repository
 - ✅ **No domain required** - works immediately
 - ✅ **Local network access** is sufficient
 - ✅ You want the **fastest possible setup** (5 minutes)
-- ✅ You're **testing** or **learning** HomelabARR CLI
+- ✅ You're **testing** or **learning** HomelabARR CE
 
 ## 🚀 How to Launch Each Mode
 
 ### **Full Mode Installation:**
 ```bash
-git clone https://github.com/smashingtags/homelabarr-cli.git
-cd homelabarr-cli
+git clone https://github.com/smashingtags/homelabarr-ce.git
+cd homelabarr-ce
 sudo ./install.sh
 ```
-*Launches the original HomelabARR CLI installer with Traefik, Authelia, and domain setup*
+*Launches the original HomelabARR CE installer with Traefik, Authelia, and domain setup*
 
 ### **Local Mode Installation:**
 ```bash
-cd ~ && sudo rm -rf homelabarr-cli 2>/dev/null; git clone https://github.com/smashingtags/homelabarr-cli.git && cd homelabarr-cli && chmod +x install-local.sh && ./install-local.sh
+cd ~ && sudo rm -rf homelabarr-ce 2>/dev/null; git clone https://github.com/smashingtags/homelabarr-ce.git && cd homelabarr-ce && chmod +x install-local.sh && ./install-local.sh
 ```
 *One-line deploy for immediate local network access*
 
@@ -153,7 +153,7 @@ Both modes can coexist on the same system. You can:
 
 ## Migration
 
-If you currently have a server with PG/MHS/PTS, have a look here before you start the installation: [Migration Guide](https://github.com/smashingtags/homelabarr-cli/blob/master/wiki/docs/install/migration.md)
+If you currently have a server with PG/MHS/PTS, have a look here before you start the installation: [Migration Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/migration.md)
 
 ---
 
@@ -209,23 +209,23 @@ Complete setup with Traefik, Authelia, and Cloudflare integration:
 
 ```bash
 # Easy installation command
-git clone https://github.com/smashingtags/homelabarr-cli.git
-cd homelabarr-cli
+git clone https://github.com/smashingtags/homelabarr-ce.git
+cd homelabarr-ce
 sudo ./install.sh
 
-# Open HomelabARR CLI interface
-sudo homelabarr-cli -i
+# Open HomelabARR CE interface
+sudo homelabarr-ce -i
 ```
 
-**📖 [Full Installation Guide](https://github.com/smashingtags/homelabarr-cli/blob/master/wiki/docs/install/install.md)**
+**📖 [Full Installation Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/install.md)**
 
 ### 🏠 Local Mode Installation
 Quick setup for local network access without domains:
 
 ```bash
 # Clone and enter directory
-git clone https://github.com/smashingtags/homelabarr-cli.git
-cd homelabarr-cli/apps/.config
+git clone https://github.com/smashingtags/homelabarr-ce.git
+cd homelabarr-ce/apps/.config
 
 # Deploy Plex locally
 docker compose -f plex-local-template.yml --env-file .env up -d
@@ -233,13 +233,13 @@ docker compose -f plex-local-template.yml --env-file .env up -d
 # Access at http://localhost:32400
 ```
 
-**📖 [Local Mode Guide](https://github.com/smashingtags/homelabarr-cli/blob/master/wiki/docs/install/local-mode.md)**
+**📖 [Local Mode Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/local-mode.md)**
 
 ---
 
 ## Available Applications
 
-HomelabARR CLI supports 100+ self-hosted applications across categories:
+HomelabARR CE supports 100+ self-hosted applications across categories:
 
 - **Media Servers**: Plex, Jellyfin, Emby
 - **Media Management**: Radarr, Sonarr, Lidarr, Bazarr
@@ -248,13 +248,13 @@ HomelabARR CLI supports 100+ self-hosted applications across categories:
 - **Monitoring**: Tautulli, Netdata, Grafana
 - **Self-hosted Apps**: Nextcloud, Bitwarden, Home Assistant
 
-**📖 [Complete Application List](https://github.com/smashingtags/homelabarr-cli/blob/master/wiki/docs/apps/apps.md)**
+**📖 [Complete Application List](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/apps/apps.md)**
 
 ---
 
 ## Development Workflow
 
-HomelabARR CLI follows an enhanced development workflow integrating local development, documentation, and project management:
+HomelabARR CE follows an enhanced development workflow integrating local development, documentation, and project management:
 
 ### Complete Workflow Process
 ```
@@ -324,9 +324,9 @@ The auto-router intelligently selects specialists:
 
 ## Support
 
-Kindly report any issues/broken-parts/bugs on [github](https://github.com/smashingtags/homelabarr-cli/issues) or [discord](https://discord.gg/Pc7mXX786x)
+Kindly report any issues/broken-parts/bugs on [github](https://github.com/smashingtags/homelabarr-ce/issues) or [discord](https://discord.gg/Pc7mXX786x)
 
-**☕ [Support Development](https://ko-fi.com/homelabarr)** - Help keep HomelabARR CLI growing!
+**☕ [Support Development](https://ko-fi.com/homelabarr)** - Help keep HomelabARR CE growing!
 
 ---
 
