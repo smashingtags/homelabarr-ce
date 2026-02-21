@@ -32,7 +32,7 @@ env:
 
 jobs:
   build-matrix:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -59,7 +59,7 @@ jobs:
 
   build-containers:
     needs: build-matrix
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -161,7 +161,7 @@ jobs:
 
   update-docs:
     needs: [build-matrix, build-containers]
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Checkout
