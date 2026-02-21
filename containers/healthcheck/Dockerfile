@@ -1,6 +1,6 @@
 # Docker Mod for Health Check functionality
 # Based on LinuxServer.io Docker Mods pattern
-FROM ghcr.io/linuxserver/baseimage-alpine:3.19
+FROM lscr.io/linuxserver/baseimage-alpine:3.19
 
 # Labels for metadata
 LABEL maintainer="HomelabARR CLI"
