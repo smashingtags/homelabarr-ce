@@ -20,7 +20,7 @@ RUN apk add --no-cache \
     bash
 
 # Create mod directory structure
-RUN mkdir -p /docker-mods/healthcheck/etc/services.d/healthcheck
+RUN rm -rf /docker-mods && mkdir -p /docker-mods/healthcheck/etc/services.d/healthcheck
 
 # Add health check script
 COPY root/ /
