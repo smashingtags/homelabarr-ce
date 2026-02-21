@@ -4,7 +4,7 @@ on:
     types: [ created ]
 jobs:
   changelog-wiki:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: read
