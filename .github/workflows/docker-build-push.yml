@@ -201,5 +201,5 @@ jobs:
           exit 0
         fi
         content="✅ HomelabARR CE: Docker images built for ${GITHUB_REPOSITORY} (${GITHUB_REF_NAME}) — run #${GITHUB_RUN_NUMBER}"
-        payload=$(printf {content:} "${content}")
+        payload=$(printf '{"content":"%s"}' "${content}")
         curl -sS -H "Content-Type: application/json" -d "${payload}" "${DISCORD_WEBHOOK}" || echo "Discord webhook failed"
