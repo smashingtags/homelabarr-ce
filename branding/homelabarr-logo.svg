@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a237e;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#00bfa5;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffab00;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#ff6d00;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- House/Lab Flask Icon -->
+  <g transform="translate(20, 20)">
+    <!-- House outline -->
+    <path d="M 40 10 L 70 35 L 70 75 L 10 75 L 10 35 Z" fill="url(#primaryGradient)" stroke="#1a237e" stroke-width="2"/>
+    
+    <!-- Flask integrated into roof -->
+    <path d="M 25 35 L 25 55 Q 25 70 40 70 Q 55 70 55 55 L 55 35 Z" fill="#ffffff" stroke="#00bfa5" stroke-width="2"/>
+    
+    <!-- Container blocks inside flask -->
+    <rect x="30" y="42" width="8" height="8" fill="#00bfa5" rx="1"/>
+    <rect x="42" y="42" width="8" height="8" fill="#ffab00" rx="1"/>
+    <rect x="30" y="53" width="8" height="8" fill="#ffab00" rx="1"/>
+    <rect x="42" y="53" width="8" height="8" fill="#00bfa5" rx="1"/>
+    
+    <!-- Flask neck -->
+    <rect x="36" y="30" width="8" height="8" fill="#ffffff" stroke="#00bfa5" stroke-width="2"/>
+  </g>
+  
+  <!-- Wordmark: HomelabARR -->
+  <g transform="translate(110, 50)">
+    <!-- Homelab -->
+    <text x="0" y="25" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" 
+          font-size="32" font-weight="600" fill="#1a237e">Homelab</text>
+    
+    <!-- ARR (bold, slightly raised, wave effect) -->
+    <text x="142" y="22" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" 
+          font-size="36" font-weight="800" fill="url(#accentGradient)">ARR</text>
+    
+    <!-- Wave underline on ARR -->
+    <path d="M 142 30 Q 155 28, 168 30 Q 181 32, 194 30" 
+          stroke="#ffab00" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Tagline -->
+  <text x="110" y="85" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" 
+        font-size="12" font-weight="400" fill="#5f6368" letter-spacing="0.5">YOUR HOMELAB. SIMPLIFIED.</text>
+</svg>
