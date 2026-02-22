@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="captainGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a237e"/>
+      <stop offset="100%" style="stop-color:#00bfa5"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Tentacles -->
+  <path d="M 50 130 Q 30 160 25 185" stroke="url(#captainGradient)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M 70 135 Q 55 165 60 190" stroke="url(#captainGradient)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M 95 140 Q 95 170 100 195" stroke="url(#captainGradient)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M 120 135 Q 135 165 140 190" stroke="url(#captainGradient)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M 145 130 Q 165 160 175 185" stroke="url(#captainGradient)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  
+  <!-- Left arm with container icon -->
+  <path d="M 35 110 Q 15 130 10 155" stroke="url(#captainGradient)" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <g transform="translate(5, 145)">
+    <rect x="0" y="0" width="12" height="12" fill="#00bfa5" rx="2"/>
+    <rect x="0" y="14" width="12" height="12" fill="#ffab00" rx="2"/>
+  </g>
+  
+  <!-- Right arm with shield icon -->
+  <path d="M 165 110 Q 185 130 190 155" stroke="url(#captainGradient)" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <g transform="translate(185, 145)">
+    <path d="M 6 0 L 12 3 L 12 9 Q 12 15 6 18 Q 0 15 0 9 L 0 3 Z" fill="#ffab00"/>
+    <path d="M 3 7 L 5.5 10 L 9 5" stroke="#1a237e" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Body -->
+  <ellipse cx="100" cy="95" rx="60" ry="55" fill="url(#captainGradient)"/>
+  
+  <!-- Eyes -->
+  <circle cx="75" cy="85" r="15" fill="white"/>
+  <circle cx="75" cy="85" r="8" fill="#00bfa5"/>
+  <circle cx="75" cy="85" r="4" fill="#1a237e"/>
+  
+  <!-- Status LED eye -->
+  <circle cx="125" cy="85" r="15" fill="#1a237e" stroke="#00bfa5" stroke-width="3"/>
+  <circle cx="125" cy="85" r="6" fill="#00ff00" filter="url(#glow)"/>
+  
+  <!-- Mouth - confident smile -->
+  <path d="M 80 115 Q 100 128 120 115" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+  
+  <!-- Captain's Hat -->
+  <path d="M 65 55 L 135 55 L 125 38 L 75 38 Z" fill="#1a237e" stroke="#ffab00" stroke-width="2"/>
+  <rect x="72" y="50" width="56" height="10" fill="#ffab00"/>
+  <text x="100" y="58" font-family="Inter, Arial, sans-serif" font-size="10" font-weight="800" 
+        fill="#1a237e" text-anchor="middle">ARR</text>
+  
+  <!-- Hat brim -->
+  <rect x="60" y="55" width="80" height="6" fill="#1a237e" rx="2"/>
+</svg>
