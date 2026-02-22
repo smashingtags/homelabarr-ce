@@ -1,0 +1,59 @@
+HOMELABARR BRAND ASSETS - QUICK REFERENCE
+==========================================
+
+COLORS
+------
+Primary Blue:     #1a237e (Deep Navy)
+Primary Teal:     #00bfa5 (Electric Teal)
+Accent Amber:     #ffab00 (Warm Amber)
+Alert Coral:      #ff6d00
+Background:       #f5f5f5 (Cloud Gray)
+Text:             #212121 (Charcoal)
+
+GRADIENTS
+---------
+Primary:  linear-gradient(135deg, #1a237e 0%, #00bfa5 100%)
+Accent:   linear-gradient(90deg, #ffab00 0%, #ff6d00 100%)
+
+FONTS
+-----
+Primary:  Inter (400, 600, 800)
+Display:  Inter Extra-Bold (800) for ARR
+Mono:     JetBrains Mono or Fira Code
+
+MISSION STATEMENTS
+------------------
+Primary:  "HomelabARR is the complete command center for your digital home. 
+          We turn complexity into clarity—giving everyone the power to build, 
+          deploy, and manage a professional-grade homelab without the 
+          enterprise headache. From your first container to your full NAS, 
+          we're your crew."
+
+Tagline:  "Your homelab. Simplified."
+
+CE:       "Deploy anything. Manage everything. The free, open-source way 
+          to run your homelab like a pro."
+
+PE:       "The NAS OS built for enthusiasts. Professional storage, 
+          simple setup, zero compromises."
+
+MASCOT: CAP'N CACHE
+-------------------
+Species:  Cyber-Octopus
+Role:     Chief Operations Officer
+Traits:   Friendly, competent, slightly nautical
+Voice:    "Ahoy!", "All hands on deck!", "Steady as she goes..."
+
+FILE LOCATIONS
+--------------
+Full Brand Guide:     homelabarr-brand-identity.md
+Logo SVG:             homelabarr-logo.svg
+Mascot SVG:           capn-cache-default.svg
+
+NEXT STEPS
+----------
+1. Review brand guide with team
+2. Send SVGs to designer for polish/variants
+3. Generate PNG exports at all sizes
+4. Implement on website and in app
+5. Order stickers/swag with mascot
