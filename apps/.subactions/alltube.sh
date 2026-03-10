@@ -8,18 +8,6 @@ typed=alltube
 if [[ ! -f "$basefolder/${typed}/config.json" ]];then
 
 cat <<'EOF' > $basefolder/${typed}/config.json
-#####################################
-# All rights reserved.              #
-# started from Zero                 #
-# Docker owned homelabarr-cli           #
-# Docker Maintainer homelabarr-cli      #
-#####################################
-#####################################
-# THIS DOCKER IS UNDER LICENSE      #
-# NO CUSTOMIZING IS ALLOWED         #
-# NO REBRANDING IS ALLOWED          #
-# NO CODE MIRRORING IS ALLOWED      #
-#####################################
 ---
 # Path to your youtube-dl binary
 youtubedl: vendor/rg3/youtube-dl/youtube_dl/__main__.py

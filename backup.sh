@@ -1,17 +1,5 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-##################################
-# Copyright (c) 2025, HomelabARR CLI Project  #
-# Docker owner         : REMOVED_USER #
-# Docker Maintainer    : REMOVED_USER #
-# Code owner           : REMOVED_USER #
-#     All rights reserved        #
-##################################
-# THIS DOCKER IS UNDER LICENSE   #
-# NO CUSTOMIZING IS ALLOWED      #
-# NO REBRANDING IS ALLOWED       #
-# NO CODE MIRRORING IS ALLOWED   #
-##################################
 # shellcheck disable=SC2086
 # shellcheck disable=SC2006
 

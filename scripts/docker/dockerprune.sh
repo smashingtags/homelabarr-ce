@@ -1,17 +1,5 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-#####################################
-# All rights reserved.              #
-# started from Zero                 #
-# Docker owned homelabarr-cli           #
-# Docker Maintainer homelabarr-cli      #
-#####################################
-#####################################
-# THIS DOCKER IS UNDER LICENSE      #
-# NO CUSTOMIZING IS ALLOWED         #
-# NO REBRANDING IS ALLOWED          #
-# NO CODE MIRRORING IS ALLOWED      #
-#####################################
 appstartup() {
   if [[ $EUID -ne 0 ]]; then
     printf "
@@ -37,7 +25,7 @@ run() {
 dockerprune() {
   printf "
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    🚀  HomelabARR CLI Host Cleaner
+    🚀  HomelabARR Host Cleaner
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Would you like to remove all unused containers,

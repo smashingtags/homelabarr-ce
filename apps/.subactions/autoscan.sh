@@ -1,16 +1,5 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-# Copyright (c) 2025, HomelabARR CLI Project
-# All rights reserved.
-#########################################################################
-# Author:         l3uddz / m-rots && cloudbox                           #
-# Docker:         https://github.com/Cloudbox/autoscan                  #
-# URL:            https://github.com/Cloudbox/autoscan                  #
-#         Part of the Cloudbox project: https://cloudbox.works          #
-#########################################################################
-#                   GNU General Public License v3.0                     #
-#########################################################################
-
 basefolder="/opt/appdata"
 appfolder="/opt/homelabarr-cli/apps/"
 typed=autoscan
