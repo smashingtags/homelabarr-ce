@@ -1,7 +1,0 @@
-time="2025-08-15T21:18:42-04:00" level=warning msg="The \"RESTARTAPP\" variable is not set. Defaulting to a blank string."
-time="2025-08-15T21:18:42-04:00" level=warning msg="The \"ID\" variable is not set. Defaulting to a blank string."
-time="2025-08-15T21:18:42-04:00" level=warning msg="The \"ID\" variable is not set. Defaulting to a blank string."
-time="2025-08-15T21:18:42-04:00" level=warning msg="The \"ID\" variable is not set. Defaulting to a blank string."
-time="2025-08-15T21:18:42-04:00" level=warning msg="The \"ID\" variable is not set. Defaulting to a blank string."
-time="2025-08-15T21:18:42-04:00" level=warning msg="The \"TZ\" variable is not set. Defaulting to a blank string."
-service "petio" depends on undefined service "mongo": invalid compose project

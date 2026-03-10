@@ -71,8 +71,8 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
         labels: |
           org.opencontainers.image.title=HomelabARR Frontend
-          org.opencontainers.image.description=React frontend for HomelabARR CLI container management
-          org.opencontainers.image.vendor=HomelabARR CLI
+          org.opencontainers.image.description=React frontend for HomelabARR CE container management
+          org.opencontainers.image.vendor=HomelabARR CE
           org.opencontainers.image.licenses=MIT
           
     - name: Extract metadata for backend
@@ -89,8 +89,8 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
         labels: |
           org.opencontainers.image.title=HomelabARR Backend
-          org.opencontainers.image.description=Node.js backend with CLI Bridge for HomelabARR container management
-          org.opencontainers.image.vendor=HomelabARR CLI
+          org.opencontainers.image.description=Node.js backend with CE Bridge for HomelabARR container management
+          org.opencontainers.image.vendor=HomelabARR CE
           org.opencontainers.image.licenses=MIT
           
     - name: Build and push frontend image
@@ -182,7 +182,7 @@ jobs:
         echo "curl -o homelabarr.yml https://raw.githubusercontent.com/${{ github.repository }}/main/homelabarr.yml" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "# Configure environment" >> $GITHUB_STEP_SUMMARY
-        echo "export CLI_BRIDGE_HOST_PATH=/path/to/your/homelabarr" >> $GITHUB_STEP_SUMMARY
+        echo "export CLI_BRIDGE_HOST_PATH=/path/to/your/homelabarr-cli" >> $GITHUB_STEP_SUMMARY
         echo "export DOCKER_GID=\$(getent group docker | cut -d: -f3)" >> $GITHUB_STEP_SUMMARY
         echo "export CORS_ORIGIN=https://your-domain.com" >> $GITHUB_STEP_SUMMARY
         echo "export JWT_SECRET=\$(openssl rand -base64 32)" >> $GITHUB_STEP_SUMMARY

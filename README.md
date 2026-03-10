@@ -6,7 +6,7 @@
     </a>
 </p>
 
------ 
+-----
 
 <p align="center">
     </br>
@@ -39,13 +39,6 @@ _Advanced Docker-based media server stack with two deployment modes: Full mode w
 - **Portainer** - Docker container management with web UI
 - **cAdvisor** - Container resource monitoring and performance metrics
 - **Pre-built Dashboards** - Ready-to-use monitoring for Plex, Sonarr, Radarr, Traefik, and system metrics
-
-### 🔧 Technical Improvements
-- **Enhanced Volume Management** - Custom Go-based local-persist driver for improved performance
-- **Validation Framework** - Automated configuration testing and validation scripts
-- **Agent-Based Architecture** - Specialized agents for infrastructure management and troubleshooting
-- **GitHub-Jira Integration** - Streamlined project management and development workflow
-
 ---
 
 ## 🚀 Quick Deploy
@@ -80,20 +73,6 @@ cp .env.example .env  # Edit with your settings
 # Interactive deployment
 ./deploy-local.sh
 ```
-
-**📖 [Complete Documentation](https://github.com/smashingtags/homelabarr-ce/tree/master/wiki)** | **🏠 [Local Mode Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/local-mode.md)** | **🌐 [Full Mode Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/install.md)**
-
-### 📁 Repository Organization
-
-As of August 2025, HomelabARR CE features a professionally organized repository structure:
-
-- **User-facing components** in main directories (`apps/`, `wiki/`, `scripts/`)
-- **Maintenance tools** organized in `.claude/scripts/` (7 active utilities)
-- **Development resources** archived in `.claude/development-scripts/` and `.claude/development-backups/`
-- **863 files organized**, **862 temporary files removed**, **29,785 lines cleaned**
-
-**📋 [Repository Structure Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/guides/repository-structure.md)** | **🧹 [Cleanup Details](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/releases/repository-cleanup-v2.2.md)**
-
 ---
 
 ## Deployment Modes
@@ -148,13 +127,6 @@ Both modes can coexist on the same system. You can:
 - Test with **Local Mode** first
 - Upgrade to **Full Mode** when ready for production
 - Run both simultaneously on different ports
-
----
-
-## Migration
-
-If you currently have a server with PG/MHS/PTS, have a look here before you start the installation: [Migration Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/migration.md)
-
 ---
 
 ## Minimum Specs and Requirements
@@ -167,7 +139,7 @@ If you currently have a server with PG/MHS/PTS, have a look here before you star
 - **Server**: VPS/VM or Dedicated Server
 
 ### Full Mode Additional Requirements
-- Valid domain name ([Namecheap](https://www.namecheap.com/) recommended)
+- Valid domain name ([Cloudflare](https://www.cloudflare.com/products/registrar/) recommended)
 - [Cloudflare](https://dash.cloudflare.com/sign-up) account (free tier sufficient)
 
 ### Local Mode Requirements
@@ -179,8 +151,6 @@ If you currently have a server with PG/MHS/PTS, have a look here before you star
 
 - [Hetzner Cloud](https://www.hetzner.com/de/cloud)
 - [Digital Ocean](https://www.digitalocean.com/)
-- [Vault](https://www.vultr.com/)
-
 ---
 
 ## Pre-Install
@@ -216,9 +186,6 @@ sudo ./install.sh
 # Open HomelabARR CE interface
 sudo homelabarr-ce -i
 ```
-
-**📖 [Full Installation Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/install.md)**
-
 ### 🏠 Local Mode Installation
 Quick setup for local network access without domains:
 
@@ -232,9 +199,6 @@ docker compose -f plex-local-template.yml --env-file .env up -d
 
 # Access at http://localhost:32400
 ```
-
-**📖 [Local Mode Guide](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/install/local-mode.md)**
-
 ---
 
 ## Available Applications
@@ -247,79 +211,6 @@ HomelabARR CE supports 100+ self-hosted applications across categories:
 - **Request Management**: Overseerr, Petio
 - **Monitoring**: Tautulli, Netdata, Grafana
 - **Self-hosted Apps**: Nextcloud, Bitwarden, Home Assistant
-
-**📖 [Complete Application List](https://github.com/smashingtags/homelabarr-ce/blob/master/wiki/docs/apps/apps.md)**
-
----
-
-## Development Workflow
-
-HomelabARR CE follows an enhanced development workflow integrating local development, documentation, and project management:
-
-### Complete Workflow Process
-```
-Local Notes → Code Changes → Confluence Docs → Jira Updates → GitHub Branch → 
-Create Pull Request → QA → {QA Passed} OR {Flopped → Bug/Subtask} → 
-Documentation Validation → Done
-```
-
-### Key Workflow Features
-
-#### 📋 Enhanced Status Management
-- **QA Passed Status**: Preserves progress between QA validation and documentation completion
-- **Flopped Workflow**: Systematic QA failure recovery with Bug/Subtask remediation  
-- **Documentation Validation**: Mandatory verification before completion
-
-#### 🎯 Task Prioritization Rules
-- **Sprint Validation**: Only work on tickets in active sprint (not backlog)
-- **Story Points**: 1 SP = 8 hours of head-down coding time
-- **In Progress Priority**: Complete "In Progress" tasks before starting "To Do"
-
-#### 🔄 Automation Features
-- **Auto-Route Command**: Intelligent task routing to specialized agents
-- **Breaking Change Detection**: Automatic identification requiring manual review
-- **Validation Pipeline**: Comprehensive YAML, JSON, and configuration checks
-
-### Development Commands
-
-#### Enhanced Workflow Tools
-```bash
-# Auto-route tasks to specialized agents
-/auto-route "Add Jellyfin with Traefik routing and monitoring"
-
-# Complete workflow orchestration
-./apps/.config/modernize-configs.sh auto
-
-# Configuration validation
-./apps/.config/validate-configs.sh
-
-# Port conflict resolution
-./apps/.config/fix-port-conflicts.sh auto
-```
-
-#### Agent-Based Development
-The auto-router intelligently selects specialists:
-- **docker-infrastructure-specialist**: Container and Docker Compose
-- **network-architecture-specialist**: Traefik and networking
-- **security-authentication-specialist**: Authelia and security
-- **media-stack-specialist**: Plex, Sonarr, Radarr automation
-- **monitoring-alerting-specialist**: Grafana, Prometheus, dashboards
-
-### Quality Assurance
-
-#### QA Process
-1. **Automated Validation**: YAML syntax, configuration compliance
-2. **Breaking Change Detection**: Impact assessment and review requirements
-3. **Manual Testing**: Functionality verification and acceptance criteria
-4. **Documentation Review**: Comprehensive documentation validation
-
-#### Recovery Workflows
-- **QA Failures**: Automatic Flopped status with remediation Bug/Subtask
-- **Documentation Issues**: Cannot proceed to Done without validation
-- **State Preservation**: QA Passed status maintains progress during interruptions
-
-**📖 [Complete Development Workflow Guide](.claude/workflow/enhanced-development-workflow.md)**
-
 ---
 
 ## Support
@@ -354,151 +245,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
 <tr>
     <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/REMOVED_USER>
-            <img src=https://avatars.githubusercontent.com/u/60312740?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=REMOVED_USER/>
-            <br />
-            <sub style="font-size:14px"><b>REMOVED_USER</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/fscorrupt>
-            <img src=https://avatars.githubusercontent.com/u/45659314?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=FSCorrupt/>
-            <br />
-            <sub style="font-size:14px"><b>FSCorrupt</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/drag0n141>
-            <img src=https://avatars.githubusercontent.com/u/44865095?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=DrAg0n141/>
-            <br />
-            <sub style="font-size:14px"><b>DrAg0n141</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
         <a href=https://github.com/smashingtags>
             <img src=https://avatars.githubusercontent.com/u/48292010?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=smashingtags/>
             <br />
             <sub style="font-size:14px"><b>smashingtags</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/aelfa>
-            <img src=https://avatars.githubusercontent.com/u/60222501?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Aelfa/>
-            <br />
-            <sub style="font-size:14px"><b>Aelfa</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/cyb3rgh05t>
-            <img src=https://avatars.githubusercontent.com/u/5200101?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=cyb3rgh05t/>
-            <br />
-            <sub style="font-size:14px"><b>cyb3rgh05t</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/justinglock40>
-            <img src=https://avatars.githubusercontent.com/u/23133649?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=justinglock40/>
-            <br />
-            <sub style="font-size:14px"><b>justinglock40</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/mrfret>
-            <img src=https://avatars.githubusercontent.com/u/72273384?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=mrfret/>
-            <br />
-            <sub style="font-size:14px"><b>mrfret</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/dan3805>
-            <img src=https://avatars.githubusercontent.com/u/35934387?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=DoCtEuR3805 | FRENCH-QC/>
-            <br />
-            <sub style="font-size:14px"><b>DoCtEuR3805 | FRENCH-QC</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/brtbach>
-            <img src=https://avatars.githubusercontent.com/u/24246495?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=brtbach/>
-            <br />
-            <sub style="font-size:14px"><b>brtbach</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/renovate-bot>
-            <img src=https://avatars.githubusercontent.com/u/25180681?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Mend Renovate/>
-            <br />
-            <sub style="font-size:14px"><b>Mend Renovate</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/ramsaytc>
-            <img src=https://avatars.githubusercontent.com/u/16809662?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=ramsaytc/>
-            <br />
-            <sub style="font-size:14px"><b>ramsaytc</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/Shayne55434>
-            <img src=https://avatars.githubusercontent.com/u/37595910?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Shayne/>
-            <br />
-            <sub style="font-size:14px"><b>Shayne</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/Nossersvinet>
-            <img src=https://avatars.githubusercontent.com/u/83166809?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Nossersvinet/>
-            <br />
-            <sub style="font-size:14px"><b>Nossersvinet</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/ookla-ariel-ride>
-            <img src=https://avatars.githubusercontent.com/u/42082417?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Ookla, Ariel, Ride!/>
-            <br />
-            <sub style="font-size:14px"><b>Ookla, Ariel, Ride!</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/actions-user>
-            <img src=https://avatars.githubusercontent.com/u/65916846?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=actions-user/>
-            <br />
-            <sub style="font-size:14px"><b>actions-user</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/ImgBotApp>
-            <img src=https://avatars.githubusercontent.com/u/31427850?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Imgbot/>
-            <br />
-            <sub style="font-size:14px"><b>Imgbot</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/townsmcp>
-            <img src=https://avatars.githubusercontent.com/u/14061617?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=James Townsend/>
-            <br />
-            <sub style="font-size:14px"><b>James Townsend</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/red-daut>
-            <img src=https://avatars.githubusercontent.com/u/78737369?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Red Daut/>
-            <br />
-            <sub style="font-size:14px"><b>Red Daut</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/DomesticWarlord>
-            <img src=https://avatars.githubusercontent.com/u/57776315?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=DomesticWarlord/>
-            <br />
-            <sub style="font-size:14px"><b>DomesticWarlord</b></sub>
         </a>
     </td>
 </tr>
@@ -507,4 +257,3 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
