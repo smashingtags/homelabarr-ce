@@ -1,16 +1,8 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
 #####################################
-# All rights reserved.              #
-# started from Zero                 #
-# Docker owned homelabarr-cli           #
-# Docker Maintainer homelabarr-cli      #
-#####################################
-#####################################
-# THIS DOCKER IS UNDER LICENSE      #
-# NO CUSTOMIZING IS ALLOWED         #
-# NO REBRANDING IS ALLOWED          #
-# NO CODE MIRRORING IS ALLOWED      #
+# Docker owned by imogenlabs        #
+# Docker Maintainer smashingtags    #
 #####################################
 # shellcheck disable=SC2086
 # shellcheck disable=SC2006
@@ -21,7 +13,7 @@ while true;do
         clear && LOCATION=preinstall && selection
         break
      fi
-     
+
      # Docker is installed, show main menu
      clear && headinterface
 done
@@ -58,7 +50,7 @@ printf "
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     🚀 HomelabARR CLI
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    
+
     [ 1 ] HomelabARR CLI - Traefik + Authelia
     [ 2 ] HomelabARR CLI - Applications
 
