@@ -3,9 +3,6 @@
 # Title:      LXC Bypass the mount :shared
 # OS Branch:  ubuntu,debian,rasbian
 # Author(s):  HomelabARR CLI Team
-# Coauthor:   DrAgOn141
-# GNU:        General Public License v3.0
-################################################################################
 # shellcheck disable=SC2003
 # shellcheck disable=SC2006
 # shellcheck disable=SC2207

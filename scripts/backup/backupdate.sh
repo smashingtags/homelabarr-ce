@@ -1,18 +1,5 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-#####################################
-# All rights reserved.              #
-# started from Zero                 #
-# Docker owned homelabarr-cli           #
-# Docker Maintainer homelabarr-cli      #
-#####################################
-#####################################
-# THIS DOCKER IS UNDER LICENSE      #
-# NO CUSTOMIZING IS ALLOWED         #
-# NO REBRANDING IS ALLOWED          #
-# NO CODE MIRRORING IS ALLOWED      #
-#####################################
-
 ### START OF SETTINGS
 ## sample crontab
 ## sudo crontab -e
@@ -68,7 +55,7 @@ for i in ${dockers}; do
       $(command -v tar) ${OPTIONSTAR} -C ${FOLDER}/${ARCHIVE} -pcf ${DESTINATION}/${STORAGE}/${ARCHIVETAR} ./
    fi
    $(command -v chown) -hR 1000:1000 ${DESTINATION}/${STORAGE}/${ARCHIVETAR}
-   
+
    if [[ -n $WEBHOOK_URL ]]; then
        # Sending notification to Discord
        TIMESTAMP=$(date '+%H:%M:%S')

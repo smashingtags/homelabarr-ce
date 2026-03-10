@@ -136,7 +136,7 @@ jobs:
           labels: |
             org.opencontainers.image.title=${{ steps.meta.outputs.image_name }}
             org.opencontainers.image.description=${{ steps.meta.outputs.description }}
-            org.opencontainers.image.vendor=HomelabARR CLI
+            org.opencontainers.image.vendor=HomelabARR CE
             org.opencontainers.image.licenses=MIT
 
       - name: Build and push Docker image (amd64)
@@ -187,7 +187,7 @@ jobs:
         run: |
           echo "# Container Registry" > CONTAINERS.md
           echo "" >> CONTAINERS.md
-          echo "HomelabARR CLI containers are hosted on GitHub Container Registry under the \`smashingtags\` organization." >> CONTAINERS.md
+          echo "HomelabARR CE containers are hosted on GitHub Container Registry under the \`smashingtags\` organization." >> CONTAINERS.md
           echo "" >> CONTAINERS.md
           echo "## Available Containers" >> CONTAINERS.md
           echo "" >> CONTAINERS.md

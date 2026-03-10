@@ -1,17 +1,5 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-#####################################
-# All rights reserved.              #
-# started from Zero                 #
-# Docker owned homelabarr           #
-# Docker Maintainer homelabarr      #
-#####################################
-#####################################
-# THIS DOCKER IS UNDER LICENSE      #
-# NO CUSTOMIZING IS ALLOWED         #
-# NO REBRANDING IS ALLOWED          #
-# NO CODE MIRRORING IS ALLOWED      #
-#####################################
 # shellcheck disable=SC2003
 # shellcheck disable=SC2006
 # shellcheck disable=SC2207

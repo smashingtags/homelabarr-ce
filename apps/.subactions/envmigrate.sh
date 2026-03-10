@@ -1,7 +1,6 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-# Copyright (c) 2025, HomelabARR CLI Project
-# All rights reserved.
+
 migrateenv() {
     basefolder="/opt/appdata"
     #bypass the dark them bug

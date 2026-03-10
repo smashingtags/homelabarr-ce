@@ -1,17 +1,5 @@
 #!/usr/bin/with-contenv bash
 # shellcheck shell=bash
-#####################################
-# All rights reserved.              #
-# started from Zero                 #
-# Docker owned homelabarr-cli           #
-# Docker Maintainer homelabarr-cli      #
-#####################################
-#####################################
-# THIS DOCKER IS UNDER LICENSE      #
-# NO CUSTOMIZING IS ALLOWED         #
-# NO REBRANDING IS ALLOWED          #
-# NO CODE MIRRORING IS ALLOWED      #
-#####################################
 basefolder="/opt/appdata"
 plex=$(docker ps -a --format={{.Names}} | grep -x 'plex' 1>/dev/null 2>&1 && echo true || echo false)
 if [[ -d "/opt/appdata/plex/" && $plex == "true" ]]; then
@@ -25,7 +13,7 @@ printf "
 In Plex-Utils
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Navigate to Config Page: https://plex-utills.${DOMAIN}/config
-  
+
   Plex Connection
 - Enter Plex Url : http://${SERVERIP}:32400
 - Enter Plex Token : ${token}
@@ -39,8 +27,8 @@ In Plex-Utils
   Script Options
 - Set Desired Script Options ( 4K/HDR/3D Posters/Banners )
 
-  
-  Save Configuration and you are good to go. 
+
+  Save Configuration and you are good to go.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "
