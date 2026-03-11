@@ -44,7 +44,7 @@ jobs:
           echo "LOG_LEVEL=${{ github.event.inputs.logLevel || env.LOG_LEVEL }}" >> "${GITHUB_ENV}"
 
       - name: Setup Node.js
-        uses: actions/setup-node@60edb5e00794594007c7b7663430c2d01192d10c # v4.0.0
+        uses: actions/setup-node@b388f441b65ff9956c5b722cb85d7719a8e68abc # v4.1.0
         with:
           node-version: "20"
 
