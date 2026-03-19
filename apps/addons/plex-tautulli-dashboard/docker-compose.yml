@@ -2,7 +2,6 @@
 services:
   plex-tautulli-dashboard:
     # NOTE: Need to find alternative image source or build our own
-    # cyb3rgh05t is a HomelabARR contributor alongside REMOVED_USER
     # image: ghcr.io/cyb3rgh05t/plex-tautulli-dashboard:latest
     image: homelabarr/plex-tautulli-dashboard:latest  # TODO: Build our own
     container_name: plex-tautulli-dashboard
