@@ -1,0 +1,18 @@
+services:
+  headscale:
+    image: headscale/headscale:latest
+    container_name: headscale
+    restart: unless-stopped
+    command: serve
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    volumes:
+      - ./config:/etc/headscale
+      - ./data:/var/lib/headscale
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

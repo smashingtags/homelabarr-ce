@@ -1,0 +1,17 @@
+services:
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: umami
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://umami:umami@db:5432/umami
+      - DATABASE_TYPE=postgresql
+      - APP_SECRET=changeme
+    ports:
+      - "3000:3000"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

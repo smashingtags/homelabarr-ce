@@ -1,0 +1,19 @@
+services:
+  rustdesk:
+    image: rustdesk/rustdesk-server:latest
+    container_name: rustdesk
+    restart: unless-stopped
+    command: hbbs
+    ports:
+      - "21115:21115"
+      - "21116:21116"
+      - "21116:21116/udp"
+      - "21118:21118"
+    volumes:
+      - ./data:/root
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge
