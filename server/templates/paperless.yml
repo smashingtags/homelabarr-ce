@@ -1,4 +1,3 @@
-version: '3'
 services:
   paperless:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
@@ -19,4 +18,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

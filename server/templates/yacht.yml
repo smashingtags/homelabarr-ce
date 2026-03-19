@@ -1,4 +1,3 @@
-version: '3'
 services:
   yacht:
     image: selfhostedpro/yacht:latest
@@ -17,4 +16,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

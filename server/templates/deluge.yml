@@ -1,4 +1,3 @@
-version: '3'
 services:
   deluge:
     image: lscr.io/linuxserver/deluge:latest
@@ -22,4 +21,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge
