@@ -8,7 +8,7 @@ pull_request_rules:
       comment:
         message: |
           Thanks for opening this pull request! 
-          Please check out the [Contributing Guidelines](https://github.com/smashingtags/homelabarr-cli/blob/master/CONTRIBUTING.md).
+          Please check out the [Contributing Guidelines](https://github.com/smashingtags/homelabarr-ce/blob/main/.github/CONTRIBUTING.md).
   - name: Assign author
     conditions:
       - "-closed"
@@ -55,7 +55,6 @@ pull_request_rules:
   - name: message check comment
     conditions:
       - author!=dependabot[bot]
-      - author!=REMOVED_USER
       - author!=drag0n141
       - "-closed"
       - "-merged"
@@ -63,7 +62,7 @@ pull_request_rules:
       comment:
         message: |
           @{{author}}
-          Please follow the [Contributing Guidelines](https://github.com/smashingtags/homelabarr-cli/blob/master/CONTRIBUTING.md).
+          Please follow the [Contributing Guidelines](https://github.com/smashingtags/homelabarr-ce/blob/main/.github/CONTRIBUTING.md).
           Before we can merg the PR , we will check the PR.
   - name: conflict comment
     conditions:

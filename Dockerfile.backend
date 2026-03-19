@@ -31,7 +31,7 @@ RUN npm ci --only=production --no-audit --loglevel=error --no-fund
 # Copy server files and configurations
 COPY server/ ./server/
 
-# Create CLI Bridge mount point for ../../../homelabarr
+# Create CLI Bridge mount point
 RUN mkdir -p /homelabarr
 
 # Make startup script executable
