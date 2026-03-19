@@ -1,0 +1,24 @@
+services:
+  planka:
+    image: ghcr.io/plankanban/planka:latest
+    container_name: planka
+    restart: unless-stopped
+    environment:
+      - BASE_URL=http://localhost:1337
+      - SECRET_KEY=changeme
+      - DEFAULT_ADMIN_EMAIL=admin@example.com
+      - DEFAULT_ADMIN_PASSWORD=admin
+      - DEFAULT_ADMIN_NAME=Admin
+      - DEFAULT_ADMIN_USERNAME=admin
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./user-avatars:/app/public/user-avatars
+      - ./project-background-images:/app/public/project-background-images
+      - ./attachments:/app/private/attachments
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge
