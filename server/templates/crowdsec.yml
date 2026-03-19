@@ -1,0 +1,21 @@
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+      - COLLECTIONS=crowdsecurity/linux crowdsecurity/traefik
+    ports:
+      - "8180:8080"
+      - "6060:6060"
+    volumes:
+      - ./config:/etc/crowdsec
+      - ./data:/var/lib/crowdsec/data
+      - /var/log:/var/log:ro
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

@@ -1,0 +1,18 @@
+services:
+  changedetection:
+    image: ghcr.io/dgtlmoon/changedetection.io:latest
+    container_name: changedetection
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/datastore
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

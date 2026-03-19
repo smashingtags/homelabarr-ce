@@ -1,0 +1,17 @@
+services:
+  trilium:
+    image: zadam/trilium:latest
+    container_name: trilium
+    restart: unless-stopped
+    environment:
+      - TRILIUM_DATA_DIR=/home/node/trilium-data
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./data:/home/node/trilium-data
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge
