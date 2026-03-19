@@ -1,1 +1,9 @@
 .github/ export-ignore
+
+# Force LF line endings for shell scripts
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Force LF for Docker and config files
+Dockerfile* text eol=lf
+*.conf text eol=lf
