@@ -67,11 +67,11 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD curl -f http://localhost:8092/health || exit 1
 
 # Production labels for GHCR
-LABEL org.opencontainers.image.title="HomelabARR Backend"
-LABEL org.opencontainers.image.description="Node.js backend with CLI Bridge for HomelabARR container management"
-LABEL org.opencontainers.image.vendor="HomelabARR CLI"
+LABEL org.opencontainers.image.title="HomelabARR CE Backend"
+LABEL org.opencontainers.image.description="Node.js backend for HomelabARR CE container management"
+LABEL org.opencontainers.image.vendor="Imogen Labs"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.source="https://github.com/smashingtags/homelabarr-cli"
+LABEL org.opencontainers.image.source="https://github.com/smashingtags/homelabarr-ce"
 
 # Start the server with startup script
 CMD ["bash", "server/start.sh"]
