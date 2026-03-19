@@ -1,4 +1,3 @@
-version: '3'
 services:
   jellyfin:
     image: jellyfin/jellyfin:latest
@@ -21,4 +20,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

@@ -1,4 +1,3 @@
-version: '3'
 services:
   flame:
     image: pawelmalak/flame:latest
@@ -16,4 +15,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

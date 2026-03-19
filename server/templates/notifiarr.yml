@@ -1,4 +1,3 @@
-version: '3'
 services:
   notifiarr:
     image: golift/notifiarr:latest
@@ -16,4 +15,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

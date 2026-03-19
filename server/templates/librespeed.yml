@@ -1,4 +1,3 @@
-version: '3'
 services:
   librespeed:
     image: lscr.io/linuxserver/librespeed:latest
@@ -18,4 +17,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge
