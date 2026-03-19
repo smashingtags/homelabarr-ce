@@ -58,6 +58,8 @@ RUN mkdir -p /var/cache/nginx \
             /var/cache/nginx/scgi_temp \
             /var/run \
             /var/log/nginx && \
+    # Configure nginx to write PID to writable location for non-root
+    sed -i 's|/run/nginx.pid|/tmp/nginx.pid|g' /etc/nginx/nginx.conf && \
     chown -R homelabarr:homelabarr /var/cache/nginx \
                                   /var/run \
                                   /var/log/nginx \
