@@ -32,7 +32,7 @@ declare -A CLEANUP_CATEGORIES=(
 
 # File patterns to clean
 declare -A TEMP_PATTERNS=(
-    ["temp_files"]="/tmp/homelabarr-* /tmp/HomelabarrCli-* *.tmp *.temp"
+    ["temp_files"]="/tmp/homelabarr-* /tmp/homelabarr-ce-* *.tmp *.temp"
     ["backup_files"]="*.backup *.bak *~"
     ["log_files"]="*.log.* *.log.gz *.log.bz2"
     ["docker_artifacts"]="docker-compose.override.yml .dockerignore"
@@ -327,7 +327,7 @@ clean_system_temp() {
     # Only clean files we know are safe and related to our project
     local safe_system_patterns=(
         "/tmp/homelabarr-*"
-        "/tmp/HomelabarrCli-*" 
+        "/tmp/homelabarr-ce-*" 
         "/tmp/*validation-report*"
         "/tmp/*port-fix*"
         "/tmp/*config-backup*"
