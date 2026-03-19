@@ -1,0 +1,16 @@
+services:
+  huginn:
+    image: ghcr.io/huginn/huginn:latest
+    container_name: huginn
+    restart: unless-stopped
+    environment:
+      - HUGINN_SECRET_TOKEN=changeme
+      - DATABASE_ADAPTER=sqlite3
+    ports:
+      - "3000:3000"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

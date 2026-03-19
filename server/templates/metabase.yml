@@ -1,0 +1,17 @@
+services:
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    restart: unless-stopped
+    environment:
+      - MB_DB_TYPE=h2
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/metabase-data
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge
