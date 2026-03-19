@@ -37,13 +37,15 @@ Two deployment modes:
 
 ## Quick Start
 
-### Docker Compose (recommended)
+### Option 1: Pre-built Images (fastest)
+
+Pull the official images from GitHub Container Registry — no build step needed.
 
 ```bash
 # Download the compose file
 curl -o docker-compose.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
 
-# Configure
+# Set required environment
 export JWT_SECRET=$(openssl rand -base64 32)
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
 
@@ -53,14 +55,30 @@ docker compose up -d
 
 The UI is at `http://your-server:8084`. The backend API is at `:8092`.
 
-### From Source
+### Option 2: Build From Source
+
+Clone the repo and build the Docker images yourself. This lets you modify the code, customize templates, or contribute changes.
 
 ```bash
 git clone https://github.com/smashingtags/homelabarr-ce.git
 cd homelabarr-ce
 cp .env.example .env    # Edit with your settings
+
+# Build both images locally
+docker build -t homelabarr-frontend:local -f Dockerfile .
+docker build -t homelabarr-backend:local -f Dockerfile.backend .
+
+# Update homelabarr.yml to use your local images instead of GHCR
+# Change image: ghcr.io/smashingtags/homelabarr-frontend:latest → homelabarr-frontend:local
+# Change image: ghcr.io/smashingtags/homelabarr-backend:latest  → homelabarr-backend:local
+
+# Deploy
+export JWT_SECRET=$(openssl rand -base64 32)
+export DOCKER_GID=$(getent group docker | cut -d: -f3)
 docker compose -f homelabarr.yml up -d
 ```
+
+> **Tip:** Building from source takes 2-3 minutes. The pre-built images are identical to what the CI builds from `main`.
 
 ---
 
