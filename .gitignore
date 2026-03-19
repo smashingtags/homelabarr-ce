@@ -65,3 +65,5 @@ volumes/
 # Temporary files
 tmp/
 temp/
+server/config/users.json
+server/data/
