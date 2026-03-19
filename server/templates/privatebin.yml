@@ -1,0 +1,15 @@
+services:
+  privatebin:
+    image: privatebin/nginx-fpm-alpine:latest
+    container_name: privatebin
+    restart: unless-stopped
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./data:/srv/data
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

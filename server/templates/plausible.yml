@@ -1,0 +1,18 @@
+services:
+  plausible:
+    image: ghcr.io/plausible/community-edition:latest
+    container_name: plausible
+    restart: unless-stopped
+    environment:
+      - BASE_URL=http://localhost:8000
+      - SECRET_KEY_BASE=changeme
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/var/lib/plausible
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

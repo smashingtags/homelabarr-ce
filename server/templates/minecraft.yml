@@ -1,0 +1,19 @@
+services:
+  minecraft:
+    image: itzg/minecraft-server:latest
+    container_name: minecraft
+    restart: unless-stopped
+    environment:
+      - EULA=TRUE
+      - TYPE=VANILLA
+      - MEMORY=2G
+    ports:
+      - "25565:25565"
+    volumes:
+      - ./data:/data
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

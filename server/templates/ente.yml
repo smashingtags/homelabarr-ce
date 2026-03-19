@@ -1,0 +1,15 @@
+services:
+  ente:
+    image: ghcr.io/ente-io/server:latest
+    container_name: ente
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge
