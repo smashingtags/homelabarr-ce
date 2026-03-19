@@ -504,8 +504,8 @@ app.get('/health', async (req, res) => {
       // Enhanced Docker connection status
       docker: {
         status: dockerStatus,
-        socketPath: connectionState.config.socketPath,
-        timeout: connectionState.config.timeout,
+        socketPath: connectionState.config?.socketPath || 'unknown',
+        timeout: connectionState.config?.timeout || 'unknown',
         serviceMessage: serviceStatus.message,
         platformSupport: {
           platform: networkConfig.platform,
@@ -654,7 +654,7 @@ app.get('/health', async (req, res) => {
           type: 'health_check_failure',
           stack: isDevelopment ? error.stack : undefined
         },
-        socketPath: connectionState.config.socketPath,
+        socketPath: connectionState.config?.socketPath || 'unknown',
         serviceMessage: serviceStatus.message
       },
 
