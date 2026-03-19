@@ -1,4 +1,3 @@
-version: '3'
 services:
   wireguard:
     image: lscr.io/linuxserver/wireguard:latest
@@ -29,4 +28,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

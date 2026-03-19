@@ -1,4 +1,3 @@
-version: '3'
 services:
   overseerr:
     image: sctx/overseerr:latest
@@ -17,4 +16,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

@@ -1,4 +1,3 @@
-version: '3'
 services:
   promtail:
     image: grafana/promtail:latest
@@ -16,4 +15,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

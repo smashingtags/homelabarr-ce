@@ -1,7 +1,6 @@
-version: '3'
 services:
   immich:
-    image: ghcr.io/immich-app/immich-server:latest
+    image: ghcr.io/immich-app/immich-server:release
     container_name: immich
     restart: unless-stopped
     networks:
@@ -20,4 +19,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

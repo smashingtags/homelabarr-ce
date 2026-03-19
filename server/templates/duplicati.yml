@@ -1,4 +1,3 @@
-version: '3'
 services:
   duplicati:
     image: lscr.io/linuxserver/duplicati:latest
@@ -19,4 +18,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

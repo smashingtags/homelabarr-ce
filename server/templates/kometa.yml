@@ -1,7 +1,6 @@
-version: '3'
 services:
   kometa:
-    image: ghcr.io/kometajs/kometa:latest
+    image: kometateam/kometa:latest
     container_name: kometa
     restart: unless-stopped
     networks:
@@ -14,4 +13,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

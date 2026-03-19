@@ -1,4 +1,3 @@
-version: '3'
 services:
   autoscan:
     image: cloudb0x/autoscan:latest
@@ -16,4 +15,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

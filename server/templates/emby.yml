@@ -1,4 +1,3 @@
-version: '3'
 services:
   emby:
     image: emby/embyserver:latest
@@ -17,4 +16,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge

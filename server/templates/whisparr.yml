@@ -1,7 +1,6 @@
-version: '3'
 services:
   whisparr:
-    image: cr.hotio.dev/hotio/whisparr:latest
+    image: ghcr.io/hotio/whisparr:latest
     container_name: whisparr
     restart: unless-stopped
     networks:
@@ -19,4 +18,4 @@ services:
 
 networks:
   proxy:
-    external: true
+    driver: bridge
