@@ -58,7 +58,7 @@ rules:
 
 ignore: |
   # Generated or external files
-  HomelabarrCli-wiki/
+  homelabarr-ce-wiki/
   .git/
   .claude/backups/
   

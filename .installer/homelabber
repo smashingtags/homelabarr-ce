@@ -28,7 +28,7 @@ echo "    🚀    HomelabARR CLI [ UPDATE CONTAINER ] STARTED"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
      basefolder="/opt/appdata"
      compose="compose/docker-compose.yml"
-     $(command -v rsync) ${homelabarr}/HomelabarrCli/docker.yml $basefolder/$compose -aqhv
+     $(command -v rsync) ${homelabarr}/homelabarr-ce/docker.yml $basefolder/$compose -aqhv
      if [[ -f $basefolder/$compose ]];then
         $(command -v cd) $basefolder/compose/ && \
           docker-compose config 1>/dev/null 2>&1 && \
