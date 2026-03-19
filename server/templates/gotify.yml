@@ -1,0 +1,17 @@
+services:
+  gotify:
+    image: gotify/server:latest
+    container_name: gotify
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+    ports:
+      - "8180:80"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

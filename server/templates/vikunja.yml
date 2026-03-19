@@ -1,0 +1,19 @@
+services:
+  vikunja:
+    image: vikunja/vikunja:latest
+    container_name: vikunja
+    restart: unless-stopped
+    environment:
+      - VIKUNJA_SERVICE_JWTSECRET=changeme
+      - VIKUNJA_SERVICE_PUBLICURL=http://localhost:3456
+    ports:
+      - "3456:3456"
+    volumes:
+      - ./files:/app/vikunja/files
+      - ./db:/db
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge
