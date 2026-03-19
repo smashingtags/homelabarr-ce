@@ -1,0 +1,19 @@
+services:
+  freshrss:
+    image: freshrss/freshrss:latest
+    container_name: freshrss
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+      - CRON_MIN=1,31
+    ports:
+      - "8180:80"
+    volumes:
+      - ./data:/var/www/FreshRSS/data
+      - ./extensions:/var/www/FreshRSS/extensions
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

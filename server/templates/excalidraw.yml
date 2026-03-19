@@ -1,0 +1,13 @@
+services:
+  excalidraw:
+    image: excalidraw/excalidraw:latest
+    container_name: excalidraw
+    restart: unless-stopped
+    ports:
+      - "3050:80"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

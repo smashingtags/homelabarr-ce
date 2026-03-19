@@ -1,0 +1,19 @@
+services:
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: ntfy
+    restart: unless-stopped
+    command: serve
+    environment:
+      - TZ=UTC
+    ports:
+      - "2586:80"
+    volumes:
+      - ./cache:/var/cache/ntfy
+      - ./config:/etc/ntfy
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

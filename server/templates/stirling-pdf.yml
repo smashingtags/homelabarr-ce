@@ -1,0 +1,17 @@
+services:
+  stirling-pdf:
+    image: frooodle/s-pdf:latest
+    container_name: stirling-pdf
+    restart: unless-stopped
+    environment:
+      - DOCKER_ENABLE_SECURITY=false
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./data:/usr/share/tessdata
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

@@ -1,0 +1,17 @@
+services:
+  home-assistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: home-assistant
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./config:/config
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge
