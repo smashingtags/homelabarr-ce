@@ -1,0 +1,18 @@
+services:
+  ghost:
+    image: ghost:latest
+    container_name: ghost
+    restart: unless-stopped
+    environment:
+      - url=http://localhost:2368
+      - database__client=sqlite3
+    ports:
+      - "2368:2368"
+    volumes:
+      - ./content:/var/lib/ghost/content
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge

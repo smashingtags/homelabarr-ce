@@ -1,0 +1,24 @@
+services:
+  tandoor:
+    image: vabene1111/recipes:latest
+    container_name: tandoor
+    restart: unless-stopped
+    environment:
+      - SECRET_KEY=changeme
+      - DB_ENGINE=django.db.backends.sqlite3
+      - POSTGRES_HOST=
+      - POSTGRES_PORT=
+      - POSTGRES_USER=
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DB=
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./staticfiles:/opt/recipes/staticfiles
+      - ./mediafiles:/opt/recipes/mediafiles
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    driver: bridge
