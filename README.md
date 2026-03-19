@@ -21,13 +21,13 @@
     </a>
 </p>
 
-**GUI-driven Docker container management for homelabbers.** Deploy and manage 90+ self-hosted apps from a single dashboard — no more copy-pasting Docker Compose files.
+**GUI-driven Docker container management for homelabbers.** Deploy and manage 125+ self-hosted apps from a single dashboard — no more copy-pasting Docker Compose files.
 
 ---
 
 ## What is HomelabARR?
 
-HomelabARR CE is a free, open-source web UI for deploying and managing Docker containers on your homelab. Pick an app from the catalog, click deploy, and it's running. Supports Plex, Sonarr, Radarr, Jellyfin, and 80+ more.
+HomelabARR CE is a free, open-source web UI for deploying and managing Docker containers on your homelab. Pick an app from the catalog, click deploy, and it's running. Supports Plex, Sonarr, Radarr, Jellyfin, Home Assistant, Immich, and 100+ more.
 
 Two deployment modes:
 - **Docker Compose** (recommended) — pull pre-built images and run
@@ -92,7 +92,7 @@ docker compose -f homelabarr.yml up -d
 
 ## Features
 
-- **90+ app templates** — Plex, Sonarr, Radarr, Jellyfin, qBittorrent, Overseerr, Grafana, and more
+- **125+ app templates** — Plex, Sonarr, Radarr, Jellyfin, qBittorrent, Overseerr, Grafana, and more
 - **One-click deployment** — select an app, hit deploy
 - **Container management** — start, stop, restart, remove from the UI
 - **Health monitoring** — see container status at a glance
@@ -153,8 +153,12 @@ Templates live in `server/templates/`. Each is a YAML file defining a Docker Com
 - **Download Clients**: qBittorrent, SABnzbd, NZBGet, Deluge, Transmission
 - **Requests**: Overseerr, Petio, Ombi
 - **Monitoring**: Grafana, Prometheus, Tautulli, cAdvisor, Portainer, Dozzle
-- **Utilities**: Nginx Proxy Manager, Authelia, Watchtower, Filebrowser, Code Server
-- **Self-hosted**: Nextcloud, Vaultwarden, Gitea, Bookstack, Heimdall, Homepage
+- **Utilities**: Nginx Proxy Manager, Authelia, Watchtower, Filebrowser, Code Server, Stirling PDF
+- **Smart Home**: Home Assistant, Zigbee2MQTT, Mosquitto
+- **Analytics**: Umami, Plausible, Metabase, Matomo
+- **Automation**: n8n, Huginn, Recyclarr
+- **VPN/Networking**: Tailscale, Headscale, WireGuard, Caddy, SearXNG
+- **Self-hosted**: Nextcloud, Vaultwarden, Gitea, Bookstack, Immich, Ente, Ghost, PrivateBin
 
 ### Adding Custom Templates
 
