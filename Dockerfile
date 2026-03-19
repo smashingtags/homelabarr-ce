@@ -81,11 +81,11 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # Production labels for GHCR
-LABEL org.opencontainers.image.title="HomelabARR Frontend"
-LABEL org.opencontainers.image.description="React frontend for HomelabARR CLI container management"
-LABEL org.opencontainers.image.vendor="HomelabARR CLI"
+LABEL org.opencontainers.image.title="HomelabARR CE Frontend"
+LABEL org.opencontainers.image.description="React frontend for HomelabARR CE container management"
+LABEL org.opencontainers.image.vendor="Imogen Labs"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.source="https://github.com/smashingtags/homelabarr-cli"
+LABEL org.opencontainers.image.source="https://github.com/smashingtags/homelabarr-ce"
 
 # Start nginx with non-daemon mode
 CMD ["nginx", "-g", "daemon off;"]
