@@ -61,7 +61,8 @@ RUN mkdir -p /var/cache/nginx \
     chown -R homelabarr:homelabarr /var/cache/nginx \
                                   /var/run \
                                   /var/log/nginx \
-                                  /usr/share/nginx/html && \
+                                  /usr/share/nginx/html \
+                                  /etc/nginx/conf.d && \
     chmod -R 755 /var/cache/nginx \
                  /var/run \
                  /var/log/nginx \
