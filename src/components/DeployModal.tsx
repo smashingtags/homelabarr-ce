@@ -26,6 +26,7 @@ export function DeployModal({
   const [errors, setErrors] = useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [validating, setValidating] = useState(false);
+  const [autheliaEnabled, setAutheliaEnabled] = useState(false);
   const [deploymentMode, setDeploymentMode] = useState<DeploymentMode>(
     deploymentModes.length > 0 
       ? deploymentModes[0] 
@@ -164,13 +165,18 @@ export function DeployModal({
                       Traefik (Reverse Proxy)
                     </span>
                   </label>
-                  {deploymentMode.type === 'traefik' && (
+                  {(deploymentMode.type === 'traefik' || deploymentMode.type === 'authelia') && (
                     <label className="flex items-center space-x-3 ml-6 mt-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={config['authelia_enabled'] === 'true'}
+                        checked={autheliaEnabled}
                         onChange={(e) => {
-                          setConfig(prev => ({ ...prev, authelia_enabled: e.target.checked ? 'true' : 'false' }));
+                          setAutheliaEnabled(e.target.checked);
+                          if (e.target.checked) {
+                            setDeploymentMode({ type: 'authelia', name: 'Traefik + Authelia', description: 'Reverse proxy with 2FA authentication', features: ['Traefik', 'Authelia 2FA'], icon: Home });
+                          } else {
+                            setDeploymentMode({ type: 'traefik', name: 'Traefik', description: 'Reverse proxy', features: [], icon: Home });
+                          }
                         }}
                         className="h-4 w-4 text-blue-600 rounded"
                       />
