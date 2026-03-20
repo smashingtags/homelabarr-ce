@@ -42,6 +42,7 @@ const categories = [
 
 export default function App() {
   const [selectedApp, setSelectedApp] = useState<AppTemplate | null>(null);
+  const [enrichedApp, setEnrichedApp] = useState<any>(null);
   const [deployedApps, setDeployedApps] = useState<DeployedApp[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<AppCategory | 'all-apps' | 'leaderboard' | 'deployed' | 'cli'>('cli');
@@ -76,6 +77,34 @@ export default function App() {
     
     return getAppsByCategory(activeCategory);
   }, [activeCategory, searchQuery]);
+
+  // Enrich selectedApp with CLI data (env vars, ports) for the deploy modal
+  useEffect(() => {
+    if (!selectedApp) {
+      setEnrichedApp(null);
+      return;
+    }
+    // Fetch all CLI apps and find matching one by name
+    fetch('/api/applications')
+      .then(r => r.json())
+      .then(data => {
+        const apps = data.applications || {};
+        for (const category of Object.values(apps) as any[]) {
+          if (!Array.isArray(category)) continue;
+          const match = category.find((a: any) =>
+            a.name === selectedApp.id ||
+            a.name === selectedApp.name.toLowerCase() ||
+            a.displayName === selectedApp.name
+          );
+          if (match) {
+            setEnrichedApp(match);
+            return;
+          }
+        }
+        setEnrichedApp(null);
+      })
+      .catch(() => setEnrichedApp(null));
+  }, [selectedApp]);
 
   useEffect(() => {
     // Only fetch containers if user is authenticated
@@ -583,7 +612,7 @@ export default function App() {
                   placeholder: 'localhost',
                   defaultValue: 'localhost'
                 },
-                ...((selectedApp as any).environment ? Object.entries((selectedApp as any).environment).map(([key, value]) => ({
+                ...(enrichedApp?.environment ? Object.entries(enrichedApp.environment).map(([key, value]) => ({
                   name: key.toLowerCase(),
                   label: key.replace(/_/g, ' '),
                   type: 'text' as const,
@@ -591,7 +620,7 @@ export default function App() {
                   defaultValue: String(value),
                   advanced: true
                 })) : []),
-                ...((selectedApp as any).ports ? Object.entries((selectedApp as any).ports).map(([key, value]) => ({
+                ...(enrichedApp?.ports ? Object.entries(enrichedApp.ports).map(([key, value]) => ({
                   name: `port_${key}`,
                   label: `Port: ${key}`,
                   type: 'text' as const,

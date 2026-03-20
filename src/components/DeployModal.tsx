@@ -170,12 +170,12 @@ export function DeployModal({
                         type="checkbox"
                         checked={false}
                         onChange={() => {
-                          // TODO: Handle authentik integration
+                          // TODO: Handle authelia integration
                         }}
                         className="h-4 w-4 text-blue-600 rounded"
                       />
                       <span className="text-sm text-gray-700 dark:text-gray-300">
-                        Enable Authentik Authentication
+                        Enable Authelia Authentication
                       </span>
                     </label>
                   )}
