@@ -15,16 +15,15 @@ export interface AppTemplate {
   sourceDirectory?: 'traefik' | 'authelia' | 'local';
 }
 
-export type AppCategory = 
+export type AppCategory =
   | 'media'
   | 'downloads'
   | 'monitoring'
   | 'development'
-  | 'home-automation'
-  | 'backup-storage'
-  | 'web-productivity'
-  | 'system-utilities'
-  | 'gaming-entertainment'
+  | 'backup'
+  | 'system'
+  | 'selfhosted'
+  | 'myapps'
   | 'all-apps';
 
 export type DeploymentModeType = 'traefik' | 'authelia' | 'local';
