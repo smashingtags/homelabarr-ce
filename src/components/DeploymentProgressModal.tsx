@@ -125,10 +125,12 @@ export function DeploymentProgressModal({
     setClientId(cId);
     
     try {
+      const token = localStorage.getItem('homelabarr_token');
       const response = await fetch(`/api/stream/deployments/${deploymentId}/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ clientId: cId }),
       });
