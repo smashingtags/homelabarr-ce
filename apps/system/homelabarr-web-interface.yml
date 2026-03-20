@@ -1,0 +1,206 @@
+# HomelabARR Web Interface - Modern React-based management interface
+# Provides CLI-based Docker management with real container deployment capabilities
+# Cross-platform compatible with Windows Docker Desktop support
+
+services:
+  homelabarr-frontend:
+    image: ghcr.io/smashingtags/homelabarr-frontend:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_frontend
+    hostname: homelabarr-frontend
+    restart: unless-stopped
+    
+    # Environment configuration
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    
+    # Network configuration
+    networks:
+      - proxy
+      - homelabarr
+    
+    # Traefik labels for web interface
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      
+      # HTTP router
+      - "traefik.http.routers.homelabarr-web.rule=Host(`homelabarr.${DOMAIN}`) || Host(`app.${DOMAIN}`)"
+      - "traefik.http.routers.homelabarr-web.entrypoints=websecure"
+      - "traefik.http.routers.homelabarr-web.tls=true"
+      - "traefik.http.routers.homelabarr-web.tls.certresolver=cloudflare"
+      
+      # Service configuration
+      - "traefik.http.services.homelabarr-web.loadbalancer.server.port=80"
+      
+      # Homepage integration
+      - "homepage.group=Management"
+      - "homepage.name=HomelabARR Web"
+      - "homepage.icon=docker"
+      - "homepage.href=https://homelabarr.${DOMAIN}"
+      - "homepage.description=Modern container management interface"
+      - "homepage.weight=1"
+      
+      # Container management
+      - "dockupdater.enable=true"
+    
+    # Health monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    
+    # Resource management
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.1'
+    
+    # Service dependencies
+    depends_on:
+      - homelabarr-backend
+
+  homelabarr-backend:
+    image: ghcr.io/smashingtags/homelabarr-backend:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_backend
+    hostname: homelabarr-backend
+    restart: unless-stopped
+    
+    # Docker socket access
+    privileged: true
+    group_add:
+      - "${DOCKER_GID:-999}"
+    
+    # Environment configuration
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3001
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      
+      # Docker configuration
+      - DOCKER_SOCKET=/var/run/docker.sock
+      - DOCKER_GID=${DOCKER_GID:-999}
+      
+      # CLI Bridge configuration
+      - CLI_BRIDGE_PATH=/homelabarr
+      - CLI_INTEGRATION_ENABLED=true
+      - HOMELABARR_CLI_PATH=${APPDATA}
+      
+      # Authentication configuration
+      - AUTH_ENABLED=${AUTH_ENABLED:-false}
+      - JWT_SECRET=${JWT_SECRET:-homelabarr-secret-change-in-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD:-admin}
+      
+      # Network configuration
+      - BIND_ADDRESS=0.0.0.0
+      - FRONTEND_URL=http://homelabarr-frontend:80
+      - BACKEND_URL=http://homelabarr-backend:3001
+      
+      # Integration endpoints
+      - TRAEFIK_URL=http://traefik:8080
+      - AUTHELIA_URL=http://authelia:9091
+      - MOUNT_URL=http://mount-enhanced:8080
+      - UPLOADER_URL=http://homelabarr-uploader:9999
+    
+    # Volume configuration
+    volumes:
+      # Docker socket for container management
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      
+      # CLI Bridge access
+      - ${APPDATA}:/homelabarr:rw
+      
+      # Backend data persistence
+      - homelabarr_backend_data:/app/data
+      - homelabarr_backend_config:/app/config
+      
+      # Templates and configurations
+      - ${APPDATA}/homelabarr:/app/homelabarr:rw
+      
+      # System time
+      - /etc/localtime:/etc/localtime:ro
+    
+    # Network configuration
+    networks:
+      - proxy
+      - homelabarr
+    
+    # Traefik labels for API access
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      
+      # API router
+      - "traefik.http.routers.homelabarr-api.rule=Host(`api.${DOMAIN}`) || (Host(`homelabarr.${DOMAIN}`) && PathPrefix(`/api`))"
+      - "traefik.http.routers.homelabarr-api.entrypoints=websecure"
+      - "traefik.http.routers.homelabarr-api.tls=true"
+      - "traefik.http.routers.homelabarr-api.tls.certresolver=cloudflare"
+      
+      # Service configuration
+      - "traefik.http.services.homelabarr-api.loadbalancer.server.port=3001"
+      
+      # Homepage integration
+      - "homepage.group=Management"
+      - "homepage.name=HomelabARR API"
+      - "homepage.icon=api"
+      - "homepage.href=https://api.${DOMAIN}/health"
+      - "homepage.description=Container management API"
+      - "homepage.weight=2"
+      
+      # Container management
+      - "dockupdater.enable=true"
+    
+    # Health monitoring
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    
+    # Resource management
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+# Network configuration
+networks:
+  proxy:
+    name: proxy
+    external: true
+  
+  homelabarr:
+    name: homelabarr
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: homelabarr-bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+
+# Named volumes with local-persist
+volumes:
+  homelabarr_backend_data:
+    driver: local-persist
+    driver_opts:
+      mountpoint: ${APPDATA}/homelabarr/backend/data
+  
+  homelabarr_backend_config:
+    driver: local-persist
+    driver_opts:
+      mountpoint: ${APPDATA}/homelabarr/backend/config
