@@ -520,6 +520,7 @@ export class CLIBridge {
   async prepareEnvironmentConfig(config, deploymentMode) {
     // Set default environment variables based on CLI standards
     const defaultEnv = {
+      // Core system defaults
       ID: '1000',
       TZ: 'UTC',
       UMASK: '002',
@@ -528,7 +529,68 @@ export class CLIBridge {
       DOMAIN: config.domain || 'localhost',
       APPFOLDER: '/opt/appdata',
       SECURITYOPS: 'no-new-privileges',
-      SECURITYOPSSET: 'true'
+      SECURITYOPSSET: 'true',
+      PORTBLOCK: '',
+
+      // Docker images — LinuxServer.io defaults
+      PLEXIMAGE: 'lscr.io/linuxserver/plex:latest',
+      RADARRIMAGE: 'lscr.io/linuxserver/radarr:latest',
+      RADARR4KIMAGE: 'lscr.io/linuxserver/radarr:latest',
+      RADARRHDRIMAGE: 'lscr.io/linuxserver/radarr:latest',
+      SONARRIMAGE: 'lscr.io/linuxserver/sonarr:latest',
+      SONARR4KIMAGE: 'lscr.io/linuxserver/sonarr:latest',
+      SONARRHDRIMAGE: 'lscr.io/linuxserver/sonarr:latest',
+      BAZARRIMAGE: 'lscr.io/linuxserver/bazarr:latest',
+      BAZARR4KIMAGE: 'lscr.io/linuxserver/bazarr:latest',
+      OVERSEERRIMAGE: 'lscr.io/linuxserver/overseerr:latest',
+      QBITORRENTIMAGE: 'lscr.io/linuxserver/qbittorrent:latest',
+      CALIBREIMAGE: 'lscr.io/linuxserver/calibre:latest',
+      LIDARRIMAGE: 'lscr.io/linuxserver/lidarr:latest',
+      JELLYFINIMAGE: 'lscr.io/linuxserver/jellyfin:latest',
+      PROWLARRIMAGE: 'lscr.io/linuxserver/prowlarr:latest',
+      PROWLARR4KIMAGE: 'lscr.io/linuxserver/prowlarr:latest',
+      PROWLARRHDRIMAGE: 'lscr.io/linuxserver/prowlarr:latest',
+      KOMGAIMAGE: 'lscr.io/linuxserver/komga:latest',
+      SABNZBDIMAGE: 'lscr.io/linuxserver/sabnzbd:latest',
+      DELUGEIMAGE: 'lscr.io/linuxserver/deluge:latest',
+      PIHOLEIMAGE: 'pihole/pihole:latest',
+      LAZYLIBRARIANIMAGE: 'lscr.io/linuxserver/lazylibrarian:latest',
+      NZBGETIMAGE: 'lscr.io/linuxserver/nzbget:latest',
+      TAUTULLIIMAGE: 'lscr.io/linuxserver/tautulli:latest',
+      JACKETTIMAGE: 'lscr.io/linuxserver/jackett:latest',
+      FENRUSIMAGE: 'lscr.io/linuxserver/fenrus:latest',
+      EMBYIMAGE: 'lscr.io/linuxserver/emby:latest',
+      READARRIMAGE: 'lscr.io/linuxserver/readarr:latest',
+      PORTAINERIMAGE: 'portainer/portainer-ce:latest',
+      WEBTOP_IMAGE: 'lscr.io/linuxserver/webtop:latest',
+
+      // Theme defaults
+      PLEXTHEME: 'dark',
+      RADARRTHEME: 'dark',
+      SONARRTHEME: 'dark',
+      BAZARRTHEME: 'dark',
+      OVERSEERRTHEME: 'dark',
+      QBITORRENTTHEME: 'dark',
+      JELLYFINTHEME: 'dark',
+      PROWLARRTHEME: 'dark',
+      PROWLARRHDRTHEME: 'dark',
+      DELUGETHEME: 'dark',
+      SABNZBDTHEME: 'dark',
+      EMBYTHEME: 'dark',
+      NZBGETTHEME: 'dark',
+      CALIBRETHEME: 'dark',
+      RADARRHDRTHEME: 'dark',
+      SONARRHDRTHEME: 'dark',
+      LAZYLIBRARIANTHEME: 'dark',
+      TAUTULLITHEME: 'dark',
+      LIDARRTHEME: 'dark',
+      READARRTHEME: 'dark',
+      JACKETTTHEME: 'dark',
+
+      // Misc defaults
+      PLEXVERSION: 'docker',
+      PLEXADDON: '',
+      ARIA_RPC_SECRET: 'homelabarr',
     };
 
     // Merge with user configuration
