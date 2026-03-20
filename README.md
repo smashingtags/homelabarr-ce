@@ -21,7 +21,7 @@
     </a>
 </p>
 
-**GUI-driven Docker container management for homelabbers.** Deploy and manage 125+ self-hosted apps from a single dashboard — no more copy-pasting Docker Compose files.
+**GUI-driven Docker container management for homelabbers.** Deploy and manage 157 self-hosted apps from a single dashboard — no more copy-pasting Docker Compose files.
 
 ---
 
@@ -92,7 +92,7 @@ docker compose -f homelabarr.yml up -d
 
 ## Features
 
-- **125+ app templates** — Plex, Sonarr, Radarr, Jellyfin, qBittorrent, Overseerr, Grafana, and more
+- **157 app templates across 12 categories** — Plex, Sonarr, Radarr, Jellyfin, qBittorrent, Overseerr, Grafana, and more
 - **One-click deployment** — select an app, hit deploy
 - **Container management** — start, stop, restart, remove from the UI
 - **Health monitoring** — see container status at a glance
@@ -222,7 +222,7 @@ chmod +x homelabarr-cli.sh
 ```
 
 This launches an interactive menu with:
-- Browse and deploy from 125+ app templates organized by category
+- Browse and deploy from 157 app templates across 12 categories organized by category
 - Deploy apps in Docker Compose or local mode
 - Configure environment variables, ports, and volumes per app
 - Start/stop/restart/remove containers
