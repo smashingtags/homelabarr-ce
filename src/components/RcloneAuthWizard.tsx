@@ -208,7 +208,7 @@ const OAuthSetup: React.FC<{ provider: Provider; containerId: string; onComplete
     setError('');
     
     try {
-      const response = await fetch(`/enhanced-mount/${containerId}/auth/start`, {
+      const response = await fetch(`/api/enhanced-mount/${containerId}/auth/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider: provider.id })
@@ -238,7 +238,7 @@ const OAuthSetup: React.FC<{ provider: Provider; containerId: string; onComplete
     setError('');
     
     try {
-      const response = await fetch(`/enhanced-mount/${containerId}/auth/complete`, {
+      const response = await fetch(`/api/enhanced-mount/${containerId}/auth/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -632,7 +632,7 @@ const ApiKeySetup: React.FC<{ provider: Provider; containerId: string; onComplet
     setError('');
     
     try {
-      const response = await fetch(`/enhanced-mount/${containerId}/auth/api-key`, {
+      const response = await fetch(`/api/enhanced-mount/${containerId}/auth/api-key`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
