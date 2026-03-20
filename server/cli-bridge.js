@@ -190,6 +190,7 @@ export class CLIBridge {
         case 'traefik':
           deploymentResult = await this.deployWithTraefik(appPath, config);
           break;
+        case 'local':
         case 'standard':
           deploymentResult = await this.deployStandard(appPath, config);
           break;
@@ -197,7 +198,9 @@ export class CLIBridge {
           deploymentResult = await this.deployWithAuthelia(appPath, config);
           break;
         default:
-          throw new Error(`Unknown deployment mode: ${deploymentMode.type}`);
+          // Fallback to local/standard for unknown modes
+          deploymentResult = await this.deployStandard(appPath, config);
+          break;
       }
 
       DeploymentLogger.logNetworkActivity('Application deployed successfully', {
