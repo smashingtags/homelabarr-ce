@@ -350,6 +350,7 @@ export class StreamingCLIBridge {
         case 'traefik':
           deploymentResult = await this.cliBridge.deployWithTraefik(appPath, config);
           break;
+        case 'local':
         case 'standard':
           deploymentResult = await this.cliBridge.deployStandard(appPath, config);
           break;
@@ -357,7 +358,8 @@ export class StreamingCLIBridge {
           deploymentResult = await this.cliBridge.deployWithAuthelia(appPath, config);
           break;
         default:
-          throw new Error(`Unknown deployment mode: ${deploymentMode.type}`);
+          deploymentResult = await this.cliBridge.deployStandard(appPath, config);
+          break;
       }
 
       this.progressStream.streamDeploymentStep(
