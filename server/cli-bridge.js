@@ -246,7 +246,7 @@ export class CLIBridge {
     // Remove top-level external network declarations
     if (doc.networks) {
       for (const [netName, netConfig] of Object.entries(doc.networks)) {
-        if (netConfig && typeof netConfig === 'object' && (netConfig as any).external) {
+        if (netConfig && typeof netConfig === 'object' && netConfig.external) {
           delete doc.networks[netName];
         }
       }
@@ -255,14 +255,14 @@ export class CLIBridge {
 
     // For each service, replace network refs with bridge and strip traefik labels
     if (doc.services) {
-      for (const svc of Object.values(doc.services) as any[]) {
+      for (const svc of Object.values(doc.services)) {
         if (svc.networks) {
           svc.networks = ['bridge'];
         } else {
           delete svc.networks;
         }
         if (svc.labels) {
-          svc.labels = svc.labels.filter((l: string) =>
+          svc.labels = svc.labels.filter((l) =>
             typeof l === 'string' && !l.includes('traefik') && !l.includes('dockupdater')
           );
           if (svc.labels.length === 0) delete svc.labels;
