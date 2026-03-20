@@ -165,12 +165,12 @@ export function DeployModal({
                     </span>
                   </label>
                   {deploymentMode.type === 'traefik' && (
-                    <label className="flex items-center space-x-3 ml-6 mt-2">
+                    <label className="flex items-center space-x-3 ml-6 mt-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={false}
-                        onChange={() => {
-                          // TODO: Handle authelia integration
+                        checked={config['authelia_enabled'] === 'true'}
+                        onChange={(e) => {
+                          setConfig(prev => ({ ...prev, authelia_enabled: e.target.checked ? 'true' : 'false' }));
                         }}
                         className="h-4 w-4 text-blue-600 rounded"
                       />
