@@ -1,0 +1,104 @@
+# Local Persist Volume Plugin - Docker volume plugin for persistent storage
+# Enables named volumes to persist in specific host locations
+# Essential for HomelabARR ecosystem volume management
+
+services:
+  local-persist:
+    image: ghcr.io/smashingtags/local-persist:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_local_persist
+    hostname: local-persist
+    restart: unless-stopped
+    
+    # Required privileges for volume plugin
+    privileged: true
+    user: root
+    
+    # Capabilities for filesystem operations
+    cap_add:
+      - SYS_ADMIN
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+    
+    # Environment configuration
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=${TZ}
+      
+      # Plugin configuration
+      - PLUGIN_NAME=local-persist
+      - SOCKET_PATH=/run/docker/plugins/local-persist.sock
+      - LOG_LEVEL=${LOCAL_PERSIST_LOG_LEVEL:-info}
+    
+    # Volume configuration for plugin operation
+    volumes:
+      # Docker socket for plugin registration
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      
+      # Plugin socket directory
+      - /run/docker/plugins:/run/docker/plugins:rw
+      
+      # Plugin data directory
+      - /var/lib/docker/plugin-data:/var/lib/docker/plugin-data:rw
+      
+      # Host filesystem access for volume management
+      - ${APPDATA}:/opt/appdata:shared
+      - ${DOWNLOADFOLDER}:/downloads:shared
+      - ${UNIONFS}:/mnt:shared
+      
+      # Additional mount points for ecosystem
+      - /tmp:/tmp:shared
+      - /var/log:/var/log:shared
+    
+    # Network configuration
+    networks:
+      - proxy
+    
+    # Labels for identification and management
+    labels:
+      - "traefik.enable=false"
+      
+      # Homepage integration
+      - "homepage.group=System"
+      - "homepage.name=Local Persist Plugin"
+      - "homepage.icon=database"
+      - "homepage.description=Docker volume persistence plugin"
+      - "homepage.weight=10"
+      
+      # Container management
+      - "dockupdater.enable=true"
+      
+      # Monitoring
+      - "prometheus.scrape=false"
+    
+    # Health monitoring
+    healthcheck:
+      test: ["CMD", "test", "-S", "/run/docker/plugins/local-persist.sock"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    
+    # Resource management
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Network configuration
+networks:
+  proxy:
+    name: proxy
+    external: true

@@ -1,0 +1,29 @@
+---
+services:
+  endlessh:
+    hostname: "endlessh"
+    container_name: "endlessh"
+    environment:
+      - "PUID=${ID}"
+      - "PGID=${ID}"
+      - "TZ=${TZ}"
+      - "MSDELAY=10000"
+      - "MAXLINES=32"
+      - "MAXCLIENTS=4096"
+      - "LOGFILE=true"
+    image: "lscr.io/linuxserver/endlessh:latest"
+    restart: "${RESTARTAPP}"
+    volumes:
+      - "${APPFOLDER}/endlessh:/config"
+    ports:
+      - "22:2222"
+    labels:
+      - "dockupdater.enable=true"
+      # HomelabARR CLI - Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.http.routers.endlessh.entrypoints=websecure"
+      - "traefik.http.routers.endlessh.rule=Host(`endlessh.${DOMAIN}`)"
+      - "traefik.http.routers.endlessh.tls=true"
+      - "traefik.http.routers.endlessh.tls.certresolver=cfdns"
+      - "traefik.http.routers.endlessh.middlewares=authelia@docker"
+      - "traefik.http.services.endlessh.loadbalancer.server.port=${ENDLESSH_PORT}"
