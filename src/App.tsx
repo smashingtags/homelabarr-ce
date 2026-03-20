@@ -193,14 +193,27 @@ export default function App() {
     try {
       const response = await getContainers(includeStats);
       const containers = response.containers;
-      const apps = containers.map((container: any) => ({
-        id: container.Id,
-        name: container.Names[0].replace('/', ''),
-        status: container.State,
-        deployedAt: new Date(container.Created * 1000).toISOString(),
-        url: `http://localhost:${container.Ports[0]?.PublicPort || ''}`,
-        stats: container.stats
-      }));
+      const apps = containers.map((container: any) => {
+        let deployedAt;
+        try {
+          const created = container.Created;
+          deployedAt = typeof created === 'number'
+            ? new Date(created * 1000).toISOString()
+            : new Date(created).toISOString();
+        } catch {
+          deployedAt = new Date().toISOString();
+        }
+        const portStr = typeof container.Ports === 'string' ? container.Ports : '';
+        const portMatch = portStr.match(/:(\d+)->/);
+        return {
+          id: container.Id,
+          name: (container.Names?.[0] || container.Names || '').replace('/', ''),
+          status: container.State,
+          deployedAt,
+          url: portMatch ? `http://localhost:${portMatch[1]}` : '',
+          stats: container.stats
+        };
+      });
       setDeployedApps(apps);
     } catch (err) {
       console.warn('Container fetch failed:', err);
