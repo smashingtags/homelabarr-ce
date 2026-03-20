@@ -189,6 +189,41 @@ export const APP_ICON_MAP: Record<string, LucideIcon> = {
   'whoogle': SearchIcon,
   'wireguard': Shield,
   'wordpress': Globe,
+  // coding
+  'cloud9': Code2,
+  'coder': Code2,
+  // encoder
+  'handbrake': Film,
+  'makemkv': Film,
+  'striparr': Film,
+  'tdarr': Film,
+  'unmanic': Film,
+  // kasmworkspace
+  'chrome': Monitor,
+  'discord': MessageSquare,
+  'firefox': Monitor,
+  'kasmdesktop': Monitor,
+  'onlyoffice': FileText,
+  'signal': MessageSquare,
+  'steam': Gamepad2,
+  'telegram': MessageSquare,
+  'tor': Shield,
+  'vlc': Video,
+  // monitoring
+  'grafana-loki-prometheus': BarChart2,
+  // share
+  'filerun': Files,
+  'projectsend': Files,
+  // system
+  'dockupdater': RefreshCw,
+  'endlessh': Shield,
+  'homelabarr-uploader': Zap,
+  'homelabarr-web-interface': LayoutDashboard,
+  'local-persist-plugin': Database,
+  'mount': HardDrive,
+  'rclone-gui': Cloud,
+  'socket-proxy': Network,
+  'wiki': Book,
 };
 
 // Maps CLI categories to display categories
@@ -209,7 +244,7 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     description: 'Media servers, management tools, and entertainment applications',
     icon: Film,
     color: 'from-purple-500 to-pink-500',
-    cliCategories: ['mediaserver', 'mediamanager', 'request'],
+    cliCategories: ['mediaserver', 'mediamanager', 'request', 'encoder'],
   },
   {
     id: 'downloads',
@@ -233,7 +268,7 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     description: 'Code editors, development tools, and AI utilities',
     icon: Code2,
     color: 'from-indigo-500 to-purple-500',
-    cliCategories: ['coding', 'ai-tools'],
+    cliCategories: ['coding', 'ai-tools', 'kasmworkspace'],
   },
   {
     id: 'backup',
@@ -257,7 +292,7 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     description: 'Self-hosted services, dashboards, and productivity tools',
     icon: Globe,
     color: 'from-teal-500 to-cyan-500',
-    cliCategories: ['selfhosted'],
+    cliCategories: ['selfhosted', 'share'],
   },
   {
     id: 'myapps',
