@@ -1,0 +1,142 @@
+# Prometheus configuration for HomelabARR CLI
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'homelabarr-cli'
+    environment: 'production'
+
+# Rule files for alerting
+rule_files:
+  - "alert_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  # Node Exporter - System metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  # cAdvisor - Container metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  # Traefik metrics
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['traefik:8080']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  # Docker containers auto-discovery
+  - job_name: 'docker-containers'
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      # Only scrape containers with prometheus.enable=true label
+      - source_labels: [__meta_docker_container_label_prometheus_enable]
+        action: keep
+        regex: true
+      # Use container name as instance
+      - source_labels: [__meta_docker_container_name]
+        target_label: instance
+      # Use container image as job
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: job
+      # Add container labels
+      - source_labels: [__meta_docker_container_label_monitoring_service]
+        target_label: service
+      - source_labels: [__meta_docker_container_label_monitoring_type]
+        target_label: type
+
+  # Plex Media Server metrics (if available)
+  - job_name: 'plex'
+    static_configs:
+      - targets: ['plex:32400']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+    scrape_timeout: 10s
+
+  # qBittorrent metrics (custom exporter)
+  - job_name: 'qbittorrent'
+    static_configs:
+      - targets: ['qbittorrent-exporter:8000']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+
+  # Sonarr metrics
+  - job_name: 'sonarr'
+    static_configs:
+      - targets: ['sonarr:8989']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+    params:
+      module: [sonarr]
+
+  # Radarr metrics
+  - job_name: 'radarr'
+    static_configs:
+      - targets: ['radarr:7878']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+    params:
+      module: [radarr]
+
+  # Grafana metrics
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+
+  # Loki metrics
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+
+  # Promtail metrics
+  - job_name: 'promtail'
+    static_configs:
+      - targets: ['promtail:9080']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+
+  # Portainer metrics
+  - job_name: 'portainer'
+    static_configs:
+      - targets: ['portainer:9000']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+
+  # Custom application exporters
+  - job_name: 'homelabarr-exporters'
+    file_sd_configs:
+      - files:
+        - 'exporters.json'
+    refresh_interval: 30s
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Remote write (optional - for long-term storage)
+# remote_write:
+#   - url: "http://your-remote-prometheus:9090/api/v1/write"
