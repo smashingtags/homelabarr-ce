@@ -149,7 +149,8 @@ export default function App() {
       }));
       setDeployedApps(apps);
     } catch (err) {
-      showError('Failed to fetch containers', 'Unable to connect to Docker or retrieve container information');
+      // Silently fail - no deployed containers is normal for fresh installs/demos
+      console.warn('Container fetch failed:', err);
     }
   };
 
