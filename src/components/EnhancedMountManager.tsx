@@ -58,7 +58,7 @@ export const EnhancedMountManager: React.FC<Props> = ({ containerId, containerNa
   const fetchEnhancedMountStats = async () => {
     try {
       // Call the backend API which proxies to the container
-      const response = await fetch(`/enhanced-mount/${containerId}/status`);
+      const response = await fetch(`/api/enhanced-mount/${containerId}/status`);
       if (response.ok) {
         const result = await response.json();
         if (result.success) {

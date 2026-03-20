@@ -65,7 +65,7 @@ export const EnhancedMountOnboarding: React.FC<Props> = ({ isOpen, onClose, onPr
   const checkPrerequisites = async () => {
     // Check for Traefik container
     try {
-      const response = await fetch('/containers');
+      const response = await fetch('/api/containers');
       const data = await response.json();
       
       if (data.success && data.containers) {
