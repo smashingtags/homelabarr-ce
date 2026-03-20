@@ -1,6 +1,8 @@
 import { DeploymentMode } from '../types';
 
-const API_BASE_URL = 'http://localhost:8092';  // Backend server URL for development
+// In production, use relative URL so requests go through nginx proxy (/api/ → backend)
+// In development (npm run dev), Vite proxy handles the forwarding
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:8092' : '/api';
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem('homelabarr_token');
