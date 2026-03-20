@@ -7,7 +7,7 @@ import path from 'path';
 import helmet from 'helmet';
 import os from 'os';
 import { chmodSync } from 'fs';
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import { promisify } from 'util';
 import {
   initializeAuth,
@@ -3518,7 +3518,7 @@ app.post('/deploy', authEnabled ? requireAuth : optionalAuth, async (req, res) =
       logger.info('🐳 Using direct Docker CLI deployment for it-tools MVP');
       
       try {
-        const { spawn } = require('child_process');
+        // spawn imported at top of file via ESM import
         
         const containerName = `homelabarr-${appId}-${Date.now()}`;
         const port = config.port || '8080';
@@ -3622,7 +3622,7 @@ app.post('/deploy', authEnabled ? requireAuth : optionalAuth, async (req, res) =
     
     // For MVP, create a simple container deployment using docker CLI
     try {
-      const { spawn } = require('child_process');
+      // spawn imported at top of file via ESM import
       
       // Basic it-tools container deployment
       if (appId === 'it-tools') {
