@@ -209,6 +209,74 @@ No domain required. Apps are accessible at `http://your-ip:port`.
 
 ---
 
+## CLI Usage
+
+HomelabARR CE includes a powerful CLI for managing apps directly from the terminal. Power users can deploy, manage, and monitor containers without touching the GUI.
+
+### Interactive CLI
+
+```bash
+cd homelabarr-ce
+chmod +x homelabarr-cli.sh
+./homelabarr-cli.sh
+```
+
+This launches an interactive menu with:
+- Browse and deploy from 125+ app templates organized by category
+- Deploy apps in Docker Compose or local mode
+- Configure environment variables, ports, and volumes per app
+- Start/stop/restart/remove containers
+- View logs and health status
+
+### CLI App Categories
+
+| Category | Apps | Examples |
+|----------|------|---------|
+| `addons` | 33 | Autoscan, Cloudflare DDNS, Dozzle, Flaresolverr, Homepage |
+| `backup` | 3 | Duplicati, Restic, Borgmatic |
+| `downloadclients` | 14 | qBittorrent, SABnzbd, NZBGet, Transmission, Deluge |
+| `mediamanager` | 25 | Sonarr, Radarr, Lidarr, Readarr, Prowlarr, Bazarr, Recyclarr |
+| `mediaserver` | 7 | Plex, Jellyfin, Emby, Navidrome, Kavita |
+| `monitoring` | — | Netdata, Grafana, Prometheus, Uptime Kuma |
+| `request` | 2 | Overseerr, Ombi |
+| `selfhosted` | 37 | Nextcloud, Vaultwarden, Immich, Bookstack, Ghost, Gitea |
+
+### Deploy an App via CLI
+
+```bash
+# List available apps in a category
+ls apps/mediaserver/
+
+# Deploy Plex
+./homelabarr-cli.sh
+# Select: mediaserver → plex → configure → deploy
+```
+
+### App Template Structure
+
+Each app is a YAML file in `apps/<category>/<app>.yml`:
+
+```bash
+apps/
+├── addons/          # Utility containers
+├── backup/          # Backup solutions
+├── downloadclients/ # Torrent/Usenet clients
+├── mediamanager/    # *arr stack
+├── mediaserver/     # Plex, Jellyfin, etc.
+├── monitoring/      # Dashboards and metrics
+├── request/         # Media request tools
+└── selfhosted/      # Everything else
+```
+
+### Default Login
+
+- **Username:** `admin`
+- **Password:** `admin`
+
+Change this immediately after first login, or set `DEFAULT_ADMIN_PASSWORD` environment variable before deployment.
+
+---
+
 ## Development
 
 ```bash
