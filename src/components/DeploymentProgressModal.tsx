@@ -40,7 +40,7 @@ export function DeploymentProgressModal({
     if (!isOpen) return;
 
     // Set up Server-Sent Events connection
-    const eventSource = new EventSource('/stream/progress');
+    const eventSource = new EventSource('/api/stream/progress');
     eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
