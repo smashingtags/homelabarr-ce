@@ -572,11 +572,41 @@ export default function App() {
         {/* Deploy Modal */}
         {selectedApp && (
           <DeployModal
-            app={selectedApp}
+            app={{
+              ...selectedApp,
+              configFields: [
+                {
+                  name: 'domain',
+                  label: 'Domain',
+                  type: 'text' as const,
+                  required: true,
+                  placeholder: 'localhost',
+                  defaultValue: 'localhost'
+                },
+                ...((selectedApp as any).environment ? Object.entries((selectedApp as any).environment).map(([key, value]) => ({
+                  name: key.toLowerCase(),
+                  label: key.replace(/_/g, ' '),
+                  type: 'text' as const,
+                  required: false,
+                  defaultValue: String(value),
+                  advanced: true
+                })) : []),
+                ...((selectedApp as any).ports ? Object.entries((selectedApp as any).ports).map(([key, value]) => ({
+                  name: `port_${key}`,
+                  label: `Port: ${key}`,
+                  type: 'text' as const,
+                  required: false,
+                  defaultValue: String(value),
+                  advanced: true
+                })) : [])
+              ],
+              deploymentModes: selectedApp.deploymentModes || ['local']
+            }}
             isOpen={true}
             onClose={() => setSelectedApp(null)}
             onDeploy={(_appId, config, mode) => handleDeploy(config, mode)}
             loading={deploymentInProgress}
+            cliIntegration={true}
           />
         )}
 
