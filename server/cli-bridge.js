@@ -236,7 +236,53 @@ export class CLIBridge {
    * Deploy application in standard mode (without Traefik)
    */
   async deployStandard(appPath, config) {
-    return await this.executeDockerCompose(appPath, 'up -d', config);
+    // For local/standard mode, we need to rewrite the compose file
+    // to remove external network declarations and Traefik labels
+    const yaml = (await import('yaml')).default;
+    const fs = (await import('fs')).default;
+    const content = fs.readFileSync(appPath, 'utf8');
+    const doc = yaml.parse(content);
+
+    // Remove top-level external network declarations
+    if (doc.networks) {
+      for (const [netName, netConfig] of Object.entries(doc.networks)) {
+        if (netConfig && typeof netConfig === 'object' && (netConfig as any).external) {
+          delete doc.networks[netName];
+        }
+      }
+      if (Object.keys(doc.networks).length === 0) delete doc.networks;
+    }
+
+    // For each service, replace network refs with bridge and strip traefik labels
+    if (doc.services) {
+      for (const svc of Object.values(doc.services) as any[]) {
+        if (svc.networks) {
+          svc.networks = ['bridge'];
+        } else {
+          delete svc.networks;
+        }
+        if (svc.labels) {
+          svc.labels = svc.labels.filter((l: string) =>
+            typeof l === 'string' && !l.includes('traefik') && !l.includes('dockupdater')
+          );
+          if (svc.labels.length === 0) delete svc.labels;
+        }
+      }
+    }
+
+    // Write modified compose to temp file
+    const tmpPath = appPath.replace('.yml', '-local.yml');
+    fs.writeFileSync(tmpPath, yaml.stringify(doc));
+
+    try {
+      return await this.executeDockerCompose(tmpPath, 'up -d', {
+        ...config,
+        DOCKERNETWORK: 'bridge'
+      });
+    } finally {
+      // Clean up temp file
+      try { fs.unlinkSync(tmpPath); } catch {}
+    }
   }
 
   /**
