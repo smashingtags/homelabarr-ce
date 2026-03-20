@@ -45,9 +45,7 @@ wiki
 rebrand_backup*
 
 # HomelabARR specific
-apps/
-scripts/
-traefik/
+# NOTE: apps/, scripts/, traefik/ are NOT ignored — backend needs them for CLI Bridge
 preinstall/
 .claude/
 .installer/
