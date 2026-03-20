@@ -329,9 +329,17 @@ app.get('/health', async (req, res) => {
   const serviceStatus = dockerManager.getServiceStatus();
 
   try {
-    let dockerStatus = 'disconnected';
+    let dockerStatus = 'connected';
     let dockerDetails = {};
     let dockerInfo = null;
+
+    // Test Docker CLI access directly
+    try {
+      execSync('docker info --format "{{.ServerVersion}}"', { encoding: 'utf8', timeout: 5000 });
+      dockerStatus = 'connected';
+    } catch (e) {
+      dockerStatus = 'disconnected';
+    }
 
     if (connectionState.isConnected) {
       try {
@@ -2941,15 +2949,9 @@ const conditionalAuth = (req, res, next) => {
 // Routes (protected by authentication if enabled)
 app.get('/containers', conditionalAuth, async (req, res) => {
   try {
-    // Check Docker availability first
-    const serviceStatus = dockerManager.getServiceStatus();
-
-    if (serviceStatus.status === 'unavailable') {
-      return res.status(503).json({
-        ...dockerManager.createErrorResponse('List containers', new Error(serviceStatus.message), false),
-        containers: []
-      });
-    }
+    // Skip dockerode service status check — we use CLI-based Docker access
+    // which works even when dockerode can't connect
+    const serviceStatus = { status: 'connected', message: 'CLI-based Docker access' };
 
     // Use cross-platform CLI-based approach
     let containers = [];
@@ -3009,45 +3011,17 @@ app.get('/containers', conditionalAuth, async (req, res) => {
     const includeStats = req.query.stats === 'true';
 
     if (!includeStats) {
-      // Fast path: return containers without expensive stats
-      const containersWithBasicInfo = await Promise.all(
-        containers.map(async (container) => {
-          try {
-            // Use CLI-based container inspection instead of dockerode
-            const inspectCommand = `docker inspect ${container.Id}`;
-            const inspectResult = execSync(inspectCommand, {
-              encoding: 'utf8',
-              shell: process.platform === 'win32' ? 'powershell.exe' : '/bin/sh'
-            });
-            
-            const info = JSON.parse(inspectResult)[0];
-
-            return {
-              ...container,
-              stats: {
-                cpu: 0,
-                memory: { usage: 0, limit: 0, percentage: 0 },
-                network: {},
-                uptime: calculateUptime(info)
-              },
-              config: info.Config,
-              mounts: info.Mounts
-            };
-          } catch (error) {
-            logger.warn(`Error fetching basic info for container ${container.Id}:`, error.message);
-            return {
-              ...container,
-              stats: {
-                cpu: 0,
-                memory: { usage: 0, limit: 0, percentage: 0 },
-                network: {},
-                uptime: 0
-              },
-              error: 'Failed to fetch container details'
-            };
-          }
-        })
-      );
+      // Fast path: return containers from docker ps without any inspect calls
+      const containersWithBasicInfo = containers.map((container) => ({
+        ...container,
+        Ports: typeof container.Ports === 'string' ? [{PublicPort: container.Ports.match(/:(\d+)->/)?.[1] || ''}] : [],
+        stats: {
+          cpu: 0,
+          memory: { usage: 0, limit: 0, percentage: 0 },
+          network: {},
+          uptime: 0
+        }
+      }));
       return res.json({
         success: true,
         containers: containersWithBasicInfo,
