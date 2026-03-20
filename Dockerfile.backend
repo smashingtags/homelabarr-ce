@@ -31,7 +31,15 @@ RUN npm ci --only=production --no-audit --loglevel=error --no-fund
 # Copy server files and configurations
 COPY server/ ./server/
 
-# Create CLI Bridge mount point
+# Copy app templates (CLI Bridge scans these for the application catalog)
+COPY apps/ ./apps/
+
+# Copy scripts and traefik templates (used by CLI Bridge for deployment)
+COPY scripts/ ./scripts/
+COPY traefik/ ./traefik/
+COPY install.sh ./install.sh
+
+# Create CLI Bridge mount point (can be overridden with CLI_BRIDGE_HOST_PATH env)
 RUN mkdir -p /homelabarr
 
 # Make startup script executable
@@ -51,7 +59,10 @@ RUN mkdir -p \
     /var/log/homelabarr
 
 # Set environment variables for CLI Bridge integration
-ENV CLI_BRIDGE_PATH=/homelabarr
+# CLI_BRIDGE_HOST_PATH tells the backend where to find app templates
+# Default: not set (uses process.cwd() which is /app in this image)
+# Override: mount a volume and set CLI_BRIDGE_HOST_PATH to the mount point
+ENV PORT=8092
 ENV DOCKER_HOST=unix:///var/run/docker.sock
 ENV DOCKER_BUILDKIT=1
 ENV COMPOSE_DOCKER_CLI_BUILD=1

@@ -11,14 +11,16 @@ import { DeploymentLogger } from './deployment-logger.js';
 export class CLIBridge {
   constructor() {
     // Path to the main HomelabARR CLI repository
-    this.cliPath = process.cwd(); // Use current directory as the CLI is in the same repo
+    // CLI_BRIDGE_HOST_PATH env var allows override for Docker deployments
+    // where the CLI repo is mounted at a different path than the app working directory
+    this.cliPath = process.env.CLI_BRIDGE_HOST_PATH || process.cwd();
     this.appsPath = path.join(this.cliPath, 'apps');
     this.scriptsPath = path.join(this.cliPath, 'scripts');
     this.traefik = path.join(this.cliPath, 'traefik');
-    
+
     // Verify CLI installation
     this.verifyCLIInstallation();
-    
+
     DeploymentLogger.logNetworkActivity('CLI Bridge initialized', {
       level: 'info',
       cliPath: this.cliPath,
@@ -30,16 +32,21 @@ export class CLIBridge {
    * Verify that the HomelabARR CLI is properly installed
    */
   verifyCLIInstallation() {
-    const requiredPaths = [
-      this.appsPath,
+    // apps/ directory is required — contains all application templates
+    if (!fs.existsSync(this.appsPath)) {
+      throw new Error(`HomelabARR apps directory not found at ${this.appsPath}. Set CLI_BRIDGE_HOST_PATH env var to the CLI repo root.`);
+    }
+
+    // Optional paths — warn but don't block startup
+    const optionalPaths = [
       this.scriptsPath,
       path.join(this.cliPath, 'install.sh'),
       path.join(this.cliPath, 'traefik', 'install.sh')
     ];
 
-    for (const requiredPath of requiredPaths) {
-      if (!fs.existsSync(requiredPath)) {
-        throw new Error(`HomelabARR CLI not found at ${requiredPath}. Please ensure CLI is properly installed.`);
+    for (const optionalPath of optionalPaths) {
+      if (!fs.existsSync(optionalPath)) {
+        console.warn(`Optional CLI path not found: ${optionalPath}`);
       }
     }
   }
