@@ -4593,6 +4593,9 @@ try {
 (async () => {
   logger.info('✅ Authentication system initialized successfully');
   
+  // Initialize default admin user if no users exist
+  await initializeAuth();
+
   try {
     const server = app.listen(PORT, BIND_ADDRESS, () => {
       // Log successful network binding
