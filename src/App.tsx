@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { AppTemplate, AppCategory, DeployedApp, DeploymentMode } from './types';
-import { APP_CATEGORIES, getAllApps, getAppsByCategory, searchApps } from './data/categorized-apps';
+import React, { useState, useEffect, useCallback } from 'react';
+import { AppTemplate, CLIApplication, DeployedApp, DeploymentMode } from './types';
+import { DISPLAY_CATEGORIES, getDisplayCategoryId, getAppIcon, getDisplayCategory } from './data/app-metadata';
 import { AppCard } from './components/AppCard';
 import { Search, ArrowUpDown } from 'lucide-react';
 import { DeployedAppCard } from './components/DeployedAppCard';
 import { DeployModal } from './components/DeployModal';
+import { DeploymentProgressModal } from './components/DeploymentProgressModal';
 import { LogViewer } from './components/LogViewer';
 import { ThemeToggle } from './components/ThemeToggle';
 import { HelpModal } from './components/HelpModal';
@@ -23,29 +24,62 @@ import {
   Box,
   HelpCircle,
   Trophy,
-  RefreshCw
+  RefreshCw,
+  Terminal,
+  Package,
+  Search as SearchIcon,
 } from 'lucide-react';
-import { deployApp, getContainers } from './lib/api';
-import { CLIApplicationBrowser } from './components/CLIApplicationBrowser';
+import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes } from './lib/api';
 
-// Generate categories from APP_CATEGORIES plus special views
-const categories = [
-  { id: 'cli', name: 'HomelabARR CLI', icon: RefreshCw },
+// Tab type encompasses display categories + special views
+type TabId = string; // display category ids, 'deployed', 'all-apps', 'leaderboard'
+
+// Build category tabs from DISPLAY_CATEGORIES + special views
+const categoryTabs = [
   { id: 'deployed', name: 'Deployed Apps', icon: Box },
-  ...Object.values(APP_CATEGORIES).map(cat => ({
-    id: cat.id as AppCategory | 'all-apps' | 'leaderboard' | 'deployed' | 'cli',
-    name: cat.name,
-    icon: cat.icon
+  ...DISPLAY_CATEGORIES.map(dc => ({
+    id: dc.id,
+    name: dc.name,
+    icon: dc.icon,
   })),
-  { id: 'leaderboard' as const, name: 'Leaderboard', icon: Trophy }
+  { id: 'all-apps', name: 'All Apps', icon: SearchIcon },
+  { id: 'leaderboard', name: 'Leaderboard', icon: Trophy },
 ];
 
+// Convert a CLIApplication to an AppTemplate for rendering in AppCard and DeployModal
+function cliAppToTemplate(app: CLIApplication): AppTemplate {
+  const icon = getAppIcon(app.name, app.category);
+  const displayCatId = getDisplayCategoryId(app.category);
+
+  const modes: ('traefik' | 'authelia' | 'local')[] = ['local'];
+  if (app.requiresTraefik) modes.unshift('traefik');
+  if (app.requiresAuthelia) modes.unshift('authelia');
+
+  return {
+    id: app.id, // "category-name" format from CLI
+    name: app.displayName,
+    description: app.description,
+    category: displayCatId as any,
+    logo: icon,
+    deploymentModes: modes,
+    defaultPorts: app.ports,
+    requiredPorts: Object.keys(app.ports),
+    // Store CLI data for deploy modal enrichment
+    _cliApp: app,
+  } as AppTemplate & { _cliApp: CLIApplication };
+}
+
 export default function App() {
+  const [cliApps, setCliApps] = useState<CLIApplication[]>([]);
+  const [cliDeploymentModes, setCliDeploymentModes] = useState<DeploymentMode[]>([]);
+  const [catalogSource, setCatalogSource] = useState<'cli' | 'templates'>('templates');
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+
   const [selectedApp, setSelectedApp] = useState<AppTemplate | null>(null);
-  const [enrichedApp, setEnrichedApp] = useState<any>(null);
   const [deployedApps, setDeployedApps] = useState<DeployedApp[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<AppCategory | 'all-apps' | 'leaderboard' | 'deployed' | 'cli'>('cli');
+  const [activeCategory, setActiveCategory] = useState<TabId>('media');
   const [sortField, setSortField] = useState<'name' | 'status' | 'deployedAt' | 'uptime'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [selectedContainerLogs, setSelectedContainerLogs] = useState<string | null>(null);
@@ -56,79 +90,99 @@ export default function App() {
   const [selectedEnhancedMount, setSelectedEnhancedMount] = useState<{ containerId: string; containerName: string } | null>(null);
   const [onboardingModalOpen, setOnboardingModalOpen] = useState(false);
   const [pendingDeployment, setPendingDeployment] = useState<{ app: AppTemplate; config: Record<string, string>; mode: DeploymentMode } | null>(null);
+  const [deploymentProgress, setDeploymentProgress] = useState<{
+    deploymentId: string;
+    appId: string;
+  } | null>(null);
 
   const { success, error: showError, info } = useNotifications();
-  const { loading: deploymentInProgress, withLoading } = useLoading();
+  const { loading: deploymentInProgress } = useLoading();
   const { isAuthenticated } = useAuth();
 
-  // Get filtered apps based on category and search
+  // Fetch CLI application catalog on mount
+  const loadCatalog = useCallback(async () => {
+    try {
+      setCatalogLoading(true);
+      setCatalogError(null);
+      const [catalogData, modesData] = await Promise.all([
+        getApplicationCatalog(),
+        getDeploymentModes(),
+      ]);
+
+      const allApps: CLIApplication[] = [];
+      if (catalogData.applications) {
+        Object.entries(catalogData.applications).forEach(([category, apps]) => {
+          (apps as CLIApplication[]).forEach(app => {
+            allApps.push({ ...app, category });
+          });
+        });
+      }
+      setCliApps(allApps);
+      setCliDeploymentModes(modesData.modes || []);
+      setCatalogSource(catalogData.source || 'templates');
+    } catch (err) {
+      setCatalogError(err instanceof Error ? err.message : 'Failed to load applications');
+    } finally {
+      setCatalogLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCatalog();
+  }, [loadCatalog]);
+
+  // Convert all CLI apps to AppTemplates
+  const allAppTemplates = React.useMemo(() => {
+    return cliApps.map(cliAppToTemplate);
+  }, [cliApps]);
+
+  // Filter apps based on active category and search
   const filteredApps = React.useMemo(() => {
+    let apps = allAppTemplates;
+
+    // Category filter
+    if (activeCategory !== 'all-apps' && activeCategory !== 'deployed' && activeCategory !== 'leaderboard') {
+      const displayCat = getDisplayCategory(activeCategory);
+      if (displayCat) {
+        apps = apps.filter(app => {
+          const cliApp = (app as any)._cliApp as CLIApplication;
+          return displayCat.cliCategories.includes(cliApp.category);
+        });
+      }
+    }
+
+    // Search filter
     if (searchQuery.trim()) {
-      return searchApps(searchQuery);
+      const q = searchQuery.toLowerCase();
+      apps = apps.filter(app => {
+        const cliApp = (app as any)._cliApp as CLIApplication;
+        return (
+          app.name.toLowerCase().includes(q) ||
+          app.description.toLowerCase().includes(q) ||
+          cliApp.category.toLowerCase().includes(q) ||
+          cliApp.image.toLowerCase().includes(q)
+        );
+      });
     }
-    
-    if (activeCategory === 'all-apps') {
-      return getAllApps();
-    }
-    
-    if (activeCategory === 'cli' || activeCategory === 'deployed' || activeCategory === 'leaderboard') {
-      return [];
-    }
-    
-    return getAppsByCategory(activeCategory);
-  }, [activeCategory, searchQuery]);
 
-  // Enrich selectedApp with CLI data (env vars, ports) for the deploy modal
-  useEffect(() => {
-    if (!selectedApp) {
-      setEnrichedApp(null);
-      return;
-    }
-    // Fetch all CLI apps and find matching one by name
-    fetch('/api/applications')
-      .then(r => r.json())
-      .then(data => {
-        const apps = data.applications || {};
-        for (const category of Object.values(apps) as any[]) {
-          if (!Array.isArray(category)) continue;
-          const match = category.find((a: any) =>
-            a.name === selectedApp.id ||
-            a.name === selectedApp.name.toLowerCase() ||
-            a.displayName === selectedApp.name
-          );
-          if (match) {
-            setEnrichedApp(match);
-            return;
-          }
-        }
-        setEnrichedApp(null);
-      })
-      .catch(() => setEnrichedApp(null));
-  }, [selectedApp]);
+    return apps;
+  }, [allAppTemplates, activeCategory, searchQuery]);
 
   useEffect(() => {
-    // Only fetch containers if user is authenticated
-    if (!isAuthenticated) {
-      return;
-    }
-
-    fetchContainers(false); // Fast initial load without stats
-
-    // Set up intervals: fast refresh for basic info, slower for stats
-    const basicInterval = setInterval(() => fetchContainers(false), 10000); // Every 10s
+    if (!isAuthenticated) return;
+    fetchContainers(false);
+    const basicInterval = setInterval(() => fetchContainers(false), 10000);
     const statsInterval = setInterval(() => {
       if (activeCategory === 'deployed') {
-        fetchContainers(true); // Only fetch stats when viewing deployed apps
+        fetchContainers(true);
       }
-    }, 30000); // Every 30s
-
+    }, 30000);
     return () => {
       clearInterval(basicInterval);
       clearInterval(statsInterval);
     };
   }, [activeCategory, isAuthenticated]);
 
-  // Show helpful info when switching to deployed apps
   useEffect(() => {
     if (activeCategory === 'deployed' && deployedApps.length === 0) {
       info('No Deployed Apps', 'Deploy some applications to see them here. Browse the categories above to get started!');
@@ -149,31 +203,36 @@ export default function App() {
       }));
       setDeployedApps(apps);
     } catch (err) {
-      // Silently fail - no deployed containers is normal for fresh installs/demos
       console.warn('Container fetch failed:', err);
     }
   };
 
-  const handleCLIDeploy = async (appId: string, config: Record<string, string>, mode: DeploymentMode) => {
-    info('CLI Deployment Started', `Deploying ${appId} via HomelabARR CLI...`);
+  const handleDeploy = async (appId: string, config: Record<string, string>, mode: DeploymentMode) => {
+    info('Deployment Started', `Deploying ${appId} via HomelabARR CLI...`);
 
     try {
       const result = await deployApp(appId, config, mode);
-      
-      // Handle streaming deployment
+
       if (result.source === 'cli-streaming') {
         info('Real-time Deployment', `${appId} deployment started with live progress tracking`);
-        return result; // Return the result so CLI browser can handle it
+        if (result.deploymentId) {
+          setDeploymentProgress({
+            deploymentId: result.deploymentId as string,
+            appId: result.appId as string,
+          });
+        }
+        setSelectedApp(null);
+        return result;
       } else {
-        // Handle traditional deployment
         await fetchContainers();
-        success('CLI Deployment Successful', `${appId} has been deployed successfully via HomelabARR CLI!`);
+        success('Deployment Successful', `${appId} has been deployed successfully!`);
+        setSelectedApp(null);
         setActiveCategory('deployed');
         return result;
       }
     } catch (err: any) {
-      let errorTitle = 'CLI Deployment Failed';
-      let errorMessage = 'Failed to deploy application via CLI';
+      let errorTitle = 'Deployment Failed';
+      let errorMessage = 'Failed to deploy application';
 
       if (err.message.includes('CLI Bridge not available')) {
         errorTitle = 'CLI Integration Unavailable';
@@ -192,104 +251,41 @@ export default function App() {
       }
 
       showError(errorTitle, errorMessage);
-      throw err; // Re-throw so CLI browser can handle it
+      throw err;
     }
   };
 
-  const handleDeploy = async (config: Record<string, string>, mode: DeploymentMode) => {
+  const handleAppCardDeploy = (app: AppTemplate) => {
+    // Enhanced mount onboarding check
+    const cliApp = (app as any)._cliApp as CLIApplication | undefined;
+    if (cliApp && cliApp.name === 'mount-enhanced') {
+      setSelectedApp(app);
+      return;
+    }
+    setSelectedApp(app);
+  };
+
+  const handleDeploySubmit = async (appId: string, config: Record<string, string>, mode: DeploymentMode) => {
     if (!selectedApp) return;
 
-    // Check if this is an enhanced mount container and show onboarding if needed
-    if (selectedApp.id === 'homelabarr-mount-enhanced') {
+    // Enhanced mount onboarding
+    if (appId.includes('mount-enhanced')) {
       setPendingDeployment({ app: selectedApp, config, mode });
       setOnboardingModalOpen(true);
       setSelectedApp(null);
       return;
     }
 
-    info('Deployment Started', `Deploying ${selectedApp.name}...`);
-
-    await withLoading(
-      async () => {
-        await deployApp(selectedApp.id, config, mode);
-        await fetchContainers();
-        return selectedApp.name;
-      },
-      (appName) => {
-        success('Deployment Successful', `${appName} has been deployed successfully!`);
-        setSelectedApp(null);
-        // Switch to deployed apps view to see the new container
-        setActiveCategory('deployed');
-      },
-      (err) => {
-        let errorTitle = 'Deployment Failed';
-        let errorMessage = 'Failed to deploy application';
-
-        if (err.message.includes('Port conflict')) {
-          errorTitle = 'Port Conflict';
-          errorMessage = 'The required ports are already in use. Please stop conflicting containers or choose different ports.';
-        } else if (err.message.includes('Template not found')) {
-          errorTitle = 'Template Missing';
-          errorMessage = 'This application template is not available. Please try a different application.';
-        } else if (err.message.includes('Docker not available')) {
-          errorTitle = 'Docker Unavailable';
-          errorMessage = 'Docker is not running or accessible. Please ensure Docker is started and try again.';
-        } else if (err.message.includes('Failed to pull image')) {
-          errorTitle = 'Image Pull Failed';
-          errorMessage = 'Unable to download the application image. Please check your internet connection.';
-        } else {
-          errorMessage = err.message;
-        }
-
-        showError(errorTitle, errorMessage);
-      }
-    );
+    setSelectedApp(null);
+    await handleDeploy(appId, config, mode);
   };
 
   const handleOnboardingProceed = async () => {
     setOnboardingModalOpen(false);
-    
     if (!pendingDeployment) return;
-    
     const { app, config, mode } = pendingDeployment;
     setPendingDeployment(null);
-    
-    info('Deployment Started', `Deploying ${app.name}...`);
-
-    await withLoading(
-      async () => {
-        await deployApp(app.id, config, mode);
-        await fetchContainers();
-        return app.name;
-      },
-      (appName) => {
-        success('Deployment Successful', `${appName} has been deployed successfully!`);
-        // Switch to deployed apps view to see the new container
-        setActiveCategory('deployed');
-      },
-      (err) => {
-        let errorTitle = 'Deployment Failed';
-        let errorMessage = 'Failed to deploy application';
-
-        if (err.message.includes('Port conflict')) {
-          errorTitle = 'Port Conflict';
-          errorMessage = 'The required ports are already in use. Please stop conflicting containers or choose different ports.';
-        } else if (err.message.includes('Template not found')) {
-          errorTitle = 'Template Missing';
-          errorMessage = 'This application template is not available. Please try a different application.';
-        } else if (err.message.includes('Docker not available')) {
-          errorTitle = 'Docker Unavailable';
-          errorMessage = 'Docker is not running or accessible. Please ensure Docker is started and try again.';
-        } else if (err.message.includes('Failed to pull image')) {
-          errorTitle = 'Image Pull Failed';
-          errorMessage = 'Unable to download the application image. Please check your internet connection.';
-        } else {
-          errorMessage = err.message;
-        }
-
-        showError(errorTitle, errorMessage);
-      }
-    );
+    await handleDeploy(app.id, config, mode);
   };
 
   const handleOnboardingCancel = () => {
@@ -297,9 +293,16 @@ export default function App() {
     setPendingDeployment(null);
   };
 
+  const handleDeploymentComplete = (completionSuccess: boolean, _summary?: any) => {
+    console.log('Deployment completed:', { success: completionSuccess });
+  };
+
+  const handleCloseProgress = () => {
+    setDeploymentProgress(null);
+  };
+
   const sortedDeployedApps = [...deployedApps].sort((a, b) => {
     const direction = sortDirection === 'asc' ? 1 : -1;
-
     switch (sortField) {
       case 'name':
         return direction * a.name.localeCompare(b.name);
@@ -316,11 +319,50 @@ export default function App() {
     }
   });
 
-  const renderContent = () => {
-    if (activeCategory === 'cli') {
-      return <CLIApplicationBrowser onDeploy={handleCLIDeploy} />;
+  // Build config fields for the deploy modal from CLI app data
+  const buildConfigFields = (app: AppTemplate) => {
+    const cliApp = (app as any)._cliApp as CLIApplication | undefined;
+    const fields: any[] = [
+      {
+        name: 'domain',
+        label: 'Domain',
+        type: 'text' as const,
+        required: false,
+        placeholder: 'localhost (optional for local mode)',
+        defaultValue: 'localhost',
+      },
+    ];
+
+    if (cliApp?.environment) {
+      Object.entries(cliApp.environment).forEach(([key, value]) => {
+        fields.push({
+          name: key.toLowerCase(),
+          label: key.replace(/_/g, ' '),
+          type: 'text' as const,
+          required: false,
+          defaultValue: String(value),
+          advanced: true,
+        });
+      });
     }
 
+    if (cliApp?.ports) {
+      Object.entries(cliApp.ports).forEach(([key, value]) => {
+        fields.push({
+          name: `port_${key}`,
+          label: `Port: ${key}`,
+          type: 'text' as const,
+          required: false,
+          defaultValue: String(value),
+          advanced: true,
+        });
+      });
+    }
+
+    return fields;
+  };
+
+  const renderContent = () => {
     if (activeCategory === 'leaderboard') {
       return <Leaderboard deployedApps={deployedApps} />;
     }
@@ -348,8 +390,7 @@ export default function App() {
               >
                 Name
                 {sortField === 'name' && (
-                  <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''
-                    }`} />
+                  <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
               </button>
               <button
@@ -361,8 +402,7 @@ export default function App() {
               >
                 Status
                 {sortField === 'status' && (
-                  <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''
-                    }`} />
+                  <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
               </button>
               <button
@@ -374,8 +414,7 @@ export default function App() {
               >
                 Deployment Date
                 {sortField === 'deployedAt' && (
-                  <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''
-                    }`} />
+                  <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
               </button>
               <button
@@ -387,8 +426,7 @@ export default function App() {
               >
                 Uptime
                 {sortField === 'uptime' && (
-                  <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''
-                    }`} />
+                  <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
               </button>
             </div>
@@ -405,11 +443,9 @@ export default function App() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedDeployedApps.map(app => {
-              // Check if this is an enhanced mount container
-              const isEnhancedMount = app.name.includes('homelabarr-mount-enhanced') || 
+              const isEnhancedMount = app.name.includes('homelabarr-mount-enhanced') ||
                                     app.name.includes('enhanced-mount') ||
                                     app.name.includes('mount-enhanced');
-              
               return (
                 <div key={app.id} className="space-y-2">
                   <DeployedAppCard
@@ -419,9 +455,9 @@ export default function App() {
                   />
                   {isEnhancedMount && (
                     <button
-                      onClick={() => setSelectedEnhancedMount({ 
-                        containerId: app.id, 
-                        containerName: app.name 
+                      onClick={() => setSelectedEnhancedMount({
+                        containerId: app.id,
+                        containerName: app.name
                       })}
                       className="w-full px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
@@ -436,17 +472,82 @@ export default function App() {
       );
     }
 
-    // Show category header and app count for non-search views
-    const currentCategoryInfo = Object.values(APP_CATEGORIES).find(cat => cat.id === activeCategory);
-    
+    // Loading state for catalog
+    if (catalogLoading) {
+      return (
+        <div className="flex items-center justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <span className="ml-3 text-gray-600 dark:text-gray-400">Loading applications...</span>
+        </div>
+      );
+    }
+
+    // Error state
+    if (catalogError) {
+      return (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+          <div className="flex items-center">
+            <Package className="h-6 w-6 text-red-600 dark:text-red-400" />
+            <div className="ml-3">
+              <h3 className="text-red-800 dark:text-red-200 font-medium">Failed to load applications</h3>
+              <p className="text-red-600 dark:text-red-400 text-sm mt-1">{catalogError}</p>
+              <button onClick={loadCatalog} className="mt-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 text-sm underline">
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // CLI status banner
+    const statusBanner = (
+      <div className={`mb-6 p-4 rounded-lg border ${
+        catalogSource === 'cli'
+          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+          : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+      }`}>
+        <div className="flex items-center">
+          <Terminal className={`h-5 w-5 ${
+            catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
+          }`} />
+          <div className="ml-3">
+            <h3 className={`font-medium ${
+              catalogSource === 'cli' ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'
+            }`}>
+              {catalogSource === 'cli' ? 'HomelabARR CLI Connected' : 'Template Mode Active'}
+            </h3>
+            <p className={`text-sm ${
+              catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
+            }`}>
+              {catalogSource === 'cli'
+                ? `${cliApps.length} proven applications available from HomelabARR CLI`
+                : 'Using fallback template mode'
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+
+    // Category header
+    const displayCat = getDisplayCategory(activeCategory);
+    const currentCategoryInfo = activeCategory === 'all-apps'
+      ? { name: 'All Apps', description: 'Complete list of all available applications', icon: SearchIcon }
+      : displayCat
+        ? { name: displayCat.name, description: displayCat.description, icon: displayCat.icon }
+        : null;
+
     return (
       <div>
+        {statusBanner}
+
         {/* Category Header */}
         {!searchQuery && currentCategoryInfo && (
-          <div className="mb-6 p-6 bg-gradient-to-r bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="mb-6 p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <currentCategoryInfo.icon className="w-8 h-8 text-blue-600 mr-3" />
+                <currentCategoryInfo.icon className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                     {currentCategoryInfo.name}
@@ -488,12 +589,12 @@ export default function App() {
 
         {/* Apps Grid */}
         {filteredApps.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredApps.map(app => (
               <AppCard
                 key={app.id}
                 app={app}
-                onDeploy={() => setSelectedApp(app)}
+                onDeploy={() => handleAppCardDeploy(app)}
               />
             ))}
           </div>
@@ -504,8 +605,8 @@ export default function App() {
               {searchQuery ? 'No results found' : 'No applications in this category'}
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              {searchQuery 
-                ? `Try different keywords or browse categories above`
+              {searchQuery
+                ? 'Try different keywords or browse categories above'
                 : 'Select a different category to see available applications'
               }
             </p>
@@ -562,7 +663,7 @@ export default function App() {
           </div>
           <input
             type="text"
-            placeholder="Lightning-fast search across 160+ apps..."
+            placeholder={`Search across ${cliApps.length || '...'} CLI apps...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
@@ -577,20 +678,20 @@ export default function App() {
         </div>
 
         {/* Category Navigation */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          {categories.map(category => {
-            const Icon = category.icon;
+        <div className="flex flex-wrap gap-3 mb-8">
+          {categoryTabs.map(tab => {
+            const Icon = tab.icon;
             return (
               <button
-                key={category.id}
-                onClick={() => setActiveCategory(category.id as any)}
-                className={`flex items-center px-4 py-2 rounded-md transition-colors ${activeCategory === category.id
+                key={tab.id}
+                onClick={() => setActiveCategory(tab.id)}
+                className={`flex items-center px-4 py-2 rounded-md transition-colors text-sm ${activeCategory === tab.id
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
                   }`}
               >
-                <Icon className="w-5 h-5 mr-2" />
-                {category.name}
+                <Icon className="w-4 h-4 mr-2" />
+                {tab.name}
               </button>
             );
           })}
@@ -604,39 +705,26 @@ export default function App() {
           <DeployModal
             app={{
               ...selectedApp,
-              configFields: [
-                {
-                  name: 'domain',
-                  label: 'Domain',
-                  type: 'text' as const,
-                  required: true,
-                  placeholder: 'localhost',
-                  defaultValue: 'localhost'
-                },
-                ...(enrichedApp?.environment ? Object.entries(enrichedApp.environment).map(([key, value]) => ({
-                  name: key.toLowerCase(),
-                  label: key.replace(/_/g, ' '),
-                  type: 'text' as const,
-                  required: false,
-                  defaultValue: String(value),
-                  advanced: true
-                })) : []),
-                ...(enrichedApp?.ports ? Object.entries(enrichedApp.ports).map(([key, value]) => ({
-                  name: `port_${key}`,
-                  label: `Port: ${key}`,
-                  type: 'text' as const,
-                  required: false,
-                  defaultValue: String(value),
-                  advanced: true
-                })) : [])
-              ],
-              deploymentModes: selectedApp.deploymentModes || ['local']
+              configFields: buildConfigFields(selectedApp),
+              deploymentModes: selectedApp.deploymentModes || ['local'],
             }}
             isOpen={true}
             onClose={() => setSelectedApp(null)}
-            onDeploy={(_appId, config, mode) => handleDeploy(config, mode)}
+            onDeploy={handleDeploySubmit}
             loading={deploymentInProgress}
+            deploymentModes={cliDeploymentModes}
             cliIntegration={true}
+          />
+        )}
+
+        {/* Deployment Progress Modal */}
+        {deploymentProgress && (
+          <DeploymentProgressModal
+            isOpen={!!deploymentProgress}
+            deploymentId={deploymentProgress.deploymentId}
+            appId={deploymentProgress.appId}
+            onComplete={handleDeploymentComplete}
+            onClose={handleCloseProgress}
           />
         )}
 
