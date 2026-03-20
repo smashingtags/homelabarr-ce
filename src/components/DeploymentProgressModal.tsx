@@ -125,7 +125,7 @@ export function DeploymentProgressModal({
     setClientId(cId);
     
     try {
-      const response = await fetch(`/stream/deployments/${deploymentId}/subscribe`, {
+      const response = await fetch(`/api/stream/deployments/${deploymentId}/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
