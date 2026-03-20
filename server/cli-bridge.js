@@ -239,16 +239,14 @@ export class CLIBridge {
    * Deploy application in standard mode (without Traefik)
    */
   async deployStandard(appPath, config) {
-    // For local/standard mode, we need to rewrite the compose file
-    // to remove external network declarations and Traefik labels
-    const yaml = (await import('yaml')).default;
-    const fs = (await import('fs')).default;
+    // For local/standard mode, rewrite compose to remove Traefik + external networks
     const content = fs.readFileSync(appPath, 'utf8');
     const doc = yaml.parse(content);
 
     // Remove top-level external network declarations
     if (doc.networks) {
-      for (const [netName, netConfig] of Object.entries(doc.networks)) {
+      for (const netName of Object.keys(doc.networks)) {
+        const netConfig = doc.networks[netName];
         if (netConfig && typeof netConfig === 'object' && netConfig.external) {
           delete doc.networks[netName];
         }
@@ -256,16 +254,14 @@ export class CLIBridge {
       if (Object.keys(doc.networks).length === 0) delete doc.networks;
     }
 
-    // For each service, replace network refs with bridge and strip traefik labels
+    // For each service: remove networks, strip traefik/dockupdater labels, remove security_opt
     if (doc.services) {
-      for (const svc of Object.values(doc.services)) {
-        if (svc.networks) {
-          svc.networks = ['bridge'];
-        } else {
-          delete svc.networks;
-        }
-        if (svc.labels) {
-          svc.labels = svc.labels.filter((l) =>
+      for (const svcName of Object.keys(doc.services)) {
+        const svc = doc.services[svcName];
+        delete svc.networks;
+        delete svc.security_opt;
+        if (svc.labels && Array.isArray(svc.labels)) {
+          svc.labels = svc.labels.filter(l =>
             typeof l === 'string' && !l.includes('traefik') && !l.includes('dockupdater')
           );
           if (svc.labels.length === 0) delete svc.labels;
@@ -273,9 +269,15 @@ export class CLIBridge {
       }
     }
 
-    // Write modified compose to temp file
     const tmpPath = appPath.replace('.yml', '-local.yml');
     fs.writeFileSync(tmpPath, yaml.stringify(doc));
+
+    DeploymentLogger.logNetworkActivity('Local mode: rewrote compose file', {
+      level: 'info',
+      originalPath: appPath,
+      tmpPath,
+      component: 'CLIBridge'
+    });
 
     try {
       return await this.executeDockerCompose(tmpPath, 'up -d', {
@@ -283,7 +285,6 @@ export class CLIBridge {
         DOCKERNETWORK: 'bridge'
       });
     } finally {
-      // Clean up temp file
       try { fs.unlinkSync(tmpPath); } catch {}
     }
   }
