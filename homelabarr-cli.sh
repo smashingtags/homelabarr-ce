@@ -28,7 +28,7 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APPS_DIR="$(dirname "$SCRIPT_DIR")"
 TEMPLATES_DIR="$SCRIPT_DIR"
-BULK_APPS_DIR="$APPS_DIR/local-mode-apps"
+BULK_APPS_DIR="$SCRIPT_DIR/apps"
 
 # Curated templates (guaranteed working)
 declare -A CURATED_TEMPLATES=(
@@ -110,7 +110,7 @@ EOF
     # Count available apps
     local app_count=0
     if [[ -d "$BULK_APPS_DIR" ]]; then
-        app_count=$(ls -1 "$BULK_APPS_DIR"/*.yml 2>/dev/null | wc -l)
+        app_count=$(find "$BULK_APPS_DIR" -name "*.yml" 2>/dev/null | wc -l)
     fi
     
     echo -e "${BOLD}${BRIGHT_GREEN}🎯 Quick Deploy Options${NC}"
