@@ -58,13 +58,13 @@ These 8 services are fully tested and guaranteed to work perfectly:
 
 # Or deploy any bulk converted app
 cd apps/local-mode-apps
-docker-compose -f SERVICE.yml --env-file ../.config/.env up -d
+docker compose -f SERVICE.yml --env-file ../.config/.env up -d
 
 # Popular examples:
-docker-compose -f nextcloud.yml --env-file ../.config/.env up -d      # Cloud storage
-docker-compose -f pihole.yml --env-file ../.config/.env up -d         # Ad blocking
-docker-compose -f heimdall.yml --env-file ../.config/.env up -d       # Dashboard
-docker-compose -f code-server.yml --env-file ../.config/.env up -d    # VS Code
+docker compose -f nextcloud.yml --env-file ../.config/.env up -d      # Cloud storage
+docker compose -f pihole.yml --env-file ../.config/.env up -d         # Ad blocking
+docker compose -f heimdall.yml --env-file ../.config/.env up -d       # Dashboard
+docker compose -f code-server.yml --env-file ../.config/.env up -d    # VS Code
 ```
 
 ## 🎯 Deployment Options

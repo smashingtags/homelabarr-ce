@@ -258,13 +258,13 @@ After running the cleanup tool:
 
 ```bash
 # Test Docker Compose parsing
-docker-compose -f apps/mediaserver/plex.yml config
+docker compose -f apps/mediaserver/plex.yml config
 
 # Validate YAML syntax
 yamllint apps/mediaserver/plex.yml
 
 # Test actual deployment
-docker-compose -f apps/mediaserver/plex.yml up --dry-run
+docker compose -f apps/mediaserver/plex.yml up --dry-run
 ```
 
 ## Integration with Development Workflow

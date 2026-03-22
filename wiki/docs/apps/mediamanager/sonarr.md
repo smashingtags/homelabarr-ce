@@ -316,9 +316,9 @@ docker start sonarr
 ### Manual Backup Before Upgrade
 ```bash
 docker exec sonarr cp /config/sonarr.db /config/sonarr.db.v3backup
-docker-compose down
+docker compose down
 # Update image tag to v4
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Custom Scripts
