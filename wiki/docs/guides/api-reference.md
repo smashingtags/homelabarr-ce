@@ -154,13 +154,13 @@ The `mode.type` field accepts: `standard`, `traefik`, or `authelia`.
 
 ## Progress Streaming (SSE)
 
-!!! warning "Not JSON"
-    These endpoints return `text/event-stream`, not JSON. Use `EventSource` or a streaming HTTP client — standard `fetch().then(r => r.json())` will fail.
+| Method | Path | Auth | Response | Description |
+|--------|------|------|----------|-------------|
+| `GET` | `/stream/progress` | None | `text/event-stream` | Open an SSE connection for real-time deployment events |
+| `POST` | `/stream/deployments/:deploymentId/subscribe` | Conditional | JSON | Subscribe an SSE client to a specific deployment |
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/stream/progress` | None | Open an SSE connection for real-time deployment events |
-| `POST` | `/stream/deployments/:deploymentId/subscribe` | Conditional | Subscribe an SSE client to a specific deployment |
+!!! warning "GET /stream/progress is not JSON"
+    The progress endpoint returns `text/event-stream`, not JSON. Use `EventSource` or a streaming HTTP client — standard `fetch().then(r => r.json())` will fail. The subscribe endpoint returns normal JSON.
 
 Connect to `/stream/progress` with an `EventSource`. The server assigns a `clientId` and pushes events as deployments progress. To filter events for a single deployment, call the subscribe endpoint with your `clientId` and the target `deploymentId`.
 
