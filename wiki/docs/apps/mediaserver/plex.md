@@ -1,7 +1,7 @@
 # Plex Media Server
 
 ## Overview
-Plex organizes your video, music, and photo collections and streams them to all your devices. Originally documented in the MHA-Team PTS wiki, this guide has been updated for HomelabARR with Traefik v3.5.0 and modern best practices.
+Plex organizes your video, music, and photo collections and streams them to all your devices. This guide covers HomelabARR CE setup with Traefik v3.5.0 and modern best practices.
 
 ## Container Information
 
@@ -267,9 +267,8 @@ Located in `/scripts/plex/`:
 - [Official Plex Documentation](https://support.plex.tv/)
 - [LinuxServer.io Plex Documentation](https://docs.linuxserver.io/images/docker-plex)
 - [HomelabARR Traefik Guide](../../traefik/README.md)
-- [Original MHA-Team PTS Wiki](https://github.com/MHA-Team/PTS-Team/wiki)
+
 
 ---
 
 *Last Updated: January 2025*  
-*Adapted from MHA-Team PTS Wiki for HomelabARR with modern standards*
