@@ -69,12 +69,13 @@ curl -o docker-compose.yml https://raw.githubusercontent.com/smashingtags/homela
 # Set required environment
 export JWT_SECRET=$(openssl rand -base64 32)
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
+export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
 
 # Deploy
 docker compose up -d
 ```
 
-The UI is at `http://your-server:8084`. The backend API is at `:8092`.
+The UI is at `http://your-server:8084`. Log in with **admin / admin**. Change the password immediately.
 
 ### Option 2: Build From Source
 
@@ -96,6 +97,7 @@ docker build -t homelabarr-backend:local -f Dockerfile.backend .
 # Deploy
 export JWT_SECRET=$(openssl rand -base64 32)
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
+export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
 docker compose -f homelabarr.yml up -d
 ```
 
@@ -145,7 +147,7 @@ The frontend is a static React SPA served by nginx. It proxies `/api` requests t
 | `JWT_SECRET` | (required) | Secret for signing auth tokens |
 | `DEFAULT_ADMIN_PASSWORD` | `admin` | Initial admin password — **change this** |
 | `AUTH_ENABLED` | `true` | Enable/disable authentication |
-| `CORS_ORIGIN` | `*` | Allowed CORS origins |
+| `CORS_ORIGIN` | (required) | URL you access the dashboard from (e.g., `http://192.168.1.50:8084`). **Login fails without this.** |
 | `DOCKER_GID` | `999` | Your host's docker group ID |
 | `FRONTEND_PORT` | `8084` | Frontend port mapping |
 | `BACKEND_PORT` | `8092` | Backend port mapping |
