@@ -6,7 +6,7 @@
     </a>
 </p>
 
------ 
+-----
 
 <p align="center">
     </br>
@@ -28,13 +28,25 @@
     </br>
 </p>
 
-_Docker + Traefik with Authelia and Cloudflare Protection_
+_Docker container management for homelabs. 157+ apps, one-click deploy. Optional Traefik reverse proxy with Authelia 2FA._
+
+---
+
+!!! tip "Quick Start -- Up and running in 60 seconds"
+    ```bash
+    curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
+    export JWT_SECRET=$(openssl rand -base64 32)
+    export DOCKER_GID=$(getent group docker | cut -d: -f3)
+    docker compose -f homelabarr.yml up -d
+    ```
+    Open **http://your-server-ip:8084**, log in with **admin / admin**, and start deploying apps.
+    See the **[Quick Start Guide](guides/quick-start.md)** for all installation methods.
 
 ---
 
 ## Migration
 
-If you currently have a server with PG/MHS/PTS, have a look here before you start the installation: [Migration Guide](migration.md)
+If you currently have a server with PG/MHS/PTS, have a look here before you start the installation: [Migration Guide](install/migration.md)
 
 ---
 
@@ -48,8 +60,8 @@ If you currently have a server with PG/MHS/PTS, have a look here before you star
 - 20GB Disk Space
 
 - A VPS/VM or Dedicated Server
-- your Domain or buy a new [namecheap](https://www.namecheap.com/)
-- [Cloudflare](https://dash.cloudflare.com/sign-up) account free tier
+- your Domain or buy a new [namecheap](https://www.namecheap.com/) _(only required for Traefik setup)_
+- [Cloudflare](https://dash.cloudflare.com/sign-up) account free tier _(only required for Traefik setup)_
 
 ---
 
@@ -62,6 +74,9 @@ If you currently have a server with PG/MHS/PTS, have a look here before you star
 ---
 
 ## Pre-Install
+
+!!! note "Only required for Traefik + domain setup (Method 2)"
+    If you're using the Docker Compose method, skip this section and go straight to the [Quick Start Guide](guides/quick-start.md).
 
 1. Login to your Cloudflare Account & goto DNS click on Add record.
 1. Add 1 **A-Record** pointed to your server's ip.
@@ -80,17 +95,17 @@ If you currently have a server with PG/MHS/PTS, have a look here before you star
 
 ---
 
-### Easy Mode install
+### Install
 
-Follow our install instructions: [Install Guide](install/install.md)
+Follow our install instructions: [Quick Start Guide](guides/quick-start.md)
 
 ---
 
-## 📚 Documentation & Guides
+## Documentation & Guides
 
 ### Getting Started
-- **[Installation Guide](install/install.md)** - Complete setup instructions
-- **[Quick Start Guide](guides/quick-start.md)** - Get up and running fast
+- **[Quick Start Guide](guides/quick-start.md)** - All installation methods (Docker Compose, CLI, Local)
+- **[Linux Installation Guide](install/linux-installation.md)** - Detailed Linux setup instructions
 - **[Local Mode Setup](install/local-mode.md)** - Testing and development setup
 
 ### Advanced Topics
@@ -110,7 +125,7 @@ Follow our install instructions: [Install Guide](install/install.md)
 
 Kindly report any issues/broken-parts/bugs on [github](https://github.com/smashingtags/homelabarr-ce/issues) or [discord](https://discord.gg/Pc7mXX786x)
 
-**☕ [Support Development](https://ko-fi.com/homelabarr)** - Help keep HomelabARR CE growing!
+**[Support Development](https://ko-fi.com/homelabarr)** - Help keep HomelabARR CE growing!
 
 ---
 
@@ -125,7 +140,7 @@ Co-Dev -APPS- @CONTRIBUTORS-LIST
 
 ---
 
-## Contributors ✨
+## Contributors
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 

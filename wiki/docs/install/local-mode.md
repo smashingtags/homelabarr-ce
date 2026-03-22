@@ -588,7 +588,7 @@ docker ps
 ### What's Next?
 - Start adding your media files to the configured directories
 - Explore additional [applications](../apps/apps.md) from our collection
-- Consider upgrading to [Full Mode](install.md) when you're ready for external access
+- Consider upgrading to [Full Mode](../guides/quick-start.md) when you're ready for external access
 - Join our [Discord community](https://discord.gg/Pc7mXX786x) for tips and support
 
 ### Support Development

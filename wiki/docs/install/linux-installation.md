@@ -1,12 +1,66 @@
 # Linux Installation Guide
 
-## Overview
+---
 
-This guide covers the complete installation process for HomelabARR CE on Linux systems (Ubuntu/Debian). The installer has been fixed to work properly from any directory location and includes comprehensive error handling.
+## Method 1: Docker Compose (Recommended)
 
-## Prerequisites
+The fastest path to a running HomelabARR CE instance. No domain, no Traefik, no git clone required.
 
-### System Requirements
+### Requirements
+
+- **Docker Engine 24+** with **Docker Compose v2**
+- Linux x86_64 (Ubuntu 18.04+, Debian 10+, or any distro with Docker)
+- 4GB RAM minimum, 8GB+ recommended
+
+### Install in 4 Commands
+
+```bash
+# 1. Download the compose file
+curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
+
+# 2. Generate a JWT secret
+export JWT_SECRET=$(openssl rand -base64 32)
+
+# 3. Detect your Docker socket group ID
+export DOCKER_GID=$(getent group docker | cut -d: -f3)
+
+# 4. Start the stack
+docker compose -f homelabarr.yml up -d
+```
+
+### Environment Variables
+
+| Variable | Purpose | How to set |
+|----------|---------|------------|
+| `JWT_SECRET` | Signs auth tokens for the dashboard | `openssl rand -base64 32` |
+| `DOCKER_GID` | Grants the container access to the Docker socket | `getent group docker \| cut -d: -f3` |
+| `CLI_BRIDGE_HOST_PATH` | (Optional) Host path for CLI bridge scripts | Defaults to internal path if unset |
+
+### Accessing the Dashboard
+
+Open **http://your-server-ip:8084** in your browser. Default login: **admin / admin**.
+
+From the dashboard you can browse 157+ app templates and deploy them with one click.
+
+!!! tip "Persist environment variables"
+    Create a `.env` file next to `homelabarr.yml` so the stack survives restarts:
+    ```bash
+    echo "JWT_SECRET=$(openssl rand -base64 32)" > .env
+    echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> .env
+    ```
+
+!!! note "For Traefik + domain setup, see Method 2 below"
+    The Docker Compose method gives you the dashboard and one-click deploys. If you also want a reverse proxy with SSL and Authelia 2FA, continue with the CLI installation.
+
+---
+
+## Method 2: CLI Installation (Full Mode)
+
+This is the original installation method. It sets up Traefik, Authelia, Cloudflare DNS integration, and SSL certificates in addition to the app deployment system.
+
+### Prerequisites
+
+#### System Requirements
 - **Operating System**: Ubuntu 18.04+ or Debian 10+
 - **Architecture**: x86_64 (ARM not supported)
 - **RAM**: Minimum 4GB, Recommended 8GB+
@@ -14,19 +68,17 @@ This guide covers the complete installation process for HomelabARR CE on Linux s
 - **CPU**: 2+ cores recommended
 - **Network**: Internet connection for container downloads
 
-### Required Dependencies
+#### Required Dependencies
 The installer will automatically install these if missing:
 - **Docker**: Latest stable version
 - **Docker Compose**: v2.0+
 - **Git**: For repository management
 - **Curl/Wget**: For downloading components
 
-### Domain and DNS Requirements
+#### Domain and DNS Requirements
 - Valid domain name with Cloudflare DNS management
 - Cloudflare API token with Zone:Edit permissions
 - Subdomain configuration capability
-
-## Installation Process
 
 ### Step 1: Download and Prepare
 
@@ -77,9 +129,9 @@ After running the installer, you'll see the main menu:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    🚀 HomelabARR CE
+    HomelabARR CE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    
+
     [ 1 ] HomelabARR CE - Traefik + Authelia
     [ 2 ] HomelabARR CE - Applications
 

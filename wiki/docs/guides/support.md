@@ -33,7 +33,7 @@
 
 ### 🔍 Check Documentation First
 1. **Quick Start Guide** - [guides/quick-start.md](quick-start.md)
-2. **Installation Guides** - [install/install.md](../install/install.md) or [install/local-mode.md](../install/local-mode.md)
+2. **Installation Guides** - [install/install.md](../guides/quick-start.md) or [install/local-mode.md](../install/local-mode.md)
 3. **FAQ Section** - [guides/faq.md](faq.md)
 4. **Application Docs** - [apps/apps.md](../apps/apps.md)
 
