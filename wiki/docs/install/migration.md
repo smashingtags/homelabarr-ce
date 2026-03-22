@@ -15,165 +15,210 @@
 
 # Migration Guide
 
-This guide helps you migrate to HomelabARR CE from other Docker management platforms or cloud-based homelab setups.
+This guide covers migrating to HomelabARR CE from other Docker management platforms.
 
-!!! tip "Already using Docker with `/opt/appdata`?"
-    If your existing setup stores container data in `/opt/appdata/`, HomelabARR CE will pick it up automatically. Just install CE and your apps' data is already there.
+---
 
-**Benefits of migrating to HomelabARR CE:**
-- Web GUI with 157+ one-click deployable apps
-- No cloud API rate limits or daily quotas
-- Better performance with local storage
-- Enhanced privacy — data stays on your infrastructure
-- Optional Traefik reverse proxy with Authelia 2FA
-- Active development and community support
+## Migrating from Similar Docker Platforms
 
-# Prerequisites
+If your existing setup uses `/opt/appdata/` for container data and a `proxy` Docker network with Traefik, the migration is straightforward — HomelabARR CE uses the same structure.
 
-## From Other Docker Platforms
-If migrating from another Docker management system:
-- Backup all application data locally
-- If using cloud storage, download media files to your NAS first
-- Document current application configurations
-- Note your existing environment variables (domain, API keys, etc.)
+!!! tip "Same appdata? You're 90% done."
+    If your containers store data in `/opt/appdata/`, HomelabARR CE picks it up automatically. Your Plex databases, Sonarr configs, Radarr settings — all preserved.
 
-## Environment Migration Tool
+### Step 1: Backup Everything
 
-HomelabARR CE includes an automatic environment migrator that converts your existing `.env` file:
+Before making any changes:
 
 ```bash
-# From the homelabarr-ce directory
+# Backup your current .env file
+cp /opt/appdata/compose/.env /opt/appdata/compose/.env.backup
+
+# Backup your appdata (compress, this may take a while)
+sudo tar czf /opt/homelabarr-backup-$(date +%Y%m%d).tar.gz /opt/appdata/
+
+# Note your running containers
+docker ps --format "{{.Names}}" > /opt/running-containers.txt
+```
+
+### Step 2: Stop Existing Containers
+
+```bash
+# Stop all running containers (your data in /opt/appdata is safe)
+docker stop $(docker ps -q)
+```
+
+!!! warning "Don't remove containers yet"
+    Stopping is enough. Don't `docker rm` anything until you've verified CE works.
+
+### Step 3: Migrate Environment Variables
+
+HomelabARR CE includes a migration tool that converts your existing `.env`:
+
+```bash
+git clone https://github.com/smashingtags/homelabarr-ce.git
+cd homelabarr-ce
+sudo ln -sf "$(pwd)" /opt/homelabarr
+
+# Run the environment migrator
 bash apps/.subactions/envmigrate.sh
 ```
 
-This reads your existing `/opt/appdata/compose/.env` and rewrites it with HomelabARR CE defaults while preserving all your custom values (Cloudflare keys, domain, Plex claim tokens, VPN configs, image preferences).
+This reads `/opt/appdata/compose/.env` and rewrites it with CE-compatible defaults while **preserving all your existing values**:
 
-## Local NAS Requirements
-- **NAS System**: UnRAID, TrueNAS, or similar
-- **Network Share**: SMB/NFS export properly configured
-- **Storage Capacity**: Sufficient space for your media library
-- **Network**: Gigabit connection recommended for large libraries
+- Cloudflare credentials (email, API key, Zone ID)
+- Domain configuration
+- Plex claim tokens
+- VPN settings (Gluetun/WireGuard)
+- Container image preferences
+- Port configurations
+- API keys (IMDB, TVDB, TMDB)
+- All custom environment variables
 
-# Migration Steps
+### Step 4: Install HomelabARR CE
 
-## 1. Prepare Local Storage
+You have two options:
 
-### UnRAID Setup
+**Option A: Web GUI (Docker Compose)**
+
 ```bash
-# Configure user shares for media
-/mnt/user/media/movies
-/mnt/user/media/tv
-/mnt/user/downloads
-/mnt/user/appdata
+curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
+export JWT_SECRET=$(openssl rand -base64 32)
+export DOCKER_GID=$(getent group docker | cut -d: -f3)
+export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
+docker compose -f homelabarr.yml up -d
 ```
 
-### TrueNAS Setup  
+Open `http://your-server-ip:8084` — you'll see the CE dashboard with 157+ apps ready to deploy. Your existing `/opt/appdata` data is already there.
+
+**Option B: CLI Menu**
+
 ```bash
-# Create ZFS datasets
-/mnt/tank/media
-/mnt/tank/downloads
-/mnt/tank/appdata
+chmod +x install.sh
+find . -name "*.sh" -exec chmod +x {} \;
+sudo ./install.sh
 ```
 
-### Network Mount Configuration
+The interactive menu lets you:
+
+- **Option 1:** Set up Traefik + Authelia (if not already running)
+- **Option 2:** Install/Remove/Backup/Restore apps via the terminal menu
+
+### Step 5: Redeploy Your Apps
+
+Your app **data** is already in `/opt/appdata`. You just need to recreate the containers pointing to the same data:
+
+**Via the Web GUI:** Browse the app catalog → click Deploy → your existing config data in `/opt/appdata/<app>` is picked up automatically.
+
+**Via the CLI:** Option 2 → Install Apps → pick your category → pick your app.
+
+!!! tip "Check your apps after redeployment"
+    After deploying each app, verify it loaded your existing configuration:
+
+    - **Plex:** Library should be intact (check Settings → Libraries)
+    - **Sonarr/Radarr:** Series/movies should be listed (check Mass Editor)
+    - **qBittorrent:** Torrents should resume if data paths match
+    - **Authelia:** Users and 2FA should be preserved (stored in `/opt/appdata/authelia/`)
+
+### Step 6: Clean Up
+
+Once everything is verified:
+
 ```bash
-# Create mount points
+# Remove old containers that are no longer needed
+docker container prune
+
+# Remove old images
+docker image prune -a
+
+# Remove your backup if everything works (or keep it!)
+# rm /opt/homelabarr-backup-*.tar.gz
+```
+
+---
+
+## Migrating from Cloud-Based Setups
+
+If you're moving from a cloud-dependent system (Google Drive mounts, rclone cloud storage) to local NAS storage:
+
+### Prerequisites
+
+- **NAS System**: UnRAID, TrueNAS, Synology, or local drives
+- **Network Share**: SMB or NFS configured
+- **Storage**: Enough space for your media library
+
+### Download Media from Cloud
+
+Before switching, get your media local:
+
+```bash
+# Example: rclone sync from Google Drive to local NAS
+rclone sync gdrive:media /mnt/nas/media --progress --transfers 8
+```
+
+### Set Up Local Storage
+
+```bash
+# Create mount points for NAS shares
 sudo mkdir -p /mnt/nas/{media,downloads,appdata}
 
-# Mount NAS shares
-sudo mount -t cifs //nas.local/media /mnt/nas/media -o uid=1000,gid=1000
-sudo mount -t nfs nas.local:/volume1/downloads /mnt/nas/downloads
+# Mount via SMB
+sudo mount -t cifs //nas.local/media /mnt/nas/media -o uid=1000,gid=1000,username=user,password=pass
+
+# Or mount via NFS
+sudo mount -t nfs nas.local:/volume1/media /mnt/nas/media
 ```
 
-## 2. Backup Application Data
+Add to `/etc/fstab` for persistence:
 
-Create local backups of your application configurations:
-
-```bash
-# Run backup script (creates local backup)
-sudo ./backup.sh
+```
+//nas.local/media  /mnt/nas/media  cifs  uid=1000,gid=1000,username=user,password=pass,_netdev  0  0
 ```
 
-This creates `/appbackups/` directory with all application configurations and databases.
+### Update Application Paths
 
-## 3. Install HomelabARR CE
+After installing CE and redeploying apps, update media paths:
 
-Follow the standard installation on your host system:
+| App | Setting | Old Path | New Path |
+|-----|---------|----------|----------|
+| Plex | Library locations | `/mnt/unionfs/media/movies` | `/mnt/nas/media/movies` |
+| Sonarr | Root folder | `/mnt/unionfs/media/tv` | `/mnt/nas/media/tv` |
+| Radarr | Root folder | `/mnt/unionfs/media/movies` | `/mnt/nas/media/movies` |
+| qBittorrent | Save path | `/mnt/unionfs/downloads` | `/mnt/nas/downloads` |
+| SABnzbd | Complete folder | `/mnt/unionfs/downloads/complete` | `/mnt/nas/downloads/complete` |
 
-1. Order VPS or prepare local server with Ubuntu 22.04
-2. Follow installation instructions in the [Install Guide](../guides/quick-start.md)
-3. Return here once HomelabARR CE is installed
+### Benefits of Local Storage
 
-## 4. Configure Local Storage Integration
+- **No API rate limits** — process unlimited files simultaneously
+- **No cloud subscription costs** — your storage, your hardware
+- **Better performance** — local I/O is faster than cloud transfers
+- **Privacy** — data stays on your network
+- **Simpler setup** — no rclone configs, mount scripts, or cloud auth
 
-### Set Up Mount System
-```bash
-# Create required directories
-sudo mkdir -p /opt/appdata/system
-sudo chown -R 1000:1000 /opt/appdata
-```
+---
 
-### Configure for NAS Integration
-The modern mount system supports:
-- UnionFS/MergerFS for combining multiple drives
-- Direct NAS share mounting
-- Local disk array management
+## Compatibility Reference
 
-Deploy the mount system through HomelabARR CE CLI under System section.
+HomelabARR CE is compatible with setups that use:
 
-## 5. Restore Applications
+| Component | Expected Path/Value |
+|-----------|-------------------|
+| App data | `/opt/appdata/` |
+| Compose .env | `/opt/appdata/compose/.env` |
+| Docker network | `proxy` |
+| Reverse proxy | Traefik v2/v3 |
+| Authentication | Authelia |
+| SSL | Let's Encrypt via Cloudflare DNS challenge |
+| User/Group ID | 1000:1000 |
 
-After configuring local storage:
+If your existing setup matches these conventions, the migration is essentially a drop-in replacement.
 
-1. Install applications through HomelabARR CE CLI
-2. Restore configuration data from backups
-3. Update path configurations to point to local NAS
-4. Verify application access to shared storage
-
-# Path Migration Examples
-
-## From Cloud Paths to NAS Paths
-
-**Old Cloud Structure:**
-```
-/mnt/unionfs/cloud/media/movies
-/mnt/unionfs/cloud/media/tv
-/mnt/unionfs/cloud/downloads
-```
-
-**New NAS Structure:**
-```
-/mnt/nas/media/movies
-/mnt/nas/media/tv  
-/mnt/nas/downloads
-```
-
-## Application Configuration Updates
-
-Update your application paths in:
-- Plex library locations
-- Sonarr/Radarr root folders
-- Download client destination paths
-- Backup target locations
-
-# Performance Optimization
-
-## Local Storage Benefits
-- **No API Limits**: Process unlimited files simultaneously
-- **Better Speed**: Local storage faster than cloud transfers
-- **Real-time Access**: No download delays for media playback
-- **Reduced Complexity**: Direct filesystem access
-
-## Recommended Settings
-- Enable hardware transcoding for media servers
-- Configure cache drives for frequently accessed content
-- Set up proper backup strategies for critical data
-- Monitor storage health and capacity
+---
 
 ## Support
 
-Kindly report any issues/broken-parts/bugs on [github](https://github.com/smashingtags/homelabarr-ce/issues) or [discord](https://discord.gg/Pc7mXX786x)
+Having trouble migrating?
 
-**☕ [Support Development](https://ko-fi.com/homelabarr)** - Migration guides saving you time? Help us maintain and improve migration tools!
-
-- Join our <a href="https://discord.gg/Pc7mXX786x">
+- **[Discord](https://discord.gg/Pc7mXX786x)** — Ask in the #support channel
+- **[GitHub Issues](https://github.com/smashingtags/homelabarr-ce/issues)** — Report migration bugs
+- **Email** — michael@mjashley.com
