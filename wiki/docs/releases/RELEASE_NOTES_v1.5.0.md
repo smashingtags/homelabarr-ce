@@ -82,7 +82,7 @@ image: ghcr.io/linuxserver/radarr:latest
 # Standardized volume configuration
 volumes:
   unionfs:
-    driver: local-persist
+    driver: native bind mount
     driver_opts:
       mountpoint: /mnt
 ```

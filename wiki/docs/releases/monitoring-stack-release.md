@@ -22,7 +22,7 @@ This release introduces a comprehensive monitoring and observability stack to Ho
 - **Portainer** - Docker management UI with container insights
 
 ### 🔧 Infrastructure Enhancements
-- **Enhanced Volume Driver** - Custom Go-based local-persist driver
+- **Enhanced Volume Driver** - Custom Go-based native bind mount driver
   - 83% improvement in container startup times
   - 95% reduction in memory usage
   - Automated installation and systemd service management

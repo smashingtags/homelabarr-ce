@@ -24,7 +24,7 @@
 - **Multi-architecture container builds** (AMD64/ARM64 prep)
 - **Improved error handling** in installation scripts
 - **Network standardization** across all applications
-- **Volume management enhancement** with local-persist plugin
+- **Volume management enhancement** with native Docker bind mounts
 - **CI/CD pipeline maturity** at smashingtags/homelabarr-containers
 
 #### 📄 Documentation Overhaul

@@ -140,34 +140,46 @@ networks:
     name: proxy
     external: true
 
-# Named volumes with local-persist
+# Named volumes with native bind mounts
 volumes:
   uploader_config:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/uploader/config
+      type: none
+      o: bind
+      device: ${APPDATA}/uploader/config
   
   uploader_data:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/uploader/data
+      type: none
+      o: bind
+      device: ${APPDATA}/uploader/data
   
   uploader_servicekeys:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/system/servicekeys
+      type: none
+      o: bind
+      device: ${APPDATA}/system/servicekeys
   
   uploader_system:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/system/uploader
+      type: none
+      o: bind
+      device: ${APPDATA}/system/uploader
   
   rclone_config:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/rclone/config
+      type: none
+      o: bind
+      device: ${APPDATA}/rclone/config
   
   unionfs:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${UNIONFS}/unionfs
+      type: none
+      o: bind
+      device: ${UNIONFS}/unionfs
