@@ -46,7 +46,7 @@ _Docker container management for homelabs. 157+ apps, one-click deploy. Optional
 
 ## Migration
 
-If you currently have a server with PG/MHS/PTS, have a look here before you start the installation: [Migration Guide](install/migration.md)
+Migrating from another Docker management platform? Check the [Migration Guide](install/migration.md) before you start.
 
 ---
 
