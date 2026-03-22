@@ -19,6 +19,9 @@
     <a href="https://ko-fi.com/homelabarr">
         <img src="https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=kofi&logoColor=white" alt="Ko-fi">
     </a>
+    <a href="https://smashingtags.github.io/homelabarr-ce/">
+        <img src="https://img.shields.io/badge/Docs-Wiki-blue?logo=readthedocs&logoColor=white" alt="Documentation">
+    </a>
 </p>
 
 **GUI-driven Docker container management for homelabbers.** Deploy and manage 157 self-hosted apps from a single dashboard — no more copy-pasting Docker Compose files.
