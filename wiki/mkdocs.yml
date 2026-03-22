@@ -17,7 +17,7 @@
 
 # Project information
 site_name: HomelabARR Wiki
-use_directory_urls: false
+use_directory_urls: true
 site_url: ""
 site_author: HomelabARR CE
 site_description: Documentation for HomelabARR Community Edition — free, open-source Docker container management
