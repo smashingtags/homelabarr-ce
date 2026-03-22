@@ -174,6 +174,153 @@ docker image prune -a
 
 ---
 
+## Migrating from PGBlitz / PTS / PlexGuide
+
+If you're running PGBlitz, PTS (MHA-Team fork), or the original PlexGuide — your setup is older but the migration is straightforward. Your Plex libraries, Sonarr configs, and all your app data will survive the move.
+
+!!! tip "Your data is safe"
+    PGBlitz/PTS stores everything in `/opt/appdata/` — the same path HomelabARR CE uses. Your Plex database, Sonarr series, Radarr movies — all of it carries over untouched.
+
+### What's Different
+
+| | PGBlitz/PTS | HomelabARR CE |
+|---|---|---|
+| **Deployment** | Ansible playbooks | Docker Compose or Web GUI |
+| **Docker network** | `plexguide` | `proxy` |
+| **Traefik** | v1 (frontend/backend rules) | v2/v3 (routers/services) |
+| **Media storage** | Cloud (Google Drive + rclone + mergerfs) | Local NAS (recommended) or cloud |
+| **App data** | `/opt/appdata/` | `/opt/appdata/` (same) |
+| **Volume driver** | None (Ansible direct mounts) | Docker native bind mounts |
+| **Maintenance** | Abandoned (last updated 2021) | Actively maintained |
+
+### Step-by-Step Migration
+
+#### 1. Backup your configs
+
+```bash
+# Backup your rclone config (you may need this later)
+cp ~/.config/rclone/rclone.conf ~/rclone.conf.backup
+
+# Backup all app data
+sudo tar czf ~/pgblitz-appdata-backup-$(date +%Y%m%d).tar.gz /opt/appdata/
+```
+
+#### 2. Document your current setup
+
+Before changing anything, note what you're running:
+
+```bash
+# List all running containers
+docker ps --format "{{.Names}}\t{{.Image}}\t{{.Ports}}" > ~/my-containers.txt
+cat ~/my-containers.txt
+```
+
+Save this list — you'll use it to know what to redeploy.
+
+#### 3. Decide: keep cloud storage or go local?
+
+**If you're keeping cloud storage (Google Drive + rclone):**
+Your rclone mounts at `/mnt/unionfs` or `/mnt` will continue working. CE's app templates mount `/mnt` the same way. Skip to Step 4.
+
+**If you're moving to local NAS (recommended):**
+See the [Cloud to Local Migration](#migrating-from-cloud-based-setups) section below for how to download your media and set up NAS mounts. Do this BEFORE proceeding.
+
+#### 4. Install HomelabARR CE
+
+```bash
+# One-line install
+sudo wget -qO- https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh | sudo bash
+
+# Or Docker Compose for the web GUI
+curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
+export JWT_SECRET=$(openssl rand -base64 32)
+export DOCKER_GID=$(getent group docker | cut -d: -f3)
+export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
+docker compose -f homelabarr.yml up -d
+```
+
+#### 5. Create the proxy network
+
+PGBlitz uses `plexguide` network. CE uses `proxy`. Create it:
+
+```bash
+docker network create proxy 2>/dev/null || true
+```
+
+#### 6. Redeploy apps one at a time
+
+For each app in your `my-containers.txt` list, stop the old container and redeploy through CE:
+
+```bash
+# Example: migrate Sonarr
+docker stop sonarr && docker rm sonarr
+
+# Redeploy via CE web GUI (http://your-ip:8084) or CLI
+sudo homelabarr-cli -i
+# → Option 2 → Install Apps → mediamanager → sonarr
+```
+
+The new Sonarr container will:
+- Mount your existing `/opt/appdata/sonarr` config (series, settings, history — all preserved)
+- Mount `/mnt` for media access
+- Use Traefik v2/v3 labels (if you set up Traefik)
+- Work with the `proxy` network
+
+!!! warning "Do one app at a time"
+    Don't stop everything at once. Migrate one container, verify it works, then move to the next. Start with something non-critical like Tautulli or NZBGet.
+
+#### 7. Handle Traefik
+
+PGBlitz uses Traefik v1. CE uses Traefik v2/v3. You have two options:
+
+**Option A: Fresh Traefik (recommended)**
+Stop the old Traefik and let CE deploy a new one:
+```bash
+docker stop traefik && docker rm traefik
+# Via CLI: Option 1 → Traefik + Authelia
+```
+
+**Option B: Keep existing Traefik**
+If you've customized your Traefik v1 setup and don't want to change it, you can keep it — but CE's app templates use v2 labels which won't work with Traefik v1. You'd need to add v1 labels manually to each container.
+
+#### 8. Verify Plex
+
+This is the one everyone worries about. After redeploying Plex through CE:
+
+1. Open Plex Web (your existing URL or `http://your-ip:32400/web`)
+2. Check Settings → Libraries — all libraries should be listed
+3. Play something — verify transcoding works
+4. Check Settings → Server → General — your Plex claim token and server name should be intact
+
+Your Plex database, watch history, posters, metadata — everything lives in `/opt/appdata/plex` and was never touched during the migration.
+
+#### 9. Clean up PGBlitz/PTS
+
+Once everything is verified through CE:
+
+```bash
+# Remove old PGBlitz/PTS installation
+sudo rm -rf /opt/plexguide 2>/dev/null
+sudo rm -rf /opt/pgblitz 2>/dev/null
+sudo rm -rf /opt/pts 2>/dev/null
+sudo rm -rf /opt/coreapps 2>/dev/null
+sudo rm -rf /opt/communityapps 2>/dev/null
+
+# Remove old plexguide network (after all containers are on proxy)
+docker network rm plexguide 2>/dev/null
+
+# Remove old cron jobs
+crontab -l | grep -v "plexguide\|pgblitz\|pts" | crontab -
+
+# Clean up old images
+docker image prune -a
+```
+
+!!! tip "Keep your rclone config"
+    Even if you moved to local NAS, keep `~/rclone.conf.backup` — you might need it to download remaining files from Google Drive later.
+
+---
+
 ## Migrating from Cloud-Based Setups
 
 If you're moving from a cloud-dependent system (Google Drive mounts, rclone cloud storage) to local NAS storage:
