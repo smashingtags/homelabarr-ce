@@ -100,14 +100,9 @@ docker compose -f homelabarr.yml up -d
 
 ---
 
-## Method 3: CLI Installation (Full Mode)
+## Method 3: CLI Installation
 
-For users who want the full stack: **Traefik reverse proxy + domain-based routing + SSL certificates + Authelia 2FA**.
-
-### Requirements (in addition to prerequisites above)
-
-- A domain name with [Cloudflare](https://dash.cloudflare.com/sign-up) DNS management
-- Cloudflare API token with Zone:Edit permissions
+An interactive terminal-based installer with a menu system. You choose what to install — nothing is forced.
 
 ### Installation
 
@@ -115,20 +110,49 @@ For users who want the full stack: **Traefik reverse proxy + domain-based routin
 git clone https://github.com/smashingtags/homelabarr-ce.git
 cd homelabarr-ce
 chmod +x install.sh
+find . -name "*.sh" -exec chmod +x {} \;
 sudo ln -sf "$(pwd)" /opt/homelabarr
 sudo ./install.sh
 ```
 
-The interactive menu will guide you through:
+If Docker isn't installed, the installer runs the preinstall setup first (installs Docker, creates directories, configures networking).
 
-1. **Option 1: Traefik + Authelia** — Sets up reverse proxy, SSL, and authentication (run this first)
-2. **Option 2: Applications** — Deploys media servers, managers, and download clients
+Once Docker is detected, you'll see the **main menu**:
 
-After installation, access your services at:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    🚀 HomelabARR CLI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-- `https://your-domain.com` — Main dashboard
-- `https://traefik.your-domain.com` — Traefik dashboard
-- `https://auth.your-domain.com` — Authelia login
+    [ 1 ] HomelabARR CLI - Traefik + Authelia
+    [ 2 ] HomelabARR CLI - Applications
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    [ EXIT or Z ] - Exit
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Option 1: Traefik + Authelia** — Sets up a reverse proxy with SSL certificates and optional 2FA authentication. Requires a domain name and Cloudflare account. Only install this if you want domain-based access (e.g., `https://plex.yourdomain.com`).
+
+**Option 2: Applications** — Opens the app management menu:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    🚀  HomelabARR CLI Applications Section Menu
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    [ 1 ] Install  Apps
+    [ 2 ] Remove   Apps
+    [ 3 ] Backup   Apps
+    [ 4 ] Restore  Apps
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Selecting **Install Apps** shows all available categories (mediaserver, downloadclients, mediamanager, addons, etc.). Pick a category, then pick an app — it deploys via Docker Compose using the template YAML.
+
+!!! tip "You don't need Traefik to use the CLI"
+    Option 1 (Traefik + Authelia) is completely optional. You can skip straight to Option 2 and install apps directly. Without Traefik, apps are accessed by IP and port number (e.g., `http://192.168.1.100:32400` for Plex).
 
 ---
 
