@@ -43,15 +43,6 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
       
-    - name: Debug environment
-      run: |
-        echo "Registry: ${{ env.REGISTRY }}"
-        echo "Namespace: ${{ env.NAMESPACE }}"
-        echo "GitHub Actor: ${{ github.actor }}"
-        echo "Frontend Image: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}"
-        echo "Backend Image: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}"
-        echo "Using PAT for GHCR authentication"
-    
     - name: Log in to Container Registry
       if: github.event_name != 'pull_request'
       run: |
@@ -94,12 +85,14 @@ jobs:
           org.opencontainers.image.licenses=MIT
           
     - name: Build and push frontend image
+      id: build-frontend
       uses: docker/build-push-action@v7
       with:
         context: .
         file: ./Dockerfile
         platforms: ${{ github.event_name != 'pull_request' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
         push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
+        load: ${{ github.event_name == 'pull_request' }}
         tags: ${{ steps.meta-frontend.outputs.tags }}
         labels: ${{ steps.meta-frontend.outputs.labels }}
         cache-from: type=gha
@@ -108,36 +101,32 @@ jobs:
           NODE_ENV=production
 
     - name: Build and push backend image
+      id: build-backend
       uses: docker/build-push-action@v7
       with:
         context: .
         file: ./Dockerfile.backend
         platforms: ${{ github.event_name != 'pull_request' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
         push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
+        load: ${{ github.event_name == 'pull_request' }}
         tags: ${{ steps.meta-backend.outputs.tags }}
         labels: ${{ steps.meta-backend.outputs.labels }}
         cache-from: type=gha
         cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
         build-args: |
           NODE_ENV=production
-          
+
     - name: Test image functionality
       if: github.event_name == 'pull_request'
       run: |
         echo "Testing frontend image..."
         docker run --rm --detach --name test-frontend --publish 18080:8080 \
           ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:pr-${{ github.event.number }}
-        
-        # Wait for container to start
+
         sleep 10
-        
-        # Test health endpoint
         curl -f http://localhost:18080/health || echo "Frontend health check failed (expected without backend)"
-        
-        # Cleanup
         docker stop test-frontend
-        
-        echo "✅ Frontend image test completed"
+        echo "Frontend image test completed"
         
     - name: Update deployment manifest
       if: github.ref == 'refs/heads/main'
