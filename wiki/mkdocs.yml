@@ -309,9 +309,9 @@ nav:
       - File Sharing: pe/file-sharing.md
       - Licensing & Pricing: pe/licensing.md
   - Community:
+      - History: guides/history.md
       - Support: guides/support.md
       - FAQ: guides/faq.md
-      - Documentation Audit: guides/documentation-audit-report.md
       - Discord: https://discord.gg/Pc7mXX786x
       - GitHub Discussions: https://github.com/smashingtags/homelabarr-ce/discussions
 
