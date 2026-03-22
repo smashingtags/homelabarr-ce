@@ -5,6 +5,15 @@ import yaml from 'yaml';
 import { DeploymentLogger } from './deployment-logger.js';
 
 /**
+ * Sanitize a path component to prevent directory traversal attacks.
+ * Strips .., /, \, and null bytes from user-supplied path segments.
+ */
+function sanitizePathComponent(input) {
+  if (!input || typeof input !== 'string') return '';
+  return input.replace(/[\/\\\.]{2,}/g, '').replace(/[\/\\\0]/g, '').replace(/^\.+/, '');
+}
+
+/**
  * CLI Bridge - Connects React frontend to HomelabARR CLI system
  * Provides seamless integration with 100+ proven Docker applications
  */
@@ -165,7 +174,7 @@ export class CLIBridge {
    */
   async deployApplication(appId, config, deploymentMode) {
     const [category, appName] = appId.split('-');
-    const appPath = path.join(this.appsPath, category, `${appName}.yml`);
+    const appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
     
     if (!fs.existsSync(appPath)) {
       throw new Error(`Application ${appId} not found at ${appPath}`);
@@ -419,7 +428,7 @@ export class CLIBridge {
    */
   async stopApplication(appId) {
     const [category, appName] = appId.split('-');
-    const appPath = path.join(this.appsPath, category, `${appName}.yml`);
+    const appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
     
     return await this.executeDockerCompose(appPath, 'down');
   }
@@ -429,7 +438,7 @@ export class CLIBridge {
    */
   async removeApplication(appId, removeVolumes = false) {
     const [category, appName] = appId.split('-');
-    const appPath = path.join(this.appsPath, category, `${appName}.yml`);
+    const appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
     
     const command = removeVolumes ? 'down -v' : 'down';
     return await this.executeDockerCompose(appPath, command);
@@ -440,7 +449,7 @@ export class CLIBridge {
    */
   async getApplicationLogs(appId, lines = 100) {
     const [category, appName] = appId.split('-');
-    const appPath = path.join(this.appsPath, category, `${appName}.yml`);
+    const appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
     
     return await this.executeDockerCompose(appPath, `logs --tail=${lines}`);
   }
