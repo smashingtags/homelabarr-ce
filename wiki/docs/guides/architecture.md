@@ -140,7 +140,7 @@ graph TB
 ```yaml
 volumes:
   app-data:
-    driver: native bind mount
+    driver: local
     driver_opts:
       mountpoint: /opt/appdata/application
 ```

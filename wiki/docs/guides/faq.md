@@ -63,8 +63,8 @@ You would need to:
 
 For proper external access, consider upgrading to Full Mode.
 
-### What's the native Docker bind mounts?
-Local-persist is a Docker volume plugin that stores container data in specific host directories (`/opt/appdata`) rather than Docker's managed volumes. This makes backup and migration easier.
+### How does HomelabARR handle storage volumes?
+HomelabARR uses Docker's native bind mount volumes to store container data in specific host directories (`/opt/appdata`) rather than Docker's managed volume location. No plugins required — it works with standard Docker out of the box.
 
 ## Full Mode Questions
 
@@ -125,7 +125,7 @@ docker images | grep -v REPOSITORY | awk '{print $1":"$2}' | xargs -L1 docker pu
 
 ### Where is my application data stored?
 - **Local Mode**: `/opt/appdata/<application-name>`
-- **Full Mode**: Same location, managed by native bind mount volumes
+- **Full Mode**: Same location, managed by Docker bind mount volumes
 
 ## Troubleshooting Questions
 
