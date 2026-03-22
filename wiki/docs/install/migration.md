@@ -104,36 +104,73 @@ The interactive menu lets you:
 - **Option 1:** Set up Traefik + Authelia (if not already running)
 - **Option 2:** Install/Remove/Backup/Restore apps via the terminal menu
 
-### Step 5: Redeploy Your Apps
+### Step 5: Redeploy Your Apps (One at a Time)
 
-Your app **data** is already in `/opt/appdata`. You just need to recreate the containers pointing to the same data:
+Your app **data** is already in `/opt/appdata`. You need to stop each old container and redeploy it through CE. Do this **one app at a time** — not all at once.
 
-**Via the Web GUI:** Browse the app catalog → click Deploy → your existing config data in `/opt/appdata/<app>` is picked up automatically.
+!!! warning "Why one at a time?"
+    If you stop everything and something goes wrong during redeployment, you've lost all your services. Doing it one at a time means you can roll back a single container if needed.
 
-**Via the CLI:** Option 2 → Install Apps → pick your category → pick your app.
-
-!!! tip "Check your apps after redeployment"
-    After deploying each app, verify it loaded your existing configuration:
-
-    - **Plex:** Library should be intact (check Settings → Libraries)
-    - **Sonarr/Radarr:** Series/movies should be listed (check Mass Editor)
-    - **qBittorrent:** Torrents should resume if data paths match
-    - **Authelia:** Users and 2FA should be preserved (stored in `/opt/appdata/authelia/`)
-
-### Step 6: Clean Up
-
-Once everything is verified:
+For each app (e.g., Sonarr):
 
 ```bash
-# Remove old containers that are no longer needed
-docker container prune
+# 1. Stop and remove the OLD container
+docker stop sonarr && docker rm sonarr
 
-# Remove old images
+# 2. Redeploy through CE
+#    Via Web GUI: Browse catalog → find Sonarr → Deploy (Standard mode)
+#    Via CLI: Option 2 → Install Apps → mediamanager → sonarr
+
+# 3. Verify it starts and loads your existing config
+docker logs sonarr --tail 20
+```
+
+The new container will mount `/opt/appdata/sonarr` (your existing config) and `/mnt` (your media) using Docker's native bind mounts — no plugins needed.
+
+!!! info "What changed under the hood"
+    Your old containers used a `local-persist` Docker volume plugin to map `/mnt`. HomelabARR CE uses Docker's built-in `local` driver with bind mounts instead. Same result, zero plugin dependencies. Your data and paths are unchanged.
+
+**Suggested order:**
+
+1. Non-critical apps first (Tautulli, Heimdall, Dozzle)
+2. Download clients (NZBGet, qBittorrent, SABnzbd)
+3. Media managers (Sonarr, Radarr, Lidarr, Prowlarr)
+4. Media servers (Jellyfin, Plex — these have the biggest configs)
+
+After each app, verify:
+
+- **Sonarr/Radarr:** Series/movies listed in Mass Editor
+- **qBittorrent:** Torrents resume, download path is correct
+- **Jellyfin/Plex:** Libraries intact, playback works
+- **Authelia:** Users and 2FA preserved (`/opt/appdata/authelia/`)
+
+### Step 6: Clean Up Legacy Components
+
+Once all apps are redeployed through CE:
+
+```bash
+# Stop the old mount container (it's been failing anyway if you're not using cloud storage)
+docker stop mount && docker rm mount
+
+# Stop restic and vnstat if you no longer need them
+docker stop restic vnstat && docker rm restic vnstat
+
+# Remove the old local-persist volume (data is safe — it just pointed at /mnt)
+docker volume rm compose_unionfs 2>/dev/null
+
+# Remove the local-persist plugin/binary
+sudo rm /usr/bin/docker-volume-local-persist 2>/dev/null
+sudo rm /run/docker/plugins/local-persist.sock 2>/dev/null
+
+# Clean up old images
 docker image prune -a
 
 # Remove your backup if everything works (or keep it!)
 # rm /opt/homelabarr-backup-*.tar.gz
 ```
+
+!!! tip "Keep Traefik and Authelia"
+    If your Traefik and Authelia are working, **don't redeploy them**. They don't use `local-persist` and CE doesn't need to manage them. Leave them running.
 
 ---
 
