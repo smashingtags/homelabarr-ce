@@ -411,7 +411,7 @@ jobs:
           retention-days: 90
 
       - name: Comment PR with security summary
-        if: github.event_name == 'pull_request' && (needs.shell-security-analysis.result == 'success' || needs.compose-security-validation.result == 'success' || needs.docker-vulnerability-scan.result == 'success')
+        if: github.event_name == 'pull_request' && (needs.shell-security-analysis.result != 'skipped' || needs.compose-security-validation.result != 'skipped' || needs.docker-vulnerability-scan.result != 'skipped')
         uses: actions/github-script@v8
         with:
           script: |
