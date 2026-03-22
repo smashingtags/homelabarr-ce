@@ -44,25 +44,21 @@ These containers may fail due to outdated Docker image references:
 
 **Requires Manual Review:** ~64 containers with version-specific tags
 
-### ❌ **Category 3: Requires Native Bind Mount Plugin**
-These containers CANNOT deploy without the native bind mount Docker plugin:
+### ✅ **Category 3: Media Stack (unionfs volume)**
+These containers use a shared `unionfs` volume that maps to `/mnt` on the host. Ensure `/mnt` exists before deploying:
 
-**Media Stack (ALL require unionfs):**
-- Plex, Jellyfin, Emby (Media Servers) ❌ TESTED
-- Radarr, Sonarr, Lidarr (Media Managers) ❌ TESTED
+```bash
+sudo mkdir -p /mnt
+sudo chown 1000:1000 /mnt
+```
+
+**Media Stack apps:**
+- Plex, Jellyfin, Emby (Media Servers)
+- Radarr, Sonarr, Lidarr (Media Managers)
 - qBittorrent, SABnzbd, NZBGet (Download Clients)
 - Bazarr, Tautulli, Prowlarr (Supporting Services)
 
-**Why They Fail:**
-```yaml
-volumes:
-  unionfs:
-    driver: native bind mount
-    driver_opts:
-      mountpoint: /mnt
-```
-
-**Error:** `plugin "native bind mount" not found`
+No plugins required — these use Docker's native bind mount driver.
 
 ## 🚀 Quick Start Guide
 
@@ -124,8 +120,8 @@ RADARRIMAGE=lscr.io/linuxserver/radarr:latest
 **Symptom:** `pull access denied` or `repository does not exist`
 **Solution:** Update image reference to `latest` or correct registry
 
-### Issue 3: Native Bind Mount Plugin
-**Symptom:** `plugin "native bind mount" not found`
+### Issue 3: Docker Bind Mount Volumes
+**Symptom:** `volume driver "local" configuration error`
 **Solution:** Install plugin or skip unionfs containers for now
 
 ### Issue 4: Network Configuration
