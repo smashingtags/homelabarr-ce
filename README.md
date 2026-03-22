@@ -24,6 +24,24 @@
     </a>
 </p>
 
+<p align="center">
+    <a href="https://ce-demo.homelabarr.com">
+        <img src="https://img.shields.io/badge/CE_Demo-Live-brightgreen?logo=docker&logoColor=white" alt="CE Demo">
+    </a>
+    <a href="https://demo.homelabarr.com">
+        <img src="https://img.shields.io/badge/PE_Demo-Live-brightgreen?logo=docker&logoColor=white" alt="PE Demo">
+    </a>
+    <a href="https://homelabarr.com">
+        <img src="https://img.shields.io/badge/HomelabARR-Website-FF8C1A?logo=firefox&logoColor=white" alt="HomelabARR">
+    </a>
+    <a href="https://imogenlabs.ai">
+        <img src="https://img.shields.io/badge/Imogen_Labs-AI-8B5CF6?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PHBhdGggZD0iTTEyIDJMMiA3bDEwIDUgMTAtNXoiLz48L3N2Zz4=&logoColor=white" alt="Imogen Labs">
+    </a>
+    <a href="https://mjashley.com">
+        <img src="https://img.shields.io/badge/Michael_Ashley-Portfolio-374151?logo=googlechrome&logoColor=white" alt="Michael Ashley">
+    </a>
+</p>
+
 **GUI-driven Docker container management for homelabbers.** Deploy and manage 157 self-hosted apps from a single dashboard — no more copy-pasting Docker Compose files.
 
 ---
