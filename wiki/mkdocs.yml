@@ -170,7 +170,6 @@ nav:
       - Cloudflare: install/cloudflare.md
       - cf-companion: install/cf-companion.md
       - Traefik: install/traefik.md
-      - Local-Persist Plugin: setup/local-persist-integration.md
   - Deployment Guides:
       - Container Deployment: guides/deployment-guide.md
   - Developer Documentation:

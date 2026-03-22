@@ -31,6 +31,8 @@ networks:
     driver: bridge
 volumes:
   unionfs:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: /mnt
+      type: none
+      o: bind
+      device: /mnt
