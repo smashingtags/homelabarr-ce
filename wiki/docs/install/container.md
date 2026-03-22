@@ -2,7 +2,7 @@
 
 <p align="center">
     <a href="https://discord.gg/Pc7mXX786x">
-        <img src="https://discord.com/api/guilds/830478558995415100/widget.png?label=Discord%20Server&logo=discord" alt="Join HomelabARR CE on Discord">
+        <img src="https://discord.com/api/guilds/1334411584927301682/widget.png?label=Discord%20Server&logo=discord" alt="Join HomelabARR CE on Discord">
     </a><br />
     <img src="https://img.shields.io/liberapay/receives/homelabarr.svg?logo=liberapay">
     <a href="https://github.com/smashingtags/homelabarr-ce/releases/latest">
