@@ -64,7 +64,10 @@ sudo ln -sf "$(pwd)" /opt/homelabarr
 bash apps/.subactions/envmigrate.sh
 ```
 
-This reads `/opt/appdata/compose/.env` and rewrites it with CE-compatible defaults while **preserving all your existing values**:
+!!! warning "Back up your .env first"
+    The migrator rewrites your `.env` from a template. It preserves the standard variables listed below, but **any custom variables you added manually will be dropped**. Back up your original `.env` before running.
+
+This reads `/opt/appdata/compose/.env` and rewrites it with CE-compatible defaults while preserving these standard values:
 
 - Cloudflare credentials (email, API key, Zone ID)
 - Domain configuration
@@ -73,7 +76,8 @@ This reads `/opt/appdata/compose/.env` and rewrites it with CE-compatible defaul
 - Container image preferences
 - Port configurations
 - API keys (IMDB, TVDB, TMDB)
-- All custom environment variables
+
+If you have custom environment variables not in this list, copy them from your backup after running the migrator.
 
 ### Step 4: Install HomelabARR CE
 
