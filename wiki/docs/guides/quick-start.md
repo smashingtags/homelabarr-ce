@@ -109,7 +109,21 @@ docker compose -f homelabarr.yml up -d
 
 An interactive terminal-based installer with a menu system. You choose what to install — nothing is forced.
 
-### Installation
+### One-Line Install
+
+```bash
+sudo wget -qO- https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh | sudo bash
+```
+
+Then open the menu:
+
+```bash
+sudo homelabarr-cli -i
+```
+
+That's it. The script clones the repo to `/opt/homelabarr`, sets permissions, and installs the `homelabarr-cli` command.
+
+### Manual Install (alternative)
 
 ```bash
 git clone https://github.com/smashingtags/homelabarr-ce.git
