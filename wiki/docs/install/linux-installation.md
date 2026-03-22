@@ -24,7 +24,10 @@ export JWT_SECRET=$(openssl rand -base64 32)
 # 3. Detect your Docker socket group ID
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
 
-# 4. Start the stack
+# 4. Set CORS origin to your server's IP
+export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
+
+# 5. Start the stack
 docker compose -f homelabarr.yml up -d
 ```
 
@@ -34,6 +37,7 @@ docker compose -f homelabarr.yml up -d
 |----------|---------|------------|
 | `JWT_SECRET` | Signs auth tokens for the dashboard | `openssl rand -base64 32` |
 | `DOCKER_GID` | Grants the container access to the Docker socket | `getent group docker \| cut -d: -f3` |
+| `CORS_ORIGIN` | **Required.** URL you use to access the dashboard | `http://your-server-ip:8084` |
 | `CLI_BRIDGE_HOST_PATH` | (Optional) Host path for CLI bridge scripts | Defaults to internal path if unset |
 
 ### Accessing the Dashboard
@@ -47,6 +51,7 @@ From the dashboard you can browse 157+ app templates and deploy them with one cl
     ```bash
     echo "JWT_SECRET=$(openssl rand -base64 32)" > .env
     echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> .env
+    echo "CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084" >> .env
     ```
 
 !!! note "For Traefik + domain setup, see Method 2 below"
