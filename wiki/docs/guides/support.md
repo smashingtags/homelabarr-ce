@@ -5,7 +5,7 @@
 ### 💬 Discord Community (Primary)
 **Join our active Discord server for real-time help:**
 
-[![Discord](https://discord.com/api/guilds/830478558995415100/widget.png?style=banner2)](https://discord.gg/Pc7mXX786x)
+[![Discord](https://discord.com/api/guilds/1334411584927301682/widget.png?style=banner2)](https://discord.gg/Pc7mXX786x)
 
 **Channels:**
 - `#general` - General discussion

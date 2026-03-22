@@ -49,8 +49,8 @@ This audit report documents the comprehensive review and updates made to the Hom
 
 **Files with Image Issues:**
 1. **`index.md`** - ✅ **FIXED**
-   - **Old**: `https://raw.githubusercontent.com/smashingtags/homelabarr-ce/master/wiki/docs/img/dockservee_animated.gif`
-   - **New**: `img/dockservee_animated.gif` (relative path)
+   - **Old**: `https://raw.githubusercontent.com/smashingtags/homelabarr-ce/master/wiki/docs/img/homelabarr-header.png`
+   - **New**: `img/homelabarr-header.png` (relative path)
 
 2. **External Project Images** - ✅ **VALIDATED**
    - **Tauticord Documentation**: External raw.githubusercontent.com links to nwithan8/tauticord project
@@ -59,10 +59,10 @@ This audit report documents the comprehensive review and updates made to the Hom
 
 ### Image Assets Verified
 **Local Image Directory (`wiki/docs/img/`):**
-- ✅ `dockservee_animated.gif` (37.6 KB) - Main animation
+- ✅ `homelabarr-header.png` (37.6 KB) - Main animation
 - ✅ `homelabarr-header.png` (29.0 KB) - Project header
 - ✅ `logo.png` (155.7 KB) - Project logo
-- ✅ `logo_without_text.png` (50.0 KB) - Clean logo
+- ✅ `favicon.png` (50.0 KB) - Clean logo
 - ✅ `favicon.png` (50.0 KB) - Site favicon
 
 ## 📚 New Documentation Created
