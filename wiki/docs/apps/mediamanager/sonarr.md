@@ -385,10 +385,9 @@ docker logs -f sonarr
 - [Official Sonarr Documentation](https://wiki.servarr.com/sonarr)
 - [TRaSH Guides](https://trash-guides.info/Sonarr/)
 - [LinuxServer.io Documentation](https://docs.linuxserver.io/images/docker-sonarr)
-- [Original MHA-Team PTS Wiki](https://github.com/MHA-Team/PTS-Team/wiki)
+
 - [HomelabARR Traefik Guide](../../traefik/README.md)
 
 ---
 
 *Last Updated: January 2025*  
-*Adapted from MHA-Team PTS Wiki for HomelabARR with Traefik v3.5.0*

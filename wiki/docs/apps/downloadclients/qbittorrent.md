@@ -430,10 +430,9 @@ flood:
 - [LinuxServer.io Documentation](https://docs.linuxserver.io/images/docker-qbittorrent)
 - [VueTorrent GitHub](https://github.com/WDaan/VueTorrent)
 - [TRaSH Guides - qBittorrent](https://trash-guides.info/Downloaders/qBittorrent/)
-- [Original MHA-Team PTS Wiki](https://github.com/MHA-Team/PTS-Team/wiki)
+
 - [HomelabARR Download Clients](../downloadclients/)
 
 ---
 
 *Last Updated: January 2025*  
-*Adapted from MHA-Team PTS Wiki for HomelabARR with modern security practices*

@@ -13,24 +13,40 @@
     </a>
 </p>
 
-# Migration to NAS-Focused Storage
+# Migration Guide
 
-HomelabARR CE has transitioned from cloud-dependent to local NAS-focused architecture. This guide helps you migrate from PGBlitz or other cloud-based systems to a modern, local storage solution.
+This guide helps you migrate to HomelabARR CE from other Docker management platforms or cloud-based homelab setups.
 
-**Benefits of the new NAS-focused approach:**
+!!! tip "Already using Docker with `/opt/appdata`?"
+    If your existing setup stores container data in `/opt/appdata/`, HomelabARR CE will pick it up automatically. Just install CE and your apps' data is already there.
+
+**Benefits of migrating to HomelabARR CE:**
+- Web GUI with 157+ one-click deployable apps
 - No cloud API rate limits or daily quotas
 - Better performance with local storage
-- Enhanced privacy - data stays on your infrastructure  
-- No cloud subscription costs
-- Simplified setup without complex API configurations
+- Enhanced privacy — data stays on your infrastructure
+- Optional Traefik reverse proxy with Authelia 2FA
+- Active development and community support
 
 # Prerequisites
 
-## From PGBlitz/Cloud Systems
-If migrating from PGBlitz or similar cloud-based systems:
+## From Other Docker Platforms
+If migrating from another Docker management system:
 - Backup all application data locally
-- Download media files from cloud storage to your NAS
+- If using cloud storage, download media files to your NAS first
 - Document current application configurations
+- Note your existing environment variables (domain, API keys, etc.)
+
+## Environment Migration Tool
+
+HomelabARR CE includes an automatic environment migrator that converts your existing `.env` file:
+
+```bash
+# From the homelabarr-ce directory
+bash apps/.subactions/envmigrate.sh
+```
+
+This reads your existing `/opt/appdata/compose/.env` and rewrites it with HomelabARR CE defaults while preserving all your custom values (Cloudflare keys, domain, Plex claim tokens, VPN configs, image preferences).
 
 ## Local NAS Requirements
 - **NAS System**: UnRAID, TrueNAS, or similar
