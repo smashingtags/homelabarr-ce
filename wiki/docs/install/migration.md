@@ -95,6 +95,28 @@ docker compose -f homelabarr.yml up -d
 
 Open `http://your-server-ip:8084` — you'll see the CE dashboard with 157+ apps ready to deploy. Your existing `/opt/appdata` data is already there.
 
+!!! tip "Put CE behind Traefik too"
+    If you already have Traefik running, add a route for the CE dashboard so it's accessible at `https://homelabarr.yourdomain.com` with Authelia protection. Create a file at `/opt/appdata/traefik/rules/homelabarr-ce.yml`:
+    ```yaml
+    http:
+      routers:
+        homelabarr-ce:
+          rule: "Host(`homelabarr.yourdomain.com`)"
+          entryPoints:
+            - https
+          middlewares:
+            - chain-authelia@file
+          tls:
+            certResolver: dns-cloudflare
+          service: homelabarr-ce
+      services:
+        homelabarr-ce:
+          loadBalancer:
+            servers:
+              - url: "http://homelabarr-ce-frontend:8080"
+    ```
+    Add a CNAME record in Cloudflare for `homelabarr` pointing to your domain. The CE frontend container must be on the `proxy` network.
+
 **Option B: CLI Menu**
 
 ```bash
