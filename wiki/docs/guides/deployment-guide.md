@@ -81,16 +81,16 @@ volumes:
 
 ```bash
 # 1. Validate YAML syntax
-docker-compose -f apps/path/container.yml --env-file .env.test config
+docker compose -f apps/path/container.yml --env-file .env.test config
 
 # 2. Deploy container  
-docker-compose -f apps/path/container.yml --env-file .env.test up -d
+docker compose -f apps/path/container.yml --env-file .env.test up -d
 
 # 3. Verify deployment
 docker ps --filter "name=container_name"
 
 # 4. Clean up
-docker-compose -f apps/path/container.yml --env-file .env.test down
+docker compose -f apps/path/container.yml --env-file .env.test down
 ```
 
 ## 📋 Environment Configuration

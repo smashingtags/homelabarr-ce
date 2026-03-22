@@ -193,10 +193,10 @@ echo "Updating all containers..."
 
 # Pull latest images
 cd /opt/homelabarr
-find apps/ -name "*.yml" -exec docker-compose -f {} pull \;
+find apps/ -name "*.yml" -exec docker compose -f {} pull \;
 
 # Restart containers with new images
-find apps/ -name "*.yml" -exec docker-compose -f {} up -d \;
+find apps/ -name "*.yml" -exec docker compose -f {} up -d \;
 
 # Clean up old images
 docker image prune -f
@@ -217,8 +217,8 @@ if [ -z "$APP_PATH" ]; then
 fi
 
 echo "Updating $APP_PATH..."
-docker-compose -f "$APP_PATH" pull
-docker-compose -f "$APP_PATH" up -d
+docker compose -f "$APP_PATH" pull
+docker compose -f "$APP_PATH" up -d
 echo "Update complete!"
 ```
 
