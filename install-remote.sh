@@ -31,7 +31,11 @@ fi
 # Clone or update repo
 if [[ -d "$INSTALL_DIR" ]]; then
   echo "📂 Updating existing installation at $INSTALL_DIR..."
-  cd "$INSTALL_DIR" && git pull --ff-only 2>/dev/null || true
+  cd "$INSTALL_DIR"
+  if ! git pull --ff-only 2>&1; then
+    echo "⚠️  Could not fast-forward update. You may have local changes."
+    echo "    Run 'cd $INSTALL_DIR && git stash && git pull' to resolve."
+  fi
 else
   echo "📥 Cloning HomelabARR CE to $INSTALL_DIR..."
   git clone "$REPO" "$INSTALL_DIR"
@@ -46,12 +50,17 @@ chmod +x .installer/homelabber 2>/dev/null || true
 
 # Install the CLI command system-wide
 echo "🔗 Installing $BIN_NAME command..."
-cp .installer/homelabber /usr/local/bin/$BIN_NAME 2>/dev/null || true
-chmod +x /usr/local/bin/$BIN_NAME 2>/dev/null || true
-
-# Also install to /bin for compatibility
-cp .installer/homelabber /bin/$BIN_NAME 2>/dev/null || true
-chmod +x /bin/$BIN_NAME 2>/dev/null || true
+if ! cp .installer/homelabber /usr/local/bin/$BIN_NAME 2>/dev/null; then
+  if ! cp .installer/homelabber /bin/$BIN_NAME 2>/dev/null; then
+    echo "⚠️  Could not install $BIN_NAME to PATH. Run manually: cd $INSTALL_DIR && sudo ./install.sh"
+  else
+    chmod +x /bin/$BIN_NAME
+  fi
+else
+  chmod +x /usr/local/bin/$BIN_NAME
+  # Also install to /bin for compatibility
+  cp .installer/homelabber /bin/$BIN_NAME 2>/dev/null && chmod +x /bin/$BIN_NAME 2>/dev/null
+fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
