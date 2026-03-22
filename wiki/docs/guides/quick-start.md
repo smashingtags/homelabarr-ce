@@ -49,6 +49,14 @@ Once the containers are up:
     echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> .env
     ```
 
+!!! note "Running in a Proxmox LXC?"
+    Docker inside an LXC container requires AppArmor to be disabled. Add these lines to your LXC config on the Proxmox host (`/etc/pve/lxc/<VMID>.conf`):
+    ```
+    lxc.apparmor.profile: unconfined
+    lxc.cap.drop:
+    ```
+    Then restart the container: `pct stop <VMID> && pct start <VMID>`. Without this, containers will fail to start with an AppArmor policy error.
+
 ---
 
 ## Method 2: CLI Installation (Full Mode)
