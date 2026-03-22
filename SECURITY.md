@@ -2,11 +2,13 @@
 
 ## Supported Versions
 
+Only the latest release is fully supported. The previous minor version receives security fixes only.
+
 | Version | Supported |
 |---------|-----------|
-| 1.2.x   | Yes       |
-| 1.1.x   | Security fixes only |
-| < 1.1   | No        |
+| Latest release | Yes — see [Releases](https://github.com/smashingtags/homelabarr-ce/releases/latest) |
+| Previous minor | Security fixes only |
+| Older versions | No |
 
 ## Reporting a Vulnerability
 
