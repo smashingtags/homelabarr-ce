@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@v6
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
 
@@ -44,7 +44,7 @@ jobs:
           echo "LOG_LEVEL=${{ github.event.inputs.logLevel || env.LOG_LEVEL }}" >> "${GITHUB_ENV}"
 
       - name: Setup Node.js
-        uses: actions/setup-node@b388f441b65ff9956c5b722cb85d7719a8e68abc # v4.1.0
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
 
