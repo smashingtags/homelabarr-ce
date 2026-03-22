@@ -24,13 +24,17 @@ The fastest way to get HomelabARR CE running. Four commands, no domain required.
 # Download the compose file
 curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
 
-# Generate a JWT secret and detect your Docker group ID
+# Set required environment variables
 export JWT_SECRET=$(openssl rand -base64 32)
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
+export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
 
 # Start HomelabARR CE
 docker compose -f homelabarr.yml up -d
 ```
+
+!!! warning "CORS_ORIGIN is required"
+    The backend rejects browser requests unless `CORS_ORIGIN` matches the URL you use to access the dashboard. If you access it at `http://192.168.1.50:8084`, set `CORS_ORIGIN=http://192.168.1.50:8084`. Without this, login and all API calls will fail with a 500 error.
 
 Once the containers are up:
 
@@ -47,6 +51,7 @@ Once the containers are up:
     ```bash
     echo "JWT_SECRET=$(openssl rand -base64 32)" > .env
     echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> .env
+    echo "CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084" >> .env
     ```
 
 !!! note "Running in a Proxmox LXC?"
