@@ -85,8 +85,8 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
-  favicon: img/logo_without_text.png
-  logo: img/logo_without_text.png
+  favicon: img/favicon.png
+  logo: img/homelabarr-header.png
 
 # Plugins
 plugins:
