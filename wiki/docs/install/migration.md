@@ -321,6 +321,146 @@ docker image prune -a
 
 ---
 
+## Migrating from Saltbox
+
+[Saltbox](https://github.com/saltyorg/Saltbox) is the actively maintained successor to Cloudbox. It's a solid platform, but it's Ansible-based with no GUI — every change requires editing YAML files and running playbooks. If you want a web dashboard to manage your containers or you're tired of Ansible complexity, CE is a straightforward alternative.
+
+!!! info "Saltbox is still maintained"
+    Unlike Cloudbox and PGBlitz, Saltbox is actively developed. This migration is for users who **want** to switch to a simpler, GUI-based approach — not because Saltbox is abandoned.
+
+### What's Different
+
+| | Saltbox | HomelabARR CE |
+|---|---|---|
+| **Deployment** | Ansible playbooks | Docker Compose or Web GUI |
+| **Configuration** | YAML files + CLI commands | Web GUI or interactive CLI menu |
+| **Docker network** | `saltbox` | `proxy` |
+| **App data path** | `/opt/<app>/` | `/opt/appdata/<app>/` |
+| **Media path** | `/mnt/unionfs/` | `/mnt/` (configurable) |
+| **Traefik** | v3.6 | v2/v3 |
+| **Cloud storage** | rclone + Google Drive (default) | Local NAS (recommended), cloud optional |
+| **GUI** | None — CLI and text editors only | Web dashboard with 157+ apps |
+| **Multiple instances** | Built-in (sonarr, sonarr4k, etc.) | Deploy multiple containers manually |
+
+### Step-by-Step Migration
+
+#### 1. Backup your Saltbox
+
+```bash
+# Use Saltbox's own backup
+cd ~/saltbox && sudo ansible-playbook backup.yml
+
+# Also backup manually
+cp ~/saltbox/accounts.yml ~/accounts.yml.backup
+cp -r /opt/saltbox ~/saltbox-opt-backup
+sudo tar czf ~/saltbox-appdata-$(date +%Y%m%d).tar.gz /opt/
+```
+
+#### 2. Move app data to CE's path
+
+Saltbox stores configs at `/opt/<app>/`. CE expects `/opt/appdata/<app>/`:
+
+```bash
+sudo mkdir -p /opt/appdata
+
+# Move each app's config
+for app in sonarr radarr lidarr readarr prowlarr bazarr plex jellyfin tautulli nzbget sabnzbd qbittorrent overseerr; do
+  if [ -d "/opt/$app" ]; then
+    sudo mv /opt/$app /opt/appdata/$app
+    echo "Moved $app"
+  fi
+done
+
+sudo chown -R 1000:1000 /opt/appdata
+```
+
+!!! warning "Multiple instances"
+    If you run multiple Sonarr/Radarr instances (e.g., `sonarr`, `sonarr4k`), move each one separately. CE treats them as independent containers.
+
+#### 3. Handle media paths
+
+Saltbox uses `/mnt/unionfs/` for combined local + cloud media. If you're keeping this mount structure, create a symlink:
+
+```bash
+# If /mnt/unionfs already exists and has your media
+sudo ln -sf /mnt/unionfs /mnt/media 2>/dev/null || true
+```
+
+If moving to local NAS, see the [Cloud to Local Migration](#migrating-from-cloud-based-setups) section.
+
+#### 4. Create the proxy network
+
+```bash
+docker network create proxy 2>/dev/null || true
+```
+
+#### 5. Install HomelabARR CE
+
+```bash
+# One-line CLI install
+sudo wget -qO- https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh | sudo bash
+sudo homelabarr-cli -i
+
+# Or Docker Compose for web GUI
+curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
+export JWT_SECRET=$(openssl rand -base64 32)
+export DOCKER_GID=$(getent group docker | cut -d: -f3)
+export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
+docker compose -f homelabarr.yml up -d
+```
+
+#### 6. Redeploy apps one at a time
+
+For each app, stop the Saltbox container and redeploy through CE:
+
+```bash
+# Example: migrate Sonarr
+docker stop sonarr && docker rm sonarr
+
+# Redeploy via CE web GUI or CLI
+# Your existing /opt/appdata/sonarr config is picked up automatically
+```
+
+!!! tip "Keep Traefik if it's working"
+    Saltbox uses Traefik v3.6 which is modern and compatible. If your Traefik and Authelia are working, leave them running. CE's app templates use v2/v3 labels that work with your existing Traefik.
+
+#### 7. Update root folders in media apps
+
+After redeploying, check the media root folders in each app. Saltbox maps internal paths differently:
+
+| App | Saltbox internal path | Check in app settings |
+|-----|----------------------|----------------------|
+| Sonarr | `/tv/` | Settings → Media Management → Root Folders |
+| Radarr | `/movies/` | Settings → Media Management → Root Folders |
+| Plex | `/data/TV/`, `/data/Movies/` | Settings → Libraries |
+
+The paths inside the container may differ from Saltbox's mapping. Update them to match CE's volume mounts if needed.
+
+#### 8. Clean up Saltbox (optional)
+
+If you're fully committed to CE:
+
+```bash
+# Remove Saltbox installation
+sudo rm -rf ~/saltbox 2>/dev/null
+sudo rm -rf /opt/saltbox 2>/dev/null
+sudo rm -rf /srv/git/saltbox 2>/dev/null
+
+# Remove Ansible (if nothing else uses it)
+sudo apt remove ansible -y 2>/dev/null
+
+# Remove old network (after all containers are on proxy)
+docker network rm saltbox 2>/dev/null
+
+# Clean up
+docker image prune -a
+```
+
+!!! tip "Keep your rclone config"
+    Saltbox's rclone configuration lives at `~/.config/rclone/rclone.conf`. Keep a backup even if you're moving to local storage.
+
+---
+
 ## Migrating from Cloudbox
 
 [Cloudbox](https://github.com/Cloudbox/Cloudbox) was one of the most popular Ansible-based media server solutions. The project was **archived in March 2025** and is no longer maintained. If you're still running it, migrating to HomelabARR CE gives you a modern, actively maintained platform with a web GUI.
