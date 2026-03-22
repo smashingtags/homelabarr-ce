@@ -214,8 +214,8 @@ Want to contribute your own scripts? We welcome community contributions!
 
 For more detailed information:
 - [Maintenance Scripts](maintenance.md) - Deep dive into system maintenance
-- [Security Scripts](security.md) - Advanced security configurations
-- [Automation Scripts](automation.md) - Setting up automated workflows
+-  - Advanced security configurations
+-  - Setting up automated workflows
 
 ## Support
 
