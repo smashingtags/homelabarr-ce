@@ -275,7 +275,7 @@ git checkout apps/mediaserver/plex.yml
 ### Validation After Cleanup
 ```bash
 # Test Docker Compose parsing
-docker-compose -f apps/mediaserver/plex.yml config
+docker compose -f apps/mediaserver/plex.yml config
 
 # Validate with yamllint (if installed)
 yamllint apps/mediaserver/plex.yml

@@ -161,7 +161,7 @@ After running the installer, you'll see the main menu:
 ```bash
 # Check Docker installation
 docker --version
-docker-compose --version
+docker compose version
 
 # Verify containers are running
 docker ps
@@ -388,8 +388,8 @@ After installation, consider these security measures:
    sudo apt update && sudo apt upgrade
 
    # Update Docker containers
-   docker-compose pull
-   docker-compose up -d
+   docker compose pull
+   docker compose up -d
    ```
 
 ## Next Steps

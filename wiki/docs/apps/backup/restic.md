@@ -11,7 +11,7 @@
         <img src="https://img.shields.io/github/v/release/smashingtags/homelabarr-ce?include_prereleases&label=Latest%20Release&logo=github" alt="Latest Official Release on GitHub">
     </a>
     <a href="https://github.com/smashingtags/homelabarr-ce/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/smashingtags/homelabarr-ce?label=License&logo=gnu" alt="GNU General Public License">
+        <img src="https://img.shields.io/github/license/smashingtags/homelabarr-ce?label=License&logo=mit" alt="MIT License">
     </a>
 </p>
 
