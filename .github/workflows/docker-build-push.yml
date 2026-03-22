@@ -102,12 +102,8 @@ jobs:
         push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
         tags: ${{ steps.meta-frontend.outputs.tags }}
         labels: ${{ steps.meta-frontend.outputs.labels }}
-        cache-from: |
-          type=gha
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache
-        cache-to: |
-          type=gha,mode=max
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache,mode=max
+        cache-from: type=gha
+        cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
         build-args: |
           NODE_ENV=production
 
@@ -120,12 +116,8 @@ jobs:
         push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
         tags: ${{ steps.meta-backend.outputs.tags }}
         labels: ${{ steps.meta-backend.outputs.labels }}
-        cache-from: |
-          type=gha
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:buildcache
-        cache-to: |
-          type=gha,mode=max
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:buildcache,mode=max
+        cache-from: type=gha
+        cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
         build-args: |
           NODE_ENV=production
           
