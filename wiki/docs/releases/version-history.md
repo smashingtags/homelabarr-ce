@@ -208,42 +208,10 @@
 6. **Test functionality** before decommissioning old setup
 
 ### Version Compatibility
-- **v2.x**: Current, actively supported
-- **v1.5.x**: Legacy support, security updates only
-- **v1.4.x and below**: End of life, upgrade recommended
 
-## Upcoming Releases
+Only the latest release is fully supported. See the [Security Policy](https://github.com/smashingtags/homelabarr-ce/security/policy) for details.
 
-### v2.1.0 - "CLI Modernization" (Planned Q4 2025)
-- **Go-based CLI** replacement for shell scripts
-- **Bubble Tea TUI** for interactive management
-- **Enhanced automation** and orchestration
-- **API development** for programmatic access
-
-### v2.2.0 - "GitHub Organization" (Planned Q1 2026)
-- **Repository reorganization** under homelabarr/*
-- **Container registry** migration completion
-- **Enhanced CI/CD** across all repositories
-- **Community governance** structure
-
-### v3.0.0 - "Kubernetes Era" (Planned Q2 2026)
-- **Kubernetes support** alongside Docker Compose
-- **Helm charts** for application deployment
-- **Operator development** for automated management
-- **Multi-cloud** deployment capabilities
-
----
-
-## Support Policy
-
-### Current Support
-- **v2.x**: Full support, active development
-- **v1.5.x**: Security updates only until Q1 2026
-
-### End of Life
-- **v1.4.x and below**: No longer supported
-- **Security vulnerabilities**: Not patched in EOL versions
-- **Migration assistance**: Available through community
+For the latest release and changelog, see [GitHub Releases](https://github.com/smashingtags/homelabarr-ce/releases).
 
 ---
 
