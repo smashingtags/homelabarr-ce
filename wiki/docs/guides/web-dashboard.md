@@ -14,17 +14,21 @@ Replace `<your-server-ip>` with the IP or hostname of the machine running Homela
 
 ## Logging In
 
-On first launch, a default admin account is created automatically.
+Click **Sign In** in the top right corner. A default admin account is created on first launch.
 
 | Field    | Value   |
 |----------|---------|
 | Username | `admin` |
 | Password | `admin` |
 
-!!! warning "Change the default password immediately"
-    After your first login, go to **User Settings** and change the default password. Passwords must be at least 6 characters.
+=== "Dark Mode"
+    ![Login Modal Dark](../img/screenshots/dark-login-modal.png)
 
-If authentication is disabled via the `AUTH_ENABLED` environment variable, you can use the dashboard without logging in.
+=== "Light Mode"
+    ![Login Modal Light](../img/screenshots/light-login-modal.png)
+
+!!! warning "Change the default password immediately"
+    After your first login, go to **User Settings** and change the default password.
 
 ## Browsing the App Catalog
 
@@ -42,7 +46,13 @@ The dashboard organizes applications into category tabs along the top:
 - **All Apps** -- every app in one view
 - **Leaderboard** -- community deployment stats
 
-Each app card shows the application name, description, Docker image, and an icon. Use the **search bar** at the top to filter by name across all categories.
+Each app card shows the application name, description, Docker image, and available deployment modes (Traefik, Auth, category tags). Use the **search bar** at the top to filter by name across all categories.
+
+=== "Dark Mode"
+    ![Dashboard Dark](../img/screenshots/dark-dashboard.png)
+
+=== "Light Mode"
+    ![Dashboard Light](../img/screenshots/light-dashboard.png)
 
 ## Deploying an App
 
@@ -70,7 +80,15 @@ Each app card shows the application name, description, Docker image, and an icon
 
 ## Container Management
 
-Switch to the **Deployed Apps** tab to see all running containers. Each container card shows:
+Switch to the **Deployed Apps** tab to see all running containers.
+
+=== "Dark Mode"
+    ![Deployed Apps Dark](../img/screenshots/dark-deploy-modal-auth.png)
+
+=== "Light Mode"
+    ![Deployed Apps Light](../img/screenshots/light-deploy-modal-auth.png)
+
+Each container card shows:
 
 - Container name, image, and current state (running, stopped, exited)
 - Uptime and status text
