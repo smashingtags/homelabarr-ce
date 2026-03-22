@@ -3,7 +3,7 @@
 ## General
 
 **Q: How do I verify HomelabARR CE is running?**  
-A: Visit `http://<host-ip>:3000` (or the port you configured). You should see the app catalog dashboard.
+A: Visit `http://<host-ip>:8084` (or the port you configured). You should see the app catalog dashboard.
 
 **Q: Where are logs stored?**  
 A: Container logs are accessible via `docker logs <container-name>` or through Portainer. The backend log is also available at `/opt/appdata/homelabarr-backend/logs/combined.log` inside the backend container.
@@ -21,7 +21,7 @@ It will pull the latest images and recreate containers. For manual installs, `gi
 A: Another service is already using port 3000 (or whichever port you set). Change the port in `.env` or stop the conflicting service.
 
 **Q: The installer says “CORS_ORIGIN is required” and login fails.**  
-A: Set `CORS_ORIGIN` in your `.env` to match the exact URL you use to access the dashboard (including protocol and port, no trailing slash). Example: `CORS_ORIGIN=http://192.168.1.100:3000`.
+A: Set `CORS_ORIGIN` in your `.env` to match the exact URL you use to access the dashboard (including protocol and port, no trailing slash). Example: `CORS_ORIGIN=http://192.168.1.100:8084`.
 
 **Q: Docker fails to start containers on Proxmox LXC.**  
 A: LXC containers need AppArmor disabled for Docker. Add `lxc.apparmor.profile: unconfined` to the LXC config or disable AppArmor for the container.
@@ -85,4 +85,4 @@ cd server
 npm install
 npm run dev
 ```
-The backend will run on `http://localhost:4000`. Point the frontend to it by setting `VITE_BACKEND_URL` in `.env` or editing `src/vite.config.ts`.
+The backend will run on `http://localhost:8092`. Point the frontend to it by setting `VITE_BACKEND_URL` in `.env` or editing `src/vite.config.ts`.
