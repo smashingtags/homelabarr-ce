@@ -1,6 +1,11 @@
 # API Reference
 
-The HomelabARR CE backend exposes a REST API on port **8084**. All endpoints return JSON. Protected endpoints require a JWT token in the `Authorization` header:
+The HomelabARR CE backend exposes a REST API. There are two ways to reach it:
+
+- **Via the frontend proxy (recommended):** `http://your-server:8084/api/<endpoint>` — the nginx frontend strips the `/api` prefix and forwards to the backend
+- **Direct backend access:** `http://your-server:8092/<endpoint>` — bypasses the frontend entirely
+
+All endpoints return JSON unless noted otherwise (e.g., SSE streams). Protected endpoints require a JWT token in the `Authorization` header:
 
 ```
 Authorization: Bearer <jwt-token>
@@ -148,6 +153,9 @@ The `mode.type` field accepts: `standard`, `traefik`, or `authelia`.
 ---
 
 ## Progress Streaming (SSE)
+
+!!! warning "Not JSON"
+    These endpoints return `text/event-stream`, not JSON. Use `EventSource` or a streaming HTTP client — standard `fetch().then(r => r.json())` will fail.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
