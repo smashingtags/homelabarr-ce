@@ -10,7 +10,7 @@ HomelabARR CE is a containerized media server stack built on Docker with two dis
 - **Microservices Architecture**: Each application runs in isolated containers
 - **Immutable Infrastructure**: Applications are deployed as versioned container images
 - **Configuration as Code**: All settings managed through Docker Compose YAML
-- **Volume Persistence**: Data persistence through local-persist plugin or bind mounts
+- **Volume Persistence**: Data persistence through native Docker bind mounts or bind mounts
 
 ### Network Architecture
 
@@ -78,7 +78,7 @@ graph TB
 - **Docker Compose**: Service orchestration
 - **Bridge Networking**: Direct container communication
 - **Port Mapping**: Host port exposure
-- **Local-Persist**: Volume management plugin
+- **Native Bind Mount**: Volume management plugin
 
 ## Data Flow Architecture
 
@@ -136,11 +136,11 @@ graph TB
 - **Simplified Architecture**: In-memory state management
 - **Direct CLI Integration**: Native snapraid command execution
 
-### Local-Persist Integration
+### Native Bind Mount Integration
 ```yaml
 volumes:
   app-data:
-    driver: local-persist
+    driver: native bind mount
     driver_opts:
       mountpoint: /opt/appdata/application
 ```

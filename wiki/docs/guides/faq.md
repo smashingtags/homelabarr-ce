@@ -63,7 +63,7 @@ You would need to:
 
 For proper external access, consider upgrading to Full Mode.
 
-### What's the local-persist plugin?
+### What's the native Docker bind mounts?
 Local-persist is a Docker volume plugin that stores container data in specific host directories (`/opt/appdata`) rather than Docker's managed volumes. This makes backup and migration easier.
 
 ## Full Mode Questions
@@ -111,7 +111,7 @@ Common issues:
 1. **Port conflicts**: Check if port is already in use
 2. **Image not found**: Verify image name and tag
 3. **Permission issues**: Check file/folder permissions
-4. **Missing dependencies**: Some apps require local-persist plugin
+4. **Missing dependencies**: Some apps require native Docker bind mounts
 
 ### How do I update applications?
 ```bash
@@ -125,7 +125,7 @@ docker images | grep -v REPOSITORY | awk '{print $1":"$2}' | xargs -L1 docker pu
 
 ### Where is my application data stored?
 - **Local Mode**: `/opt/appdata/<application-name>`
-- **Full Mode**: Same location, managed by local-persist volumes
+- **Full Mode**: Same location, managed by native bind mount volumes
 
 ## Troubleshooting Questions
 
