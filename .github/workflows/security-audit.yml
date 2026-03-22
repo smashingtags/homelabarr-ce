@@ -24,7 +24,7 @@ permissions:
   contents: read
   packages: read
   security-events: write
-  pull-requests: read
+  pull-requests: write
   actions: read
 
 concurrency:
@@ -49,7 +49,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v3.0.2
         id: changes
         with:
           filters: |
@@ -139,7 +139,7 @@ jobs:
           fi
 
       - name: Upload shell analysis results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         if: always()
         with:
           name: shell-security-analysis-${{ github.sha }}
@@ -220,7 +220,7 @@ jobs:
           }
 
       - name: Upload compose validation results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         if: always()
         with:
           name: compose-security-validation-${{ github.sha }}
@@ -356,7 +356,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload vulnerability reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         if: always()
         with:
           name: docker-vulnerability-scan-${{ github.sha }}
@@ -372,7 +372,7 @@ jobs:
     if: always()
     steps:
       - name: Download all security artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.3.0
         with:
           path: security-reports
 
@@ -404,7 +404,7 @@ jobs:
           cat security-summary.md
 
       - name: Upload security compliance summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: security-compliance-summary-${{ github.sha }}
           path: security-summary.md
