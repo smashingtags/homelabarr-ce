@@ -129,7 +129,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ steps.meta.outputs.image_name }}
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
+            type=ref,event=pr,prefix=pr-
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=v1.0.0,enable={{is_default_branch}}

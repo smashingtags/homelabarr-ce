@@ -64,7 +64,7 @@ jobs:
         images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}
         tags: |
           type=ref,event=branch
-          type=ref,event=pr
+          type=ref,event=pr,prefix=pr-
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
@@ -82,7 +82,7 @@ jobs:
         images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}
         tags: |
           type=ref,event=branch
-          type=ref,event=pr
+          type=ref,event=pr,prefix=pr-
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
@@ -100,9 +100,7 @@ jobs:
         file: ./Dockerfile
         platforms: linux/amd64,linux/arm64
         push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
-        tags: |
-          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.ref_name }}
-          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
+        tags: ${{ steps.meta-frontend.outputs.tags }}
         labels: ${{ steps.meta-frontend.outputs.labels }}
         cache-from: |
           type=gha
@@ -112,7 +110,7 @@ jobs:
           type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache,mode=max
         build-args: |
           NODE_ENV=production
-          
+
     - name: Build and push backend image
       uses: docker/build-push-action@v7
       with:
@@ -120,9 +118,7 @@ jobs:
         file: ./Dockerfile.backend
         platforms: linux/amd64,linux/arm64
         push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
-        tags: |
-          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.ref_name }}
-          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:latest
+        tags: ${{ steps.meta-backend.outputs.tags }}
         labels: ${{ steps.meta-backend.outputs.labels }}
         cache-from: |
           type=gha
