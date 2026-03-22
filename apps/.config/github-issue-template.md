@@ -21,11 +21,11 @@ ports:
 ### 2. **Volume Driver Incompatibility** 
 **Severity**: 🟡 Medium  
 **Affected**: ~100+ apps with unionfs volumes  
-**Problem**: Apps reference `local-persist` plugin but use `driver: local`
+**Problem**: Apps reference `native bind mount` plugin but use `driver: local`
 ```yaml
-# Original design (requires local-persist plugin):
+# Original design (requires native bind mount driver):
 unionfs:
-  driver: local-persist
+  driver: local
   driver_opts:
     mountpoint: /mnt
 
@@ -70,7 +70,7 @@ unionfs:
 - [ ] Generate port registry for documentation
 
 ### Phase 3: Volume Driver Strategy
-- [ ] **Option A**: Install local-persist plugin properly
+- [ ] **Option A**: Install native bind mount driver properly
 - [ ] **Option B**: Create volume mapping strategy for standard Docker
 - [ ] **Option C**: Hybrid approach with fallback
 

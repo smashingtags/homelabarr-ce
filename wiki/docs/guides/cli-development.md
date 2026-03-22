@@ -425,7 +425,7 @@ var Registry = map[string]Application{
         Image:       "lscr.io/linuxserver/radarr:latest",
         Port:        7878,
         Tags:        []string{"movies", "automation"},
-        Dependencies: []string{"native bind mount"},
+        Dependencies: []string{},
     },
 }
 

@@ -239,7 +239,7 @@ Local Mode templates include UnionFS volume support:
 ```yaml
 volumes:
   unionfs:
-    driver: native bind mount
+    driver: local
     driver_opts:
       mountpoint: /mnt
 ```
