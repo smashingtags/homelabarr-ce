@@ -271,7 +271,7 @@ docker stop homelabarr_mount_enhanced
 sudo cp -r /opt/appdata/mount-backup/* /opt/appdata/mount/
 
 # Start original container
-docker-compose -f /opt/homelabarr/apps/system/mount.yml up -d
+docker compose -f /opt/homelabarr/apps/system/mount.yml up -d
 ```
 
 ## Troubleshooting

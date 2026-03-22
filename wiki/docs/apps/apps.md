@@ -35,7 +35,7 @@ HomelabARR CE supports 100+ self-hosted applications across multiple categories.
         <img src="https://img.shields.io/github/v/release/smashingtags/homelabarr-ce?include_prereleases&label=Latest%20Release&logo=github" alt="Latest Official Release on GitHub">
     </a>
     <a href="https://github.com/smashingtags/homelabarr-ce/blob/main/LICENSE">
-        <img src="https://img.shields.io/github/license/smashingtags/homelabarr-ce?label=License&logo=gnu" alt="GNU General Public License">
+        <img src="https://img.shields.io/github/license/smashingtags/homelabarr-ce?label=License&logo=mit" alt="MIT License">
     </a>
 </p>
 
@@ -103,7 +103,7 @@ docker compose -f qbittorrent-local-template.yml --env-file .env up -d
 
 ```bash
 # Install HomelabARR CE
-sudo wget -qO- https://git.io/J3GDc | sudo bash
+# See Quick Start guide for installation: https://smashingtags.github.io/homelabarr-ce/guides/quick-start/
 
 # Launch interface
 sudo homelabarr -i
