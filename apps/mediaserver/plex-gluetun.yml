@@ -37,6 +37,8 @@ services:
       - "traefik.http.services.plex-svc.loadbalancer.server.port=32400"
 volumes:
   unionfs:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: /mnt
+      type: none
+      o: bind
+      device: /mnt

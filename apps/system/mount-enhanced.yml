@@ -139,34 +139,46 @@ networks:
     name: proxy
     external: true
 
-# Named volumes with local-persist
+# Named volumes with native bind mounts
 volumes:
   mount_enhanced_config:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/mount-enhanced/config
+      type: none
+      o: bind
+      device: ${APPDATA}/mount-enhanced/config
   
   mount_enhanced_move:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${MOVE}/move
+      type: none
+      o: bind
+      device: ${MOVE}/move
   
   mount_enhanced_unionfs:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${UNIONFS}/unionfs
+      type: none
+      o: bind
+      device: ${UNIONFS}/unionfs
   
   mount_enhanced_data:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/mount-enhanced/data
+      type: none
+      o: bind
+      device: ${APPDATA}/mount-enhanced/data
   
   mount_enhanced_logs:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/mount-enhanced/logs
+      type: none
+      o: bind
+      device: ${APPDATA}/mount-enhanced/logs
   
   mount_enhanced_cache:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/mount-enhanced/cache
+      type: none
+      o: bind
+      device: ${APPDATA}/mount-enhanced/cache
