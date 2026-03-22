@@ -85,7 +85,7 @@ This creates `/appbackups/` directory with all application configurations and da
 Follow the standard installation on your host system:
 
 1. Order VPS or prepare local server with Ubuntu 22.04
-2. Follow installation instructions in the [Install Guide](install.md)
+2. Follow installation instructions in the [Install Guide](../guides/quick-start.md)
 3. Return here once HomelabARR CE is installed
 
 ## 4. Configure Local Storage Integration

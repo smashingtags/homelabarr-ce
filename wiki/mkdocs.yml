@@ -172,13 +172,10 @@ nav:
       - Local-Persist Plugin: setup/local-persist-integration.md
   - Deployment Guides:
       - Container Deployment: guides/deployment-guide.md
-      - Full Mode vs Local Mode: guides/deployment-comparison.md
-      - Production Setup: guides/production-setup.md
   - Developer Documentation:
       - Contributing: guides/contributing.md
       - Architecture Overview: guides/architecture.md
       - CLI Development: guides/cli-development.md
-      - Container Development: guides/container-development.md
       - YAML Cleanup Tool: guides/yaml-cleanup-tool.md
   - Commands:
       - Commands: commands/commands.md
@@ -242,7 +239,7 @@ nav:
           - Lidarr: apps/mediamanager/lidarr.md
           - Plex-Utills: apps/mediamanager/plex-utills.md
           - Prowlarr: apps/mediamanager/prowlarr.md
-          - Radarr: apps/mediamanager/radarr.md
+          #- Radarr: apps/mediamanager/radarr.md  # file missing
           - Readarr: apps/mediamanager/readarr.md
           - Sonarr: apps/mediamanager/sonarr.md
           - Tautulli: apps/mediamanager/tautulli.md
@@ -255,7 +252,7 @@ nav:
           - Plex: apps/mediaserver/plex.md
       - Request:
           - Conreq: apps/request/conreq.md
-          - Overseerr: apps/request/overseerr.md
+          #- Overseerr: apps/request/overseerr.md  # file missing
           - Petio: apps/request/petio.md
       - Selfhosted:
           - Alltube: apps/selfhosted/alltube.md
@@ -283,12 +280,12 @@ nav:
           - Wireguard: apps/selfhosted/wireguard.md
           - XBVR: apps/selfhosted/xbvr.md
       - Share:
-          - Filerun: apps/share/filerun.md
-          - Nextcloud: apps/share/nextcloud.md
-          - Projectsend: apps/share/projectsend.md
+          - Filerun: apps/selfhosted/share/filerun.md
+          - Nextcloud: apps/selfhosted/share/nextcloud.md
+          - Projectsend: apps/selfhosted/share/projectsend.md
       - System:
           - Mount: apps/system/mount.md
-          - Uploader: apps/system/uploader.md
+          #- Uploader: apps/system/uploader.md  # file missing
           - Dockupdater: apps/system/dockupdater.md
           - endlessh: apps/system/endlessh.md
           - Rclone-GUI: apps/system/rclone-gui.md
@@ -298,13 +295,10 @@ nav:
       - Scripts Overview: scripts/scripts.md
       - YAML Cleanup Script: scripts/yaml-cleanup.md
       - Maintenance Scripts: scripts/maintenance.md
-      - Security Scripts: scripts/security.md
-      - Automation Scripts: scripts/automation.md
   - Release Information:
       - Latest Release: releases/RELEASE-NOTES.md
       - YAML Standardization v2.1: releases/yaml-standardization-v2.1.md
       - Version History: releases/version-history.md
-      - Upgrade Guide: releases/upgrade-guide.md
   - Professional Edition:
       - Overview: pe/overview.md
       - Installation: pe/installation.md
