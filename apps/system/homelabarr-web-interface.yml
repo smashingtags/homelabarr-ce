@@ -193,14 +193,18 @@ networks:
       config:
         - subnet: 172.20.0.0/16
 
-# Named volumes with local-persist
+# Named volumes with native bind mounts
 volumes:
   homelabarr_backend_data:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/homelabarr/backend/data
+      type: none
+      o: bind
+      device: ${APPDATA}/homelabarr/backend/data
   
   homelabarr_backend_config:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: ${APPDATA}/homelabarr/backend/config
+      type: none
+      o: bind
+      device: ${APPDATA}/homelabarr/backend/config

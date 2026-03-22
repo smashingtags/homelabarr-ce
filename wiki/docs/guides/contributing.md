@@ -135,7 +135,7 @@ services:
 
 volumes:
   new-app-data:
-    driver: local-persist
+    driver: native bind mount
     driver_opts:
       mountpoint: ${APPFOLDER}/new-app
 

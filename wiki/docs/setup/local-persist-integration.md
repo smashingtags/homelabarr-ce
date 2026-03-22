@@ -1,10 +1,10 @@
-# Local-Persist Integration with HomelabARR
+# Native Bind Mount Integration with HomelabARR
 
-HomelabARR uses a modernized, containerized version of the local-persist Docker volume plugin to ensure application data persists in specific host directories rather than Docker's managed volume locations.
+HomelabARR uses a modernized, containerized version of the native bind mount Docker volume plugin to ensure application data persists in specific host directories rather than Docker's managed volume locations.
 
 ## Overview
 
-The local-persist plugin provides several advantages:
+The native Docker bind mounts provides several advantages:
 
 - **Predictable Data Location**: Application data is stored in `/opt/appdata/[service]` 
 - **Easy Backup**: All application data is in a known, accessible location
@@ -18,13 +18,13 @@ The local-persist plugin provides several advantages:
 The recommended way is to use the included installation script:
 
 ```bash
-sudo /opt/homelabarr/scripts/install-local-persist-container.sh
+sudo /opt/homelabarr/scripts/install-native bind mount-container.sh
 ```
 
 This script will:
 - Create required directories with proper permissions
 - Create the `homelabarr-local` Docker network
-- Deploy the local-persist container from GHCR
+- Deploy the native bind mount container from GHCR
 - Verify the installation is working
 
 ### Manual Installation
@@ -41,7 +41,7 @@ docker network create homelabarr-local
 
 # 3. Deploy the container
 docker run -d \
-  --name homelabarr-local-persist \
+  --name homelabarr-native bind mount \
   --restart unless-stopped \
   --privileged \
   --user root \
@@ -50,7 +50,7 @@ docker run -d \
   -v /var/lib/docker/plugin-data:/var/lib/docker/plugin-data:rw \
   -v /opt/appdata:/opt/appdata:shared \
   --network homelabarr-local \
-  ghcr.io/smashingtags/local-persist:latest
+  ghcr.io/smashingtags/native bind mount:latest
 ```
 
 ### Using Docker Compose
@@ -59,22 +59,22 @@ Deploy using the included compose file:
 
 ```bash
 cd /opt/homelabarr/apps/local-mode-apps
-docker compose -f local-persist-fixed.yml up -d
+docker compose -f native bind mount-fixed.yml up -d
 ```
 
 ## Verification
 
-After installation, verify local-persist is working:
+After installation, verify native bind mount is working:
 
 ```bash
 # Check container status
-docker ps | grep local-persist
+docker ps | grep native bind mount
 
 # Check plugin socket
-ls -la /run/docker/plugins/local-persist.sock
+ls -la /run/docker/plugins/native bind mount.sock
 
 # Test volume creation
-docker volume create -d local-persist -o mountpoint=/opt/appdata/test --name test-volume
+docker volume create -d native bind mount -o mountpoint=/opt/appdata/test --name test-volume
 
 # Verify volume
 docker volume ls | grep test-volume
@@ -102,7 +102,7 @@ services:
 
 volumes:
   plex-data:
-    driver: local-persist
+    driver: native bind mount
     driver_opts:
       mountpoint: /opt/appdata/plex
 
@@ -128,7 +128,7 @@ You can customize where data is stored:
 ```yaml
 volumes:
   custom-app-data:
-    driver: local-persist
+    driver: native bind mount
     driver_opts:
       mountpoint: /mnt/storage/myapp  # Custom location
 ```
@@ -137,11 +137,11 @@ volumes:
 
 ### Container Restarting
 
-If the local-persist container keeps restarting:
+If the native bind mount container keeps restarting:
 
 ```bash
 # Check logs
-docker logs homelabarr-local-persist
+docker logs homelabarr-native bind mount
 
 # Common fix: Ensure proper permissions
 sudo chmod 755 /run/docker/plugins
@@ -152,10 +152,10 @@ sudo chmod 755 /var/lib/docker/plugin-data
 
 ```bash
 # Check if socket exists
-ls -la /run/docker/plugins/local-persist.sock
+ls -la /run/docker/plugins/native bind mount.sock
 
 # If missing, restart the container
-docker restart homelabarr-local-persist
+docker restart homelabarr-native bind mount
 ```
 
 ### Permission Denied Errors
@@ -169,11 +169,11 @@ sudo chmod 755 /run/docker/plugins
 ### Volume Creation Fails
 
 ```bash
-# Ensure local-persist is running and healthy
-docker ps | grep local-persist
+# Ensure native bind mount is running and healthy
+docker ps | grep native bind mount
 
 # Check container health
-docker inspect homelabarr-local-persist | grep Health -A 10
+docker inspect homelabarr-native bind mount | grep Health -A 10
 ```
 
 ## Backup and Migration
@@ -195,7 +195,7 @@ sudo tar -czf plex-backup-$(date +%Y%m%d).tar.gz -C /opt/appdata plex
 1. **Stop applications** on the old host
 2. **Backup data**: `tar -czf backup.tar.gz -C /opt appdata`
 3. **Transfer** backup to new host
-4. **Install HomelabARR** and local-persist on new host
+4. **Install HomelabARR** and native bind mount on new host
 5. **Restore data**: `tar -xzf backup.tar.gz -C /opt`
 6. **Fix permissions**: `sudo chown -R 1000:1000 /opt/appdata`
 7. **Start applications** on new host
@@ -221,7 +221,7 @@ Support for multiple storage locations:
 
 ```yaml
 services:
-  local-persist:
+  native bind mount:
     volumes:
       - /opt/appdata:/opt/appdata:shared
       - /mnt/storage1:/mnt/storage1:shared
@@ -234,7 +234,7 @@ For resource-constrained systems:
 
 ```yaml
 services:
-  local-persist:
+  native bind mount:
     deploy:
       resources:
         limits:
@@ -253,8 +253,8 @@ services:
 
 ## Container Image Information
 
-- **Registry**: `ghcr.io/smashingtags/local-persist`
-- **Source**: [GitHub Repository](https://github.com/smashingtags/local-persist)
+- **Registry**: `ghcr.io/smashingtags/native bind mount`
+- **Source**: [GitHub Repository](https://github.com/smashingtags/native bind mount)
 - **Architecture**: Multi-arch (amd64, arm64)
 - **Base**: Minimal Alpine Linux
 - **Updates**: Automatically built from source

@@ -44,8 +44,8 @@ These containers may fail due to outdated Docker image references:
 
 **Requires Manual Review:** ~64 containers with version-specific tags
 
-### ❌ **Category 3: Requires Local-Persist Plugin**
-These containers CANNOT deploy without the local-persist Docker plugin:
+### ❌ **Category 3: Requires Native Bind Mount Plugin**
+These containers CANNOT deploy without the native bind mount Docker plugin:
 
 **Media Stack (ALL require unionfs):**
 - Plex, Jellyfin, Emby (Media Servers) ❌ TESTED
@@ -57,12 +57,12 @@ These containers CANNOT deploy without the local-persist Docker plugin:
 ```yaml
 volumes:
   unionfs:
-    driver: local-persist
+    driver: native bind mount
     driver_opts:
       mountpoint: /mnt
 ```
 
-**Error:** `plugin "local-persist" not found`
+**Error:** `plugin "native bind mount" not found`
 
 ## 🚀 Quick Start Guide
 
@@ -73,7 +73,7 @@ volumes:
 4. **Deploy one container at a time** following our testing protocol
 
 ### For Advanced Users:
-1. **Install local-persist plugin** for full media stack
+1. **Install native Docker bind mounts** for full media stack
 2. **Fix image versions** as needed  
 3. **Deploy entire stack** with proper volume mounting
 
@@ -124,8 +124,8 @@ RADARRIMAGE=lscr.io/linuxserver/radarr:latest
 **Symptom:** `pull access denied` or `repository does not exist`
 **Solution:** Update image reference to `latest` or correct registry
 
-### Issue 3: Local-Persist Plugin
-**Symptom:** `plugin "local-persist" not found`
+### Issue 3: Native Bind Mount Plugin
+**Symptom:** `plugin "native bind mount" not found`
 **Solution:** Install plugin or skip unionfs containers for now
 
 ### Issue 4: Network Configuration
@@ -144,7 +144,7 @@ RADARRIMAGE=lscr.io/linuxserver/radarr:latest
 
 ### For Production Use:
 1. **Start with Category 1** containers to build confidence
-2. **Install local-persist** plugin for media server functionality  
+2. **Install native bind mount** plugin for media server functionality  
 3. **Review image versions** before deploying Category 2 containers
 4. **Use our fixing scripts** to standardize configurations
 

@@ -103,10 +103,14 @@ networks:
   default:
 volumes:
   staticfiles:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: "${APPFOLDER}/recipes/staticfiles"
+      type: none
+      o: bind
+      device: "${APPFOLDER}/recipes/staticfiles"
   nginx_config:
-    driver: local-persist
+    driver: local
     driver_opts:
-      mountpoint: "${APPFOLDER}/recipes/nginx_config"
+      type: none
+      o: bind
+      device: "${APPFOLDER}/recipes/nginx_config"
