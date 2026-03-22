@@ -2,7 +2,7 @@
 
 <p align="center">
     <a href="https://github.com/smashingtags/homelabarr-ce">
-      <img src="img/dockservee_animated.gif" alt="Join HomelabARR community">
+      <img src="https://raw.githubusercontent.com/smashingtags/homelabarr-assets/main/homelabber-wiki/homelabarr-header.png" alt="HomelabARR" width="600">
     </a>
 </p>
 
@@ -11,7 +11,7 @@
 <p align="center">
     </br>
     <a href="https://discord.gg/Pc7mXX786x">
-        <img src="https://discord.com/api/guilds/830478558995415100/widget.png?label=Discord%20Server&logo=discord" alt="Join HomelabARR on Discord">
+        <img src="https://discord.com/api/guilds/1334411584927301682/widget.png?label=Discord%20Server&logo=discord" alt="Join HomelabARR on Discord">
     </a>
     </br>
     <a href="https://github.com/smashingtags/homelabarr-ce/releases/latest">
