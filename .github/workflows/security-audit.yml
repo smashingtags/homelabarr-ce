@@ -1,9 +1,7 @@
 name: Security Audit and Compliance
 on:
-  push:
-    branches: [main, develop, feature/*]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
   workflow_dispatch:
     inputs:
       run_docker_scan:
