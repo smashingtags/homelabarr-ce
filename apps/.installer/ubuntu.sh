@@ -13,14 +13,18 @@
 # NO CODE MIRRORING IS ALLOWED      #
 #####################################
 appstartup() {
+# Traefik check removed — apps work without it (local/standard mode)
+# If Traefik is not running, apps deploy with direct port access instead of domain routing
 ds=$(docker ps -a --format '{{.Names}}' | sed '/^$/d' | grep -x 'traefik')
 if [[ ${ds} == "" ]];then
 printf "
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⛔  You deploy Traefik before you can deploy any Apps
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  Traefik is not running — apps will deploy in local mode
+    Access via http://your-ip:PORT instead of https://app.domain
+    To set up Traefik, use Option 1 from the main menu
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "
-sleep 30 && exit
+sleep 5
 fi
 
 if [[ $EUID -ne 0 ]];then
