@@ -183,7 +183,7 @@ export async function authenticate(username, password) {
     }
 
     const token = generateToken(user);
-    const sessionId = 'session_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    const sessionId = 'session_' + crypto.randomBytes(12).toString('hex') + Date.now().toString(36);
     
     // Create session
     const sessions = loadSessions();

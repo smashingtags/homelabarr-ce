@@ -3,6 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { DeploymentLogger } from './deployment-logger.js';
 
+function sanitizePathComponent(input) {
+  if (!input || typeof input !== 'string') return '';
+  return input.replace(/[\/\\\.]{2,}/g, '').replace(/[\/\\\0]/g, '').replace(/^\.+/, '');
+}
+
 /**
  * Progress Stream Manager - Handles real-time deployment progress updates
  * Uses Server-Sent Events (SSE) for real-time streaming to frontend
@@ -277,7 +282,7 @@ export class StreamingCLIBridge {
       );
 
       const [category, appName] = appId.split('-');
-      const appPath = path.join(this.cliBridge.appsPath, category, `${appName}.yml`);
+      const appPath = path.join(this.cliBridge.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
       
       if (!fs.existsSync(appPath)) {
         throw new Error(`Application ${appId} not found at ${appPath}`);

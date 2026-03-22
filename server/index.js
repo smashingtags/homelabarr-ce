@@ -5,6 +5,7 @@ import yaml from 'yaml';
 import fs from 'fs';
 import path from 'path';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import os from 'os';
 import { chmodSync } from 'fs';
 import { execSync, spawn } from 'child_process';
@@ -129,10 +130,17 @@ app.use(express.json());
 app.use(DeploymentLogger.createCorsLoggingMiddleware());
 
 app.use(cors(corsOptions));
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false,
-}));
+app.use(helmet());
+
+// Global rate limiting — 100 requests per minute per IP
+const globalRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
+app.use(globalRateLimit);
 
 // Enhanced preflight OPTIONS handler for development mode
 if (isDevelopment) {
@@ -4159,8 +4167,13 @@ app.post('/enhanced-mount/:containerId/providers/:provider/enable', conditionalA
       }
     }
     
+    // Sanitize provider name — alphanumeric + hyphens only
+    const safeProvider = provider.replace(/[^a-zA-Z0-9_-]/g, '');
+    const safePort = parseInt(webPort, 10);
+    if (isNaN(safePort) || safePort < 1 || safePort > 65535) throw new Error('Invalid port');
+
     // Proxy request to container's API
-    const response = await fetch(`http://localhost:${webPort}/api/v2/providers/${provider}/enable`, {
+    const response = await fetch(`http://localhost:${safePort}/api/v2/providers/${safeProvider}/enable`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -4205,8 +4218,13 @@ app.post('/enhanced-mount/:containerId/providers/:provider/disable', conditional
       }
     }
     
+    // Sanitize provider name — alphanumeric + hyphens only
+    const safeProvider = provider.replace(/[^a-zA-Z0-9_-]/g, '');
+    const safePort = parseInt(webPort, 10);
+    if (isNaN(safePort) || safePort < 1 || safePort > 65535) throw new Error('Invalid port');
+
     // Proxy request to container's API
-    const response = await fetch(`http://localhost:${webPort}/api/v2/providers/${provider}/disable`, {
+    const response = await fetch(`http://localhost:${safePort}/api/v2/providers/${safeProvider}/disable`, {
       method: 'POST'
     });
     
