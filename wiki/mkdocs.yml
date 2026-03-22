@@ -163,6 +163,7 @@ nav:
       - Quick Start: guides/quick-start.md
       - Linux Installation: install/linux-installation.md
       - Local Mode: install/local-mode.md
+      - Web Dashboard: guides/web-dashboard.md
       - Migration: install/migration.md
   - Setup & Configuration:
       - Authelia: install/authelia.md
@@ -175,6 +176,8 @@ nav:
   - Developer Documentation:
       - Contributing: guides/contributing.md
       - Architecture Overview: guides/architecture.md
+      - CLI Bridge: guides/cli-bridge.md
+      - API Reference: guides/api-reference.md
       - CLI Development: guides/cli-development.md
       - YAML Cleanup Tool: guides/yaml-cleanup-tool.md
   - Commands:
