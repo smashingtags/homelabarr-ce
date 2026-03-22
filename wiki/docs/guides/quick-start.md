@@ -90,11 +90,11 @@ No domain, no Traefik, no SSL. Containers are accessed directly by port number. 
 ```bash
 git clone https://github.com/smashingtags/homelabarr-ce.git
 cd homelabarr-ce
-chmod +x install.sh
-sudo ./install.sh --local
+chmod +x install.sh deploy-local.sh
+./deploy-local.sh
 ```
 
-Apps are accessible at `http://your-server-ip:<port>` (e.g., Plex at `:32400`, Radarr at `:7878`).
+The local deploy script walks you through deploying apps with direct port access. Apps are accessible at `http://your-server-ip:<port>` (e.g., Plex at `:32400`, Radarr at `:7878`).
 
 See the [Local Mode Setup](../install/local-mode.md) guide for details.
 
