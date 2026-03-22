@@ -28,11 +28,23 @@ With PGBlitz abandoned, the community scrambled:
 
 - **Cloudbox / Saltbox**: Meanwhile, a separate lineage existed. [Cloudbox](https://github.com/Cloudbox/Cloudbox) was another Ansible-based media server tool (not directly from the PGBlitz tree). When Cloudbox was archived in March 2025, [Saltbox](https://github.com/saltyorg/Saltbox) — maintained by salty (saltydk), who had also worked on the original PlexGuide — became its successor. Saltbox remains actively maintained today.
 
+## Sudobox — The GUI That Never Shipped (2021–2023)
+
+While the Ansible-based projects were forking and the community was fragmenting, there was one project that promised to solve everything: **[Sudobox](https://github.com/sudobox-io)**.
+
+Announced in January 2021 on the Plex forums, Sudobox promised what everyone had been asking for — a web GUI for managing your media server. No more Ansible playbooks, no more YAML editing, no more SSH. Just open a browser, click Deploy, and your app runs.
+
+The community got excited. The installer repo got 23 stars from people waiting. They built a real [GitHub organization](https://github.com/sudobox-io) with a JavaScript backend, a companion service, a CLI tool, a full MkDocs documentation site, and an installer with a polished screenshot. They had demo videos on the Plex forums.
+
+Then it stopped. The backend was last touched in March 2023. The documentation in March 2022. The installer in 2022. The website became a landing page with three words: "Working outside the box."
+
+Sudobox was the right idea at the right time — but it never shipped. The community went back to Ansible and Docker Compose and command lines, still waiting for a GUI that would actually work.
+
 ## HomelabARR CE (2025–Present)
 
-**Michael Ashley (smashingtags)** — who had been part of the original PlexGuide team — took Dockserver's Docker Compose foundation and built something new.
+**Michael Ashley (smashingtags)** — who had been part of the original PlexGuide team — took Dockserver's Docker Compose foundation and built what Sudobox promised but never delivered.
 
-HomelabARR CE added what none of the previous projects had:
+HomelabARR CE is the GUI that actually shipped:
 
 - **A web GUI** — React-based dashboard with a 157+ app catalog. No more editing YAML files or running Ansible playbooks. Browse apps, click Deploy, watch it happen.
 - **A CLI menu system** — interactive terminal interface for users who prefer the command line.
