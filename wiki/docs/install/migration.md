@@ -321,6 +321,140 @@ docker image prune -a
 
 ---
 
+## Migrating from Cloudbox
+
+[Cloudbox](https://github.com/Cloudbox/Cloudbox) was one of the most popular Ansible-based media server solutions. The project was **archived in March 2025** and is no longer maintained. If you're still running it, migrating to HomelabARR CE gives you a modern, actively maintained platform with a web GUI.
+
+!!! tip "Your Plex database and app configs carry over"
+    Cloudbox stores app data in `/opt/` (e.g., `/opt/sonarr`, `/opt/plex`). HomelabARR CE uses `/opt/appdata/`. You'll move your configs once and everything works.
+
+### What's Different
+
+| | Cloudbox | HomelabARR CE |
+|---|---|---|
+| **Status** | Archived, unmaintained since 2025 | Actively maintained |
+| **Deployment** | Ansible playbooks | Docker Compose or Web GUI |
+| **Docker network** | `cloudbox` | `proxy` |
+| **App data path** | `/opt/<app>/` | `/opt/appdata/<app>/` |
+| **Media path** | `/mnt/unionfs/Media/` | `/mnt/` (configurable) |
+| **Cloud storage** | rclone + mergerfs (required) | Local NAS (recommended), cloud optional |
+| **Traefik** | v1 | v2/v3 |
+| **Install types** | Cloudbox / Mediabox / Feederbox | One install, choose what to deploy |
+
+### Step-by-Step Migration
+
+#### 1. Backup everything
+
+```bash
+# Backup rclone config
+cp ~/.config/rclone/rclone.conf ~/rclone.conf.backup
+
+# Backup Cloudbox settings
+cp ~/cloudbox/accounts.yml ~/accounts.yml.backup
+
+# Backup all app data
+sudo tar czf ~/cloudbox-backup-$(date +%Y%m%d).tar.gz /opt/
+```
+
+#### 2. Move app data to CE's expected path
+
+Cloudbox stores configs at `/opt/<app>/` (e.g., `/opt/sonarr/`). CE expects `/opt/appdata/<app>/`. Create the new structure and move:
+
+```bash
+sudo mkdir -p /opt/appdata
+
+# Move each app's config
+for app in plex sonarr radarr lidarr tautulli jackett nzbget sabnzbd ombi; do
+  if [ -d "/opt/$app" ]; then
+    sudo mv /opt/$app /opt/appdata/$app
+    echo "Moved $app"
+  fi
+done
+
+sudo chown -R 1000:1000 /opt/appdata
+```
+
+!!! warning "Plex path"
+    Cloudbox stores Plex at `/opt/plex/`. After moving to `/opt/appdata/plex/`, the Plex database, metadata, and libraries are all intact. The container mounts this as `/config` regardless of where it lives on the host.
+
+#### 3. Handle media paths
+
+Cloudbox uses a specific media structure:
+```
+/mnt/unionfs/Media/Movies/
+/mnt/unionfs/Media/TV/
+/mnt/unionfs/Media/Music/
+```
+
+CE mounts `/mnt` directly. If your media is at `/mnt/unionfs/Media/`, you have two options:
+
+**Option A: Symlink (quickest)**
+```bash
+# If your media is still at /mnt/unionfs/Media
+sudo ln -sf /mnt/unionfs/Media /mnt/Media
+```
+
+**Option B: Move to local NAS (recommended)**
+See the [Cloud to Local Migration](#migrating-from-cloud-based-setups) section below. Point your NAS mount at `/mnt` and organize as you like.
+
+#### 4. Create the proxy network
+
+```bash
+docker network create proxy 2>/dev/null || true
+```
+
+#### 5. Install HomelabARR CE
+
+```bash
+# One-line CLI install
+sudo wget -qO- https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh | sudo bash
+sudo homelabarr-cli -i
+
+# Or Docker Compose for web GUI
+curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
+export JWT_SECRET=$(openssl rand -base64 32)
+export DOCKER_GID=$(getent group docker | cut -d: -f3)
+export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
+docker compose -f homelabarr.yml up -d
+```
+
+#### 6. Redeploy apps one at a time
+
+```bash
+# Stop old Cloudbox container
+docker stop sonarr && docker rm sonarr
+
+# Redeploy through CE (web GUI or CLI)
+# The new container mounts /opt/appdata/sonarr:/config — your existing data
+```
+
+After redeploying each media app, update the media root folders:
+
+| App | Cloudbox path | CE path |
+|-----|--------------|---------|
+| Sonarr | `/tv/` → `/mnt/unionfs/Media/TV/` | `/mnt/Media/TV/` (or wherever your media lives) |
+| Radarr | `/movies/` → `/mnt/unionfs/Media/Movies/` | `/mnt/Media/Movies/` |
+| Plex | `/data/Movies/`, `/data/TV/` | Libraries point to `/mnt/Media/` subdirectories |
+
+#### 7. Clean up Cloudbox
+
+```bash
+# Remove Cloudbox installation
+sudo rm -rf ~/cloudbox 2>/dev/null
+sudo rm -rf /opt/cloudbox 2>/dev/null
+
+# Remove old network
+docker network rm cloudbox 2>/dev/null
+
+# Remove old Ansible
+sudo apt remove ansible -y 2>/dev/null
+
+# Clean up old images
+docker image prune -a
+```
+
+---
+
 ## Migrating from Cloud-Based Setups
 
 If you're moving from a cloud-dependent system (Google Drive mounts, rclone cloud storage) to local NAS storage:
