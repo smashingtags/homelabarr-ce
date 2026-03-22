@@ -31,27 +31,18 @@ jobs:
       
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
       
     - name: Log in to Docker Hub
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       continue-on-error: true
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
       
-    - name: Debug environment
-      run: |
-        echo "Registry: ${{ env.REGISTRY }}"
-        echo "Namespace: ${{ env.NAMESPACE }}"
-        echo "GitHub Actor: ${{ github.actor }}"
-        echo "Frontend Image: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}"
-        echo "Backend Image: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}"
-        echo "Using PAT for GHCR authentication"
-    
     - name: Log in to Container Registry
       if: github.event_name != 'pull_request'
       run: |
@@ -59,12 +50,12 @@ jobs:
     
     - name: Extract metadata for frontend
       id: meta-frontend
-      uses: docker/metadata-action@v5
+      uses: docker/metadata-action@v6
       with:
         images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}
         tags: |
           type=ref,event=branch
-          type=ref,event=pr
+          type=ref,event=pr,prefix=pr-
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
@@ -77,12 +68,12 @@ jobs:
           
     - name: Extract metadata for backend
       id: meta-backend
-      uses: docker/metadata-action@v5
+      uses: docker/metadata-action@v6
       with:
         images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}
         tags: |
           type=ref,event=branch
-          type=ref,event=pr
+          type=ref,event=pr,prefix=pr-
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
@@ -94,62 +85,48 @@ jobs:
           org.opencontainers.image.licenses=MIT
           
     - name: Build and push frontend image
-      uses: docker/build-push-action@v5
+      id: build-frontend
+      uses: docker/build-push-action@v7
       with:
         context: .
         file: ./Dockerfile
-        platforms: linux/amd64,linux/arm64
+        platforms: ${{ github.event_name != 'pull_request' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
         push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
-        tags: |
-          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:${{ github.ref_name }}
-          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:latest
+        load: ${{ github.event_name == 'pull_request' }}
+        tags: ${{ steps.meta-frontend.outputs.tags }}
         labels: ${{ steps.meta-frontend.outputs.labels }}
-        cache-from: |
-          type=gha
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache
-        cache-to: |
-          type=gha,mode=max
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:buildcache,mode=max
+        cache-from: type=gha
+        cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
         build-args: |
           NODE_ENV=production
-          
+
     - name: Build and push backend image
-      uses: docker/build-push-action@v5
+      id: build-backend
+      uses: docker/build-push-action@v7
       with:
         context: .
         file: ./Dockerfile.backend
-        platforms: linux/amd64,linux/arm64
+        platforms: ${{ github.event_name != 'pull_request' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
         push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
-        tags: |
-          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.ref_name }}
-          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:latest
+        load: ${{ github.event_name == 'pull_request' }}
+        tags: ${{ steps.meta-backend.outputs.tags }}
         labels: ${{ steps.meta-backend.outputs.labels }}
-        cache-from: |
-          type=gha
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:buildcache
-        cache-to: |
-          type=gha,mode=max
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}:buildcache,mode=max
+        cache-from: type=gha
+        cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
         build-args: |
           NODE_ENV=production
-          
+
     - name: Test image functionality
       if: github.event_name == 'pull_request'
       run: |
         echo "Testing frontend image..."
         docker run --rm --detach --name test-frontend --publish 18080:8080 \
           ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}:pr-${{ github.event.number }}
-        
-        # Wait for container to start
+
         sleep 10
-        
-        # Test health endpoint
         curl -f http://localhost:18080/health || echo "Frontend health check failed (expected without backend)"
-        
-        # Cleanup
         docker stop test-frontend
-        
-        echo "✅ Frontend image test completed"
+        echo "Frontend image test completed"
         
     - name: Update deployment manifest
       if: github.ref == 'refs/heads/main'
