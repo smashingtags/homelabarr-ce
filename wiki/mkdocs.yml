@@ -16,14 +16,14 @@
 # IN THE SOFTWARE.
 
 # Project information
-site_name: HomelabARR CE Wiki
+site_name: HomelabARR Wiki
 use_directory_urls: false
 site_url: ""
 site_author: HomelabARR CE
 site_description: Documentation for HomelabARR Community Edition — free, open-source Docker container management
 
 # Repository
-repo_name: HomelabARR CE Wiki
+repo_name: HomelabARR Wiki
 repo_url: https://github.com/smashingtags/homelabarr-ce
 edit_uri: https://github.com/smashingtags/homelabarr-ce/edit/main/wiki/docs/
 copyright: Copyright &copy; 2026 Imogen Labs
@@ -305,6 +305,13 @@ nav:
       - YAML Standardization v2.1: releases/yaml-standardization-v2.1.md
       - Version History: releases/version-history.md
       - Upgrade Guide: releases/upgrade-guide.md
+  - Professional Edition:
+      - Overview: pe/overview.md
+      - Installation: pe/installation.md
+      - Storage Management: pe/storage.md
+      - Dashboard: pe/dashboard.md
+      - File Sharing: pe/file-sharing.md
+      - Licensing & Pricing: pe/licensing.md
   - Community:
       - Support: guides/support.md
       - FAQ: guides/faq.md
