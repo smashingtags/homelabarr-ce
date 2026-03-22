@@ -116,8 +116,8 @@ Common issues:
 ### How do I update applications?
 ```bash
 # Update single application
-docker-compose -f apps/category/app.yml pull
-docker-compose -f apps/category/app.yml up -d
+docker compose -f apps/category/app.yml pull
+docker compose -f apps/category/app.yml up -d
 
 # Update all containers
 docker images | grep -v REPOSITORY | awk '{print $1":"$2}' | xargs -L1 docker pull
@@ -280,8 +280,8 @@ cd homelabarr-ce
 git pull origin master
 
 # Update containers
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 ```
 
 ### How often should I update?

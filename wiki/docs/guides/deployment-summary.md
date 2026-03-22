@@ -143,7 +143,7 @@ homelabarr/
 
 ```bash
 # Quick installation
-sudo wget -qO- https://git.io/J3GDc | sudo bash
+# See Quick Start guide for installation: https://smashingtags.github.io/homelabarr-ce/guides/quick-start/
 
 # Or manual installation
 git clone https://github.com/smashingtags/homelabarr-ce.git

@@ -173,17 +173,17 @@ Common issues and solutions.
 
 ```bash
 # Validate YAML syntax
-docker-compose -f apps/category/new-app.yml --env-file .env.test config
+docker compose -f apps/category/new-app.yml --env-file .env.test config
 
 # Test deployment
-docker-compose -f apps/category/new-app.yml --env-file .env.test up -d
+docker compose -f apps/category/new-app.yml --env-file .env.test up -d
 
 # Verify functionality
 docker ps --filter "name=new-app"
 docker logs new-app
 
 # Clean up
-docker-compose -f apps/category/new-app.yml --env-file .env.test down
+docker compose -f apps/category/new-app.yml --env-file .env.test down
 ```
 
 ## Documentation Development
@@ -303,7 +303,7 @@ test: add container validation tests
 .claude/scripts/clean-yaml-files.sh --validate-only
 
 # Manual YAML check if needed
-find apps/ -name "*.yml" -exec docker-compose -f {} config \;
+find apps/ -name "*.yml" -exec docker compose -f {} config \;
 
 # Script validation
 shellcheck scripts/*.sh

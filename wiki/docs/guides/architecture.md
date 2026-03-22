@@ -70,7 +70,7 @@ graph TB
 - **Request Management**: Overseerr, Petio
 - **Monitoring**: Tautulli, Netdata, Uptime Kuma
 - **Backup**: Duplicati, Restic
-- **Storage Management**: SnapRAID integration (v2.0)
+- **Storage Management**: SnapRAID integration (Professional Edition)
 
 ### Local Mode Components
 
@@ -110,7 +110,7 @@ graph TB
 └── overseerr/      # Request management
 ```
 
-### SnapRAID Integration (v2.0)
+### SnapRAID Integration (Professional Edition)
 ```mermaid
 graph TB
     Frontend[Dashboard UI] --> API[SnapRAID API]
@@ -129,7 +129,7 @@ graph TB
     Frontend -.polling.-> API
 ```
 
-**SnapRAID v2.0 Features:**
+**SnapRAID Features (Professional Edition):**
 - **Drop-in Integration**: Seamless API compatibility
 - **Real-time Progress**: Operation status and progress tracking
 - **Cross-platform Support**: Windows development, Linux deployment
@@ -275,7 +275,7 @@ Targets:
 ### Planned Enhancements
 - **Kubernetes Support**: Container orchestration expansion
 - **CLI Modernization**: Go/Bubble Tea interface
-- **API Integration**: RESTful management interface (✅ SnapRAID v2.0)
+- **API Integration**: RESTful management interface (Professional Edition)
 - **Observability**: Enhanced monitoring and tracing
 - **Storage Management**: Advanced SnapRAID configuration UI
 - **WebSocket Updates**: Real-time operation updates

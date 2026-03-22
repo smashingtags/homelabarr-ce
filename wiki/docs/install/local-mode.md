@@ -497,7 +497,7 @@ This allows testing Local Mode while maintaining Full Mode production services.
 
 2. **Install HomelabARR CE Full Mode**:
    ```bash
-   sudo wget -qO- https://git.io/J3GDc | sudo bash
+   # See Quick Start guide for installation: https://smashingtags.github.io/homelabarr-ce/guides/quick-start/
    ```
 
 3. **Deploy through HomelabARR CE interface**:
