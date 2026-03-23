@@ -151,7 +151,10 @@ Once Docker is detected, you'll see the **main menu**:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**Option 1: Traefik + Authelia** — Sets up a reverse proxy with SSL certificates and optional 2FA authentication. Requires a domain name and Cloudflare account. Only install this if you want domain-based access (e.g., `https://plex.yourdomain.com`).
+**Option 1: Traefik + Authelia + Auto DNS** — Sets up a reverse proxy with SSL certificates, 2FA authentication, and automatic Cloudflare DNS. Requires a domain name and Cloudflare account. Only install this if you want domain-based access (e.g., `https://plex.yourdomain.com`).
+
+!!! tip "Install this first if you have a domain"
+    The Traefik stack includes [CF Companion](https://github.com/smashingtags/cf-companion) — every container you deploy after this automatically gets a Cloudflare DNS record. No more logging into Cloudflare to manually create CNAMEs. Deploy an app, the DNS record appears within seconds.
 
 **Option 2: Applications** — Opens the app management menu:
 
