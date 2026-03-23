@@ -1,7 +1,7 @@
 # HomelabARR Backend Docker Image
 # Optimized Node.js backend with CLI Bridge integration
 
-FROM node:20-alpine
+FROM node:24.0.0-alpine
 
 # Set working directory
 WORKDIR /app
