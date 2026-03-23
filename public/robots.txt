@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ce-demo.homelabarr.com/sitemap.xml
