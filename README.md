@@ -117,10 +117,12 @@ docker compose -f homelabarr.yml up -d
 
 - **157 app templates across 12 categories** — Plex, Sonarr, Radarr, Jellyfin, qBittorrent, Overseerr, Grafana, and more
 - **One-click deployment** — select an app, hit deploy
+- **Automatic Cloudflare DNS** — deploy a container, DNS record appears. No more manual CNAMEs. Powered by [CF Companion](https://github.com/smashingtags/cf-companion)
 - **Container management** — start, stop, restart, remove from the UI
 - **Health monitoring** — see container status at a glance
 - **Template-based** — Docker Compose generation from YAML templates
-- **Two modes** — Full Mode (Traefik + domain + SSL) or Local Mode (direct IP:PORT)
+- **Two modes** — Full Mode (Traefik + domain + SSL + auto DNS) or Local Mode (direct IP:PORT)
+- **Traefik + Authelia + CF Companion** — reverse proxy, 2FA, and auto DNS all deploy as one stack
 - **JWT authentication** — secure your dashboard
 - **Dark theme** — easy on the eyes
 
