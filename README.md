@@ -28,6 +28,18 @@
 </p>
 
 <p align="center">
+    <a href="https://github.com/smashingtags/homelabarr-ce/actions/workflows/codeql.yml">
+        <img src="https://github.com/smashingtags/homelabarr-ce/actions/workflows/codeql.yml/badge.svg" alt="CodeQL">
+    </a>
+    <a href="https://snyk.io/test/github/smashingtags/homelabarr-ce">
+        <img src="https://snyk.io/test/github/smashingtags/homelabarr-ce/badge.svg" alt="Snyk">
+    </a>
+    <a href="https://github.com/smashingtags/homelabarr-ce/security">
+        <img src="https://img.shields.io/badge/Security-Policy-green?logo=opensourceinitiative&logoColor=white" alt="Security Policy">
+    </a>
+</p>
+
+<p align="center">
     <a href="https://ce-demo.homelabarr.com">
         <img src="https://img.shields.io/badge/CE_Demo-Live-brightgreen?logo=docker&logoColor=white" alt="CE Demo">
     </a>
@@ -322,6 +334,32 @@ npm run build
 ```
 
 The dev server runs Vite on `:5173` and the Express backend on `:8092`.
+
+---
+
+## Security
+
+We scan everything and we don't hide the results.
+
+| Tool | What it scans | Status |
+|------|--------------|--------|
+| [CodeQL](https://github.com/smashingtags/homelabarr-ce/security/code-scanning) | JavaScript/TypeScript source code — SSRF, injection, XSS, auth issues | Runs on every push to main |
+| [Snyk](https://snyk.io/test/github/smashingtags/homelabarr-ce) | Docker base images, npm dependencies, Alpine packages — known CVEs | Continuous monitoring |
+| [Dependabot](https://github.com/smashingtags/homelabarr-ce/security/dependabot) | Outdated dependencies with known vulnerabilities | Automatic PRs |
+
+**What we've fixed:**
+- SSRF in provider endpoints — strict allowlist, no user input reaches internal URLs
+- CORS wildcard in development mode — replaced with local network origin validation
+- Session ID generation — `crypto.randomBytes` instead of `Math.random`
+- Directory traversal — path sanitization on all user-supplied file paths
+- Rate limiting — 100 req/min global limit
+- Helmet security headers — full suite enabled
+
+**What we can't fix (upstream):**
+- Alpine base image CVEs in zlib/expat — waiting on nginx to ship updated Alpine packages
+- These are in the OS layer, not our code, and have no known exploits
+
+Report vulnerabilities privately: **michael@mjashley.com** — see [SECURITY.md](SECURITY.md) for details.
 
 ---
 
