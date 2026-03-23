@@ -224,6 +224,9 @@ export function DeployModal({
                     className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 )}
+                {field.helpText && (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
+                )}
               </div>
             ))}
           </div>
