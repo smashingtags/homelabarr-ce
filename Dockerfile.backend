@@ -14,8 +14,6 @@ RUN apk add --no-cache \
     bash \
     curl \
     jq \
-    python3 \
-    py3-pip \
     shadow \
     sudo
 
