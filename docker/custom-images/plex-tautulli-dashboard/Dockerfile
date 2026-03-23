@@ -1,6 +1,6 @@
 # HomelabARR Plex-Tautulli Dashboard
 # Based on original work by cyb3rgh05t but rebuilt for HomelabARR independence
-FROM node:18-alpine AS builder
+FROM node:25.8.1-alpine AS builder
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # Runtime stage
-FROM node:18-alpine
+FROM node:25.8.1-alpine
 
 # Install runtime dependencies
 RUN apk add --no-cache \
