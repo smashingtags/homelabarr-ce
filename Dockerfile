@@ -2,7 +2,7 @@
 # Optimized multi-stage build for React + TypeScript + Vite frontend
 
 # Build stage  
-FROM node:24-alpine AS builder
+FROM node:24-alpine3.23 AS builder
 
 # Set working directory
 WORKDIR /app
