@@ -6,13 +6,23 @@ FROM node:24-alpine3.23
 # Update Alpine packages to pick up latest security patches
 RUN apk upgrade --no-cache
 
+# Force-update npm and patch vulnerable transitive deps (minimatch, tar)
+RUN npm install -g npm@latest && \
+    npm install -g minimatch@latest tar@latest 2>/dev/null; \
+    cd /usr/local/lib/node_modules/npm && \
+    npm install minimatch@latest tar@latest --save 2>/dev/null; \
+    true
+
 # Set working directory
 WORKDIR /app
 
 # Install system dependencies for Docker operations and CLI Bridge
+# Pull docker-cli from Alpine edge for latest security patches (29.3.0+)
 RUN apk add --no-cache \
+    --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
     docker-cli \
-    docker-cli-compose \
+    docker-cli-compose && \
+    apk add --no-cache \
     git \
     bash \
     curl \
