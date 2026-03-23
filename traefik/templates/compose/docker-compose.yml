@@ -87,7 +87,7 @@ services:
       - 'traefik.http.routers.traefik-rtr.service=api@internal'
   cf-companion:
     container_name: 'cf-companion'
-    image: 'ghcr.io/tiredofit/docker-traefik-cloudflare-companion:latest'
+    image: 'smashingtags/cf-companion:latest'
     depends_on:
       - traefik
     networks:
