@@ -341,25 +341,44 @@ The dev server runs Vite on `:5173` and the Express backend on `:8092`.
 
 We scan everything and we don't hide the results.
 
+### Docker Scout Health Scores
+
+<p align="center">
+    <img src="docs/images/scout-frontend-A.png" alt="Frontend Scout Score A" width="600">
+</p>
+<p align="center"><em>Frontend — Score A</em></p>
+
+<p align="center">
+    <img src="docs/images/scout-backend-B.png" alt="Backend Scout Score B" width="600">
+</p>
+<p align="center"><em>Backend — Score B (2 remaining CVEs are in Docker CLI's compiled Go binaries, waiting on upstream fix)</em></p>
+
+### Scanning Tools
+
 | Tool | What it scans | Status |
 |------|--------------|--------|
-| [CodeQL](https://github.com/smashingtags/homelabarr-ce/security/code-scanning) | JavaScript/TypeScript source code — SSRF, injection, XSS, auth issues | Runs on every push to main |
+| [Docker Scout](https://hub.docker.com/r/smashingtags/homelabarr-frontend) | Container images — base image CVEs, supply chain attestations, SBOM | Every push to Docker Hub |
+| [CodeQL](https://github.com/smashingtags/homelabarr-ce/security/code-scanning) | JavaScript/TypeScript source code — SSRF, injection, XSS, auth issues | Every push to main |
 | [Snyk](https://snyk.io/test/github/smashingtags/homelabarr-ce) | Docker base images, npm dependencies, Alpine packages — known CVEs | Continuous monitoring |
 | [Dependabot](https://github.com/smashingtags/homelabarr-ce/security/dependabot) | Outdated dependencies with known vulnerabilities | Automatic PRs |
 
-**What we've fixed:**
+### What we've fixed
 - SSRF in provider endpoints — strict allowlist, no user input reaches internal URLs
 - CORS wildcard in development mode — replaced with local network origin validation
 - Session ID generation — `crypto.randomBytes` instead of `Math.random`
 - Directory traversal — path sanitization on all user-supplied file paths
 - Rate limiting — 100 req/min global limit
 - Helmet security headers — full suite enabled
+- nginx 1.29.6-alpine3.23-slim — latest base image, zero fixable CVEs
+- Node 24 LTS on Alpine 3.23 — latest LTS with `apk upgrade` at build time
+- docker-cli 29.3.0 from Alpine edge — patched Go dependencies
+- SLSA provenance + SBOM attestations on every build
+- Non-root container user on all images
+- Removed unused Python/pip from backend (eliminated 3 CVEs)
 
-**What we can't fix (upstream — waiting on Alpine/Node package maintainers):**
-- `docker-cli` 29.1.3 ships with vulnerable Go dependencies (grpc, containerd, x/crypto) — fix is in Docker CLI 29.2.0+, not yet packaged for Alpine 3.23
-- `npm` bundled with Node 24 includes older minimatch/tar — waiting on Node Docker image to publish March 2026 security patch
-- Alpine base image CVEs in zlib/expat — waiting on nginx to ship updated packages
-- None of these are in our code. All are in OS-level packages we depend on but don't control
+### What we can't fix (upstream)
+- 2 Go transitive dependencies (grpc 1.78.0, otel 1.38.0) compiled into docker-cli binary — waiting on Docker CLI team to recompile with updated modules
+- None of these are in our code. All are in compiled binaries we depend on but don't control
 
 Report vulnerabilities privately: **michael@mjashley.com** — see [SECURITY.md](SECURITY.md) for details.
 
