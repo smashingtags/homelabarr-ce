@@ -14,7 +14,7 @@ export function DeployedAppCard({ app, onViewLogs, onRefresh }: DeployedAppCardP
   const [showStats, setShowStats] = useState(false);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+    <div className="bg-white dark:bg-gray-800/80 dark:backdrop-blur-xl rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700/50">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
@@ -33,11 +33,16 @@ export function DeployedAppCard({ app, onViewLogs, onRefresh }: DeployedAppCardP
               {app.name}
             </h3>
           </div>
-          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+          <span className={`flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full ${
             app.status === 'running'
               ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100'
               : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100'
           }`}>
+            <span className={`w-2 h-2 rounded-full ${
+              app.status === 'running'
+                ? 'bg-green-500 animate-pulse-slow'
+                : 'bg-red-500'
+            }`}></span>
             {app.status}
           </span>
         </div>
