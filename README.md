@@ -355,9 +355,11 @@ We scan everything and we don't hide the results.
 - Rate limiting — 100 req/min global limit
 - Helmet security headers — full suite enabled
 
-**What we can't fix (upstream):**
-- Alpine base image CVEs in zlib/expat — waiting on nginx to ship updated Alpine packages
-- These are in the OS layer, not our code, and have no known exploits
+**What we can't fix (upstream — waiting on Alpine/Node package maintainers):**
+- `docker-cli` 29.1.3 ships with vulnerable Go dependencies (grpc, containerd, x/crypto) — fix is in Docker CLI 29.2.0+, not yet packaged for Alpine 3.23
+- `npm` bundled with Node 24 includes older minimatch/tar — waiting on Node Docker image to publish March 2026 security patch
+- Alpine base image CVEs in zlib/expat — waiting on nginx to ship updated packages
+- None of these are in our code. All are in OS-level packages we depend on but don't control
 
 Report vulnerabilities privately: **michael@mjashley.com** — see [SECURITY.md](SECURITY.md) for details.
 
