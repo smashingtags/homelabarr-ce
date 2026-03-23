@@ -97,6 +97,8 @@ jobs:
         labels: ${{ steps.meta-frontend.outputs.labels }}
         cache-from: type=gha
         cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
+        provenance: true
+        sbom: true
         build-args: |
           NODE_ENV=production
 
@@ -113,6 +115,8 @@ jobs:
         labels: ${{ steps.meta-backend.outputs.labels }}
         cache-from: type=gha
         cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
+        provenance: true
+        sbom: true
         build-args: |
           NODE_ENV=production
 
