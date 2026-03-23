@@ -52,7 +52,9 @@ jobs:
       id: meta-frontend
       uses: docker/metadata-action@v6
       with:
-        images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}
+        images: |
+          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}
+          ${{ env.NAMESPACE }}/${{ env.FRONTEND_IMAGE_NAME }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr,prefix=pr-
@@ -65,12 +67,14 @@ jobs:
           org.opencontainers.image.description=React frontend for HomelabARR CE container management
           org.opencontainers.image.vendor=HomelabARR CE
           org.opencontainers.image.licenses=MIT
-          
+
     - name: Extract metadata for backend
       id: meta-backend
       uses: docker/metadata-action@v6
       with:
-        images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}
+        images: |
+          ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}
+          ${{ env.NAMESPACE }}/${{ env.BACKEND_IMAGE_NAME }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr,prefix=pr-
