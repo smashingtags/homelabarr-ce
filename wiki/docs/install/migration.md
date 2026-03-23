@@ -195,8 +195,18 @@ docker image prune -a
 # rm /opt/homelabarr-backup-*.tar.gz
 ```
 
-!!! tip "Keep Traefik and Authelia"
-    If your Traefik and Authelia are working, **don't redeploy them**. They don't use `local-persist` and CE doesn't need to manage them. Leave them running.
+!!! warning "Fix Traefik's Docker network setting"
+    Your existing Traefik may be configured to discover containers on the wrong Docker network. CE deploys containers with labels on the `proxy` network. If Traefik is set to `--providers.docker.network=traefik` (common in older setups), it will ignore all CE-deployed container labels.
+
+    Check your Traefik config:
+    ```bash
+    docker inspect traefik --format '{{json .Args}}' | grep docker.network
+    ```
+
+    If it says `docker.network=traefik`, you need to recreate Traefik with `--providers.docker.network=proxy` instead. This is a one-time fix — after this, every container CE deploys with Traefik mode will be discovered automatically via Docker labels. No manual file-based routes needed.
+
+!!! tip "Keep Authelia"
+    Your existing Authelia works with CE out of the box. Don't redeploy it.
 
 ---
 
