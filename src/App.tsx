@@ -306,8 +306,15 @@ export default function App() {
     setPendingDeployment(null);
   };
 
-  const handleDeploymentComplete = (completionSuccess: boolean, _summary?: any) => {
-    console.log('Deployment completed:', { success: completionSuccess });
+  const handleDeploymentComplete = async (completionSuccess: boolean, _summary?: any) => {
+    setDeploymentProgress(null);
+    if (completionSuccess) {
+      await fetchContainers();
+      success('Deployment Successful', 'Container is running. Check the Deployed Apps tab.');
+      setActiveCategory('deployed');
+    } else {
+      showError('Deployment Failed', 'Check container logs for details.');
+    }
   };
 
   const handleCloseProgress = () => {
@@ -337,12 +344,21 @@ export default function App() {
     const cliApp = (app as any)._cliApp as CLIApplication | undefined;
     const fields: any[] = [
       {
+        name: 'containerName',
+        label: 'Container Name',
+        type: 'text' as const,
+        required: false,
+        placeholder: cliApp?.name || 'auto',
+        defaultValue: '',
+      },
+      {
         name: 'domain',
         label: 'Domain',
         type: 'text' as const,
         required: false,
-        placeholder: 'localhost (optional for local mode)',
-        defaultValue: 'localhost',
+        placeholder: 'yourdomain.com (only needed for Traefik mode)',
+        defaultValue: '',
+        trafikOnly: true,
       },
     ];
 

@@ -62,7 +62,8 @@ export function DeployModal({
     setErrors([]);
   };
 
-  const basicFields = app.configFields?.filter(field => !field.advanced) || [];
+  const isTraefikMode = deploymentMode.type === 'traefik' || deploymentMode.type === 'authelia';
+  const basicFields = app.configFields?.filter(field => !field.advanced && (!field.trafikOnly || isTraefikMode)) || [];
   const advancedFields = app.configFields?.filter(field => field.advanced) || [];
 
   if (!isOpen) return null;
