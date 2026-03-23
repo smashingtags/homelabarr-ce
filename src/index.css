@@ -1,3 +1,44 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg;
+  }
+}
+
+/* Dark scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400/50;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-gray-600/50;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500/60;
+}
+
+/* Selection color */
+::selection {
+  @apply bg-indigo-500/30 text-white;
+}

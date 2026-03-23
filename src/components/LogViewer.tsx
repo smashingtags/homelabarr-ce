@@ -41,8 +41,8 @@ export function LogViewer({ containerId, onClose }: LogViewerProps) {
   }, [containerId, autoRefresh]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-lg w-full max-w-4xl h-[80vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-gray-900 rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col animate-slide-up">
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <div className="flex items-center text-gray-100">
             <Terminal className="w-5 h-5 mr-2" />

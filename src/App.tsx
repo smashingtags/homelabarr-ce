@@ -532,10 +532,10 @@ export default function App() {
 
     // CLI status banner
     const statusBanner = (
-      <div className={`mb-6 p-4 rounded-lg border ${
+      <div className={`mb-6 px-4 py-3 rounded-lg border-l-4 ${
         catalogSource === 'cli'
-          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-          : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+          ? 'bg-green-50/50 dark:bg-green-900/10 border-l-green-500 border-y border-r border-green-100 dark:border-green-800/30'
+          : 'bg-yellow-50/50 dark:bg-yellow-900/10 border-l-yellow-500 border-y border-r border-yellow-100 dark:border-yellow-800/30'
       }`}>
         <div className="flex items-center">
           <Terminal className={`h-5 w-5 ${
@@ -649,9 +649,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 dark:border-gray-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homelabarr</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homelab<span className="bg-gradient-to-r from-indigo-500 to-blue-600 bg-clip-text text-transparent">ARR</span></h1>
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setPortManagerOpen(true)}
@@ -696,7 +696,7 @@ export default function App() {
             placeholder={`Search across ${cliApps.length || '...'} CLI apps...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+            className="block w-full pl-10 pr-3 py-4 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-inner shadow-gray-100 dark:shadow-gray-900 focus:shadow-glow"
           />
           {searchQuery && (
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -715,9 +715,9 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveCategory(tab.id)}
-                className={`flex items-center px-4 py-2 rounded-md transition-colors text-sm ${activeCategory === tab.id
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                className={`flex items-center px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${activeCategory === tab.id
+                  ? 'bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-md shadow-indigo-500/25'
+                  : 'bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/80 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600'
                   }`}
               >
                 <Icon className="w-4 h-4 mr-2" />
@@ -784,8 +784,8 @@ export default function App() {
 
         {/* Enhanced Mount Manager Modal */}
         {selectedEnhancedMount && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto animate-slide-up">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">

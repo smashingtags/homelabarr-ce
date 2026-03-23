@@ -18,10 +18,10 @@ export function AppCard({ app, onDeploy }: AppCardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 flex flex-col">
+    <div className="group bg-white dark:bg-gray-800/80 dark:backdrop-blur-xl rounded-xl shadow-md p-4 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-200 border border-gray-200 dark:border-gray-700/50 border-t-2 border-t-indigo-500/60 hover:translate-y-[-2px] flex flex-col">
       <div className="flex items-center mb-3">
-        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg transition-transform duration-200 group-hover:scale-110">
+          <Icon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
         </div>
         <div className="ml-3 flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900 dark:text-white truncate">{app.name}</h3>
@@ -72,7 +72,7 @@ export function AppCard({ app, onDeploy }: AppCardProps) {
 
       <button
         onClick={() => onDeploy(app)}
-        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 px-4 rounded-md transition-all duration-200 font-medium shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 text-sm"
+        className="w-full bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white py-2 px-4 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md hover:shadow-indigo-500/25 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 text-sm"
       >
         Deploy
       </button>
