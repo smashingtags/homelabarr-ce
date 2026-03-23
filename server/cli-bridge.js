@@ -81,6 +81,7 @@ export class CLIBridge {
         'mediamanager',
         'mediaserver',
         'monitoring',
+        'myapps',
         'request',
         'selfhosted',
         'share',
