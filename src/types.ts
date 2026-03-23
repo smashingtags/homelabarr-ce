@@ -45,6 +45,7 @@ export interface ConfigField {
   options?: string[];
   defaultValue?: string;
   advanced?: boolean;
+  trafikOnly?: boolean;
 }
 
 export interface DeploymentMode {
