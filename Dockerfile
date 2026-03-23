@@ -39,6 +39,9 @@ RUN npm run build
 # Production stage
 FROM nginx:1.29.6-alpine3.23-slim
 
+# Update Alpine packages to pick up latest security patches
+RUN apk upgrade --no-cache
+
 # Security: run as non-root user
 RUN addgroup -g 1001 -S homelabarr && \
     adduser -S homelabarr -u 1001 -G homelabarr

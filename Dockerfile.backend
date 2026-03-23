@@ -3,6 +3,9 @@
 
 FROM node:24-alpine3.23
 
+# Update Alpine packages to pick up latest security patches
+RUN apk upgrade --no-cache
+
 # Set working directory
 WORKDIR /app
 
