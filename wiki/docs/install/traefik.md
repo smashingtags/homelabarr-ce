@@ -9,7 +9,12 @@ Traefik is the reverse proxy that makes your apps accessible at `https://app.you
 - Applies security middleware (rate limiting, secure headers, authentication via Authelia)
 - Redirects HTTP to HTTPS automatically
 
-HomelabARR CE deploys Traefik 3.5 alongside **Authelia** (authentication portal) and **cf-companion** (automatic Cloudflare DNS record creation).
+HomelabARR CE deploys Traefik 3.5 alongside **Authelia** (2FA authentication) and **[CF Companion](https://github.com/smashingtags/cf-companion)** (automatic Cloudflare DNS).
+
+!!! success "Automatic DNS — never touch Cloudflare again"
+    CF Companion watches Docker events. When you deploy a container with a Traefik `Host()` label, it automatically creates the Cloudflare CNAME record. Deploy 40 containers, get 40 DNS records. Zero manual work.
+
+    This is built into the Traefik stack — no extra setup. Just make sure your `DOMAIN1_ZONE_ID` and Cloudflare credentials are set in `.env`.
 
 ## Installation
 
