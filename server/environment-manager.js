@@ -358,36 +358,24 @@ export class EnvironmentManager {
     };
 
     if (config.environment === 'development') {
-      // Development mode: wildcard CORS for maximum compatibility
-      corsOptions.origin = '*';
+      // Development mode: allow localhost and local network origins
+      corsOptions.origin = function(origin, callback) {
+        if (!origin) return callback(null, true);
+        if (/^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$/.test(origin)) {
+          return callback(null, true);
+        }
+        callback(new Error('Not allowed by CORS'));
+      };
       corsOptions.methods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'];
       corsOptions.allowedHeaders = [
-        'Content-Type', 
-        'Authorization', 
-        'Accept', 
-        'Origin', 
-        'X-Requested-With',
-        'Access-Control-Allow-Origin',
-        'Access-Control-Allow-Headers',
-        'Access-Control-Allow-Methods',
-        'Cache-Control',
-        'Pragma',
-        'Expires',
-        'Last-Modified',
-        'If-Modified-Since',
-        'If-None-Match',
-        'ETag'
-      ];
-      corsOptions.exposedHeaders = [
-        'Content-Length',
         'Content-Type',
-        'ETag',
-        'Last-Modified',
-        'Cache-Control'
+        'Authorization',
+        'Accept',
+        'Origin',
+        'X-Requested-With',
+        'Cache-Control',
+        'Pragma'
       ];
-      
-      // Note: credentials must be false when origin is '*'
-      corsOptions.credentials = false;
     } else {
       // Production mode: strict CORS
       corsOptions.origin = function(origin, callback) {
