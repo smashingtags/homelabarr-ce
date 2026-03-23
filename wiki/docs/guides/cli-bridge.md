@@ -66,6 +66,8 @@ environment:
       emby.yml
     monitoring/
       tautulli.yml
+    myapps/
+      # Your custom application templates
     request/
       overseerr.yml
     selfhosted/
@@ -82,7 +84,7 @@ environment:
     ...
 ```
 
-Only these category directories are scanned: `addons`, `ai-tools`, `backup`, `coding`, `downloadclients`, `encoder`, `kasmworkspace`, `mediamanager`, `mediaserver`, `monitoring`, `request`, `selfhosted`, `share`, `system`. Other directories are ignored to prevent duplicates.
+Only these category directories are scanned: `addons`, `ai-tools`, `backup`, `coding`, `downloadclients`, `encoder`, `kasmworkspace`, `mediamanager`, `mediaserver`, `monitoring`, `myapps`, `request`, `selfhosted`, `share`, `system`. Other directories are ignored to prevent duplicates.
 
 ## Template Format
 
@@ -213,11 +215,11 @@ Image variables like `PLEXIMAGE`, `RADARRIMAGE`, etc. default to the latest Linu
 
 ## Adding Custom Templates
 
-To add a new application to the catalog:
+The `myapps/` directory is specifically for your custom application templates. Drop a YAML file in there and it shows up in the dashboard under **My Apps**.
 
-1. Create a YAML file in the appropriate category directory:
+1. Create a YAML file in the `myapps/` directory:
    ```
-   apps/selfhosted/my-app.yml
+   apps/myapps/my-app.yml
    ```
 
 2. Follow the standard Docker Compose format with at least one service defined under `services:`.
@@ -232,4 +234,4 @@ To add a new application to the catalog:
     Deploy your custom template in Local/Standard mode before adding Traefik labels. This confirms the container runs correctly before introducing proxy complexity.
 
 !!! warning "Category must be in the allow-list"
-    The bridge only scans the 14 known category directories. If you create a new category folder, it will be ignored. Place custom apps in `selfhosted/` or another existing category.
+    The bridge only scans 15 known category directories. If you create a new category folder, it will be ignored. Place custom apps in `myapps/` — that's what it's there for.
