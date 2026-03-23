@@ -18,17 +18,17 @@ WORKDIR /app
 
 # Install system dependencies for Docker operations and CLI Bridge
 # Pull docker-cli from Alpine edge for latest security patches (29.3.0+)
-RUN apk add --no-cache \
-    --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
-    docker-cli \
-    docker-cli-compose && \
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
     apk add --no-cache \
+    'docker-cli>29.2' \
+    'docker-cli-compose>2.40' \
     git \
     bash \
     curl \
     jq \
     shadow \
-    sudo
+    sudo && \
+    sed -i '$ d' /etc/apk/repositories
 
 # Create homelabarr user with sudo access
 RUN addgroup -g 1001 homelabarr && \
