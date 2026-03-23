@@ -4150,15 +4150,21 @@ app.get('/enhanced-mount/:containerId/performance', conditionalAuth, async (req,
 });
 
 // Provider configuration endpoints
+const ALLOWED_PROVIDERS = ['local', 'google', 'dropbox', 'onedrive', 'sftp', 'webdav', 's3', 'b2', 'mega', 'box', 'ftp', 'smb', 'nfs'];
+
 app.post('/enhanced-mount/:containerId/providers/:provider/enable', conditionalAuth, async (req, res) => {
   try {
     const { containerId, provider } = req.params;
     const config = req.body;
-    
+
+    if (!ALLOWED_PROVIDERS.includes(provider)) {
+      return res.status(400).json({ success: false, error: 'Invalid provider' });
+    }
+
     // Get container info to find its web port
     const container = dockerManager.getDocker().getContainer(containerId);
     const containerInfo = await container.inspect();
-    
+
     let webPort = 8080;
     if (containerInfo.NetworkSettings?.Ports) {
       const portMapping = containerInfo.NetworkSettings.Ports['8080/tcp'];
@@ -4166,14 +4172,12 @@ app.post('/enhanced-mount/:containerId/providers/:provider/enable', conditionalA
         webPort = portMapping[0].HostPort;
       }
     }
-    
-    // Sanitize provider name — alphanumeric + hyphens only
-    const safeProvider = provider.replace(/[^a-zA-Z0-9_-]/g, '');
+
     const safePort = parseInt(webPort, 10);
     if (isNaN(safePort) || safePort < 1 || safePort > 65535) throw new Error('Invalid port');
 
-    // Proxy request to container's API
-    const response = await fetch(`http://localhost:${safePort}/api/v2/providers/${safeProvider}/enable`, {
+    // Proxy request to container's API — provider is from allowlist
+    const response = await fetch(`http://localhost:${safePort}/api/v2/providers/${provider}/enable`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -4205,11 +4209,15 @@ app.post('/enhanced-mount/:containerId/providers/:provider/enable', conditionalA
 app.post('/enhanced-mount/:containerId/providers/:provider/disable', conditionalAuth, async (req, res) => {
   try {
     const { containerId, provider } = req.params;
-    
+
+    if (!ALLOWED_PROVIDERS.includes(provider)) {
+      return res.status(400).json({ success: false, error: 'Invalid provider' });
+    }
+
     // Get container info to find its web port
     const container = dockerManager.getDocker().getContainer(containerId);
     const containerInfo = await container.inspect();
-    
+
     let webPort = 8080;
     if (containerInfo.NetworkSettings?.Ports) {
       const portMapping = containerInfo.NetworkSettings.Ports['8080/tcp'];
@@ -4217,14 +4225,12 @@ app.post('/enhanced-mount/:containerId/providers/:provider/disable', conditional
         webPort = portMapping[0].HostPort;
       }
     }
-    
-    // Sanitize provider name — alphanumeric + hyphens only
-    const safeProvider = provider.replace(/[^a-zA-Z0-9_-]/g, '');
+
     const safePort = parseInt(webPort, 10);
     if (isNaN(safePort) || safePort < 1 || safePort > 65535) throw new Error('Invalid port');
 
-    // Proxy request to container's API
-    const response = await fetch(`http://localhost:${safePort}/api/v2/providers/${safeProvider}/disable`, {
+    // Proxy request to container's API — provider is from allowlist
+    const response = await fetch(`http://localhost:${safePort}/api/v2/providers/${provider}/disable`, {
       method: 'POST'
     });
     
