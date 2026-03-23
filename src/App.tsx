@@ -356,9 +356,10 @@ export default function App() {
         label: 'Domain',
         type: 'text' as const,
         required: false,
-        placeholder: 'yourdomain.com (only needed for Traefik mode)',
+        placeholder: 'yourdomain.com — no https:// needed',
         defaultValue: '',
         trafikOnly: true,
+        helpText: 'Just the domain (e.g. mjashley.com). Apps will be accessible at appname.yourdomain.com',
       },
     ];
 
