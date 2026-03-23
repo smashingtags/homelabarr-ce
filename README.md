@@ -22,6 +22,9 @@
     <a href="https://smashingtags.github.io/homelabarr-ce/">
         <img src="https://img.shields.io/badge/Docs-Wiki-blue?logo=readthedocs&logoColor=white" alt="Documentation">
     </a>
+    <a href="https://www.reddit.com/r/homelabarr/">
+        <img src="https://img.shields.io/badge/Reddit-r/homelabarr-FF4500?logo=reddit&logoColor=white" alt="Reddit">
+    </a>
 </p>
 
 <p align="center">
@@ -335,6 +338,7 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
 ## Support
 
 - [Discord](https://discord.gg/Pc7mXX786x)
+- [Reddit](https://www.reddit.com/r/homelabarr/) — r/homelabarr
 - [GitHub Issues](https://github.com/smashingtags/homelabarr-ce/issues)
 - [Ko-fi](https://ko-fi.com/homelabarr) — support development
 
@@ -346,5 +350,6 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
 
 - **Website**: [homelabarr.com](https://homelabarr.com)
 - **Discord**: [discord.gg/Pc7mXX786x](https://discord.gg/Pc7mXX786x)
+- **Reddit**: [r/homelabarr](https://www.reddit.com/r/homelabarr/)
 - **Company**: [imogenlabs.ai](https://imogenlabs.ai)
 - **PE Edition**: [homelabarr.com#pricing](https://homelabarr.com#pricing)
