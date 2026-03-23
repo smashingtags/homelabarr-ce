@@ -37,7 +37,7 @@ export function DeploymentProgressModal({
   const logsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!deploymentId) return;
 
     // Set up Server-Sent Events connection
     const eventSource = new EventSource('/api/stream/progress');
@@ -104,11 +104,18 @@ export function DeploymentProgressModal({
     };
 
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
+      // Only close SSE when component fully unmounts, not when modal hides
+      // This keeps the stream alive for "Run in Background"
     };
-  }, [deploymentId, isOpen]);
+  }, [deploymentId]);
+
+  // Close SSE when deployment is complete
+  useEffect(() => {
+    if (isComplete && eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  }, [isComplete]);
 
   // Auto-scroll logs to bottom
   useEffect(() => {
