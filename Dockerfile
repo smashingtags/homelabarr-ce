@@ -37,7 +37,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 # Production stage
-FROM nginx:1.29-alpine
+FROM nginx:1.29.6-alpine3.23-slim
 
 # Security: run as non-root user
 RUN addgroup -g 1001 -S homelabarr && \
