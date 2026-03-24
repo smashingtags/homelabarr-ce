@@ -25,7 +25,6 @@ import {
   HelpCircle,
   Trophy,
   RefreshCw,
-  Terminal,
   Package,
   Search as SearchIcon,
 } from 'lucide-react';
@@ -622,7 +621,22 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 dark:border-gray-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homelab<span className="bg-gradient-to-r from-indigo-500 to-blue-600 bg-clip-text text-transparent">ARR</span></h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homelab<span className="bg-gradient-to-r from-indigo-500 to-blue-600 bg-clip-text text-transparent">ARR</span></h1>
+            {/* Connection status indicator */}
+            {!catalogLoading && (
+              <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
+                catalogSource === 'cli'
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                  : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  catalogSource === 'cli' ? 'bg-green-500' : 'bg-yellow-500'
+                }`} />
+                {catalogSource === 'cli' ? `Connected · ${cliApps.length} apps` : 'Template Mode'}
+              </span>
+            )}
+          </div>
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
@@ -659,35 +673,7 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[calc(100vh-80px)]">
 
-        {/* CLI Status Banner */}
-        {!catalogLoading && (
-          <div className={`mb-6 px-4 py-3 rounded-lg border-l-4 ${
-            catalogSource === 'cli'
-              ? 'bg-green-50/50 dark:bg-green-900/10 border-l-green-500 border-y border-r border-green-100 dark:border-green-800/30'
-              : 'bg-yellow-50/50 dark:bg-yellow-900/10 border-l-yellow-500 border-y border-r border-yellow-100 dark:border-yellow-800/30'
-          }`}>
-            <div className="flex items-center">
-              <Terminal className={`h-5 w-5 ${
-                catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
-              }`} />
-              <div className="ml-3">
-                <h3 className={`font-medium ${
-                  catalogSource === 'cli' ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'
-                }`}>
-                  {catalogSource === 'cli' ? 'HomelabARR Connected' : 'Template Mode Active'}
-                </h3>
-                <p className={`text-sm ${
-                  catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
-                }`}>
-                  {catalogSource === 'cli'
-                    ? `${cliApps.length} applications available`
-                    : 'Using fallback template mode'
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Status banner removed — indicator now in header */}
 
         {/* Search Bar */}
         <div className="relative mb-8">
@@ -713,7 +699,7 @@ export default function App() {
         {/* Category Navigation */}
         <div className="mb-10">
           <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
-            <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-4 w-full">
+            <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-4 w-full justify-start">
               {categoryTabs.map(tab => {
                 const Icon = tab.icon;
                 return (
