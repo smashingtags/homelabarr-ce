@@ -3,6 +3,8 @@ import { Shield, Network, Monitor } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getAppIconPath, getCdnFallbackUrl } from '../utils/iconMap';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface AppCardProps {
   app: AppTemplate;
@@ -10,7 +12,7 @@ interface AppCardProps {
 }
 
 export function AppCard({ app, onDeploy }: AppCardProps) {
-  const Icon = app.logo;
+  const { theme } = useTheme();
   const cliApp = (app as any)._cliApp as CLIApplication | undefined;
 
   return (
@@ -20,7 +22,18 @@ export function AppCard({ app, onDeploy }: AppCardProps) {
 
       <CardHeader className="flex flex-row items-center gap-4 pt-5 pb-3">
         <div className="p-3 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/20 rounded-xl ring-1 ring-indigo-100 dark:ring-indigo-800/30 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-indigo-500/20">
-          <Icon className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+          <img
+            src={getAppIconPath(app.name, theme)}
+            alt={`${app.name} icon`}
+            className="w-7 h-7 object-contain"
+            onError={(e) => {
+              const target = e.currentTarget;
+              const cdnUrl = getCdnFallbackUrl(app.name);
+              if (target.src !== cdnUrl) {
+                target.src = cdnUrl;
+              }
+            }}
+          />
         </div>
         <div className="min-w-0 flex-1">
           <CardTitle className="text-base font-semibold truncate">{app.name}</CardTitle>
