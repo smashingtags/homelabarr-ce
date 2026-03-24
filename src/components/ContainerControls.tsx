@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Play, Square, RefreshCw, Trash2 } from 'lucide-react';
 import { startContainer, stopContainer, restartContainer, removeContainer } from '../lib/api';
 import { useNotifications } from '../contexts/NotificationContext';
+import { Button } from "@/components/ui/button";
 
 interface ContainerControlsProps {
   containerId: string;
@@ -32,59 +33,67 @@ export function ContainerControls({ containerId, status, onAction }: ContainerCo
   };
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex space-x-1">
       {status !== 'running' && (
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={() => handleAction(
             () => startContainer(containerId),
             'start',
             'Container started successfully'
           )}
           disabled={loadingAction === 'start'}
-          className="p-1 text-green-600 hover:text-green-800 disabled:opacity-50"
           title="Start"
+          className="text-green-600 hover:text-green-800 hover:bg-green-50 dark:hover:bg-green-900/30"
         >
           <Play className={`w-4 h-4 ${loadingAction === 'start' ? 'animate-pulse' : ''}`} />
-        </button>
+        </Button>
       )}
       {status === 'running' && (
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={() => handleAction(
             () => stopContainer(containerId),
             'stop',
             'Container stopped successfully'
           )}
           disabled={loadingAction === 'stop'}
-          className="p-1 text-red-600 hover:text-red-800 disabled:opacity-50"
           title="Stop"
+          className="text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/30"
         >
           <Square className={`w-4 h-4 ${loadingAction === 'stop' ? 'animate-pulse' : ''}`} />
-        </button>
+        </Button>
       )}
-      <button
+      <Button
+        variant="ghost"
+        size="icon-sm"
         onClick={() => handleAction(
           () => restartContainer(containerId),
           'restart',
           'Container restarted successfully'
         )}
         disabled={loadingAction === 'restart'}
-        className="p-1 text-blue-600 hover:text-blue-800 disabled:opacity-50"
         title="Restart"
+        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/30"
       >
         <RefreshCw className={`w-4 h-4 ${loadingAction === 'restart' ? 'animate-spin' : ''}`} />
-      </button>
-      <button
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
         onClick={() => handleAction(
           () => removeContainer(containerId),
           'remove',
           'Container removed successfully'
         )}
         disabled={loadingAction === 'remove'}
-        className="p-1 text-gray-600 hover:text-gray-800 disabled:opacity-50"
         title="Remove"
+        className="text-gray-600 hover:text-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
       >
         <Trash2 className={`w-4 h-4 ${loadingAction === 'remove' ? 'animate-pulse' : ''}`} />
-      </button>
+      </Button>
     </div>
   );
 }
