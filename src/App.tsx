@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes } from './lib/api';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -633,7 +634,7 @@ export default function App() {
                 <span className={`w-1.5 h-1.5 rounded-full ${
                   catalogSource === 'cli' ? 'bg-green-500' : 'bg-yellow-500'
                 }`} />
-                {catalogSource === 'cli' ? `Connected · ${cliApps.length} apps` : 'Template Mode'}
+                {catalogSource === 'cli' ? `Connected · ${cliApps.length} apps` : 'Browse Mode'}
               </span>
             )}
           </div>
@@ -702,11 +703,17 @@ export default function App() {
             <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-4 w-full justify-start">
               {categoryTabs.map(tab => {
                 const Icon = tab.icon;
+                const isActive = activeCategory === tab.id;
                 return (
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className="flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/25 data-[state=active]:ring-0 data-[state=active]:border-transparent border border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:text-gray-900 dark:hover:text-white"
+                    className={cn(
+                      "flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border",
+                      isActive
+                        ? "bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25 border-transparent ring-0"
+                        : "border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:text-gray-900 dark:hover:text-white"
+                    )}
                   >
                     <Icon className="w-4 h-4 mr-2 shrink-0" />
                     {tab.name}
