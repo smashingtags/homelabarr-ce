@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes } from './lib/api';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 // Tab type encompasses display categories + special views
 type TabId = string; // display category ids, 'deployed', 'all-apps', 'leaderboard'
@@ -621,7 +621,7 @@ export default function App() {
 
         {/* Apps Grid */}
         {filteredApps.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredApps.map(app => (
               <AppCard
                 key={app.id}
@@ -652,7 +652,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 dark:border-gray-700/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homelab<span className="bg-gradient-to-r from-indigo-500 to-blue-600 bg-clip-text text-transparent">ARR</span></h1>
           <div className="flex items-center space-x-4">
             <button
@@ -675,34 +675,34 @@ export default function App() {
             {isAuthenticated ? (
               <UserMenu onOpenSettings={() => setSettingsModalOpen(true)} />
             ) : (
-              <button
+              <Button
                 onClick={() => setLoginModalOpen(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                className="bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white shadow-md shadow-indigo-500/20"
               >
                 Sign In
-              </button>
+              </Button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-80px)]">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[calc(100vh-80px)]">
 
         {/* Search Bar */}
-        <div className="relative mb-6">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-muted-foreground" />
+        <div className="relative mb-8">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-indigo-400" />
           </div>
-          <Input
+          <input
             type="text"
             placeholder={`Search across ${cliApps.length || '...'} CLI apps...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-20 py-4 h-auto rounded-xl shadow-inner shadow-gray-100 dark:shadow-gray-900 focus:shadow-glow"
+            className="block w-full pl-12 pr-24 py-4 bg-white dark:bg-gray-800/80 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-2xl border border-gray-200 dark:border-gray-700/60 ring-2 ring-transparent focus:ring-indigo-500/30 focus:border-indigo-400 dark:focus:border-indigo-500 shadow-sm hover:shadow-md focus:shadow-lg focus:shadow-indigo-500/10 transition-all duration-200 text-base outline-none"
           />
           {searchQuery && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <span className="text-sm text-muted-foreground">
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+              <span className="text-sm font-medium text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-lg">
                 {filteredApps.length} results
               </span>
             </div>
@@ -710,23 +710,25 @@ export default function App() {
         </div>
 
         {/* Category Navigation */}
-        <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
-          <TabsList className="flex flex-wrap gap-1 h-auto bg-transparent p-0 mb-8">
-            {categoryTabs.map(tab => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className="flex items-center px-4 py-2 rounded-lg text-sm font-medium data-active:bg-gradient-to-r data-active:from-indigo-500 data-active:to-blue-600 data-active:text-white data-active:shadow-md data-active:shadow-indigo-500/25 border border-transparent data-[state=inactive]:bg-white dark:data-[state=inactive]:bg-gray-800/60 data-[state=inactive]:text-gray-600 dark:data-[state=inactive]:text-gray-300 data-[state=inactive]:border-gray-200 dark:data-[state=inactive]:border-gray-700"
-                >
-                  <Icon className="w-4 h-4 mr-2" />
-                  {tab.name}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-        </Tabs>
+        <div className="mb-10 -mx-4 px-4 overflow-x-auto" style={{ scrollbarWidth: 'thin' }}>
+          <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
+            <TabsList className="inline-flex gap-2 h-auto bg-transparent p-0 min-w-max pb-2">
+              {categoryTabs.map(tab => {
+                const Icon = tab.icon;
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className="flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 data-active:bg-gradient-to-r data-active:from-indigo-500 data-active:to-blue-600 data-active:text-white data-active:shadow-lg data-active:shadow-indigo-500/25 data-active:ring-0 data-active:border-transparent border border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:text-gray-900 dark:hover:text-white"
+                  >
+                    <Icon className="w-4 h-4 mr-2 shrink-0" />
+                    {tab.name}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </Tabs>
+        </div>
 
         {/* Main Content Area */}
         {renderContent()}
