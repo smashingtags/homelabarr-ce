@@ -532,36 +532,6 @@ export default function App() {
       );
     }
 
-    // CLI status banner
-    const statusBanner = (
-      <div className={`mb-6 px-4 py-3 rounded-lg border-l-4 ${
-        catalogSource === 'cli'
-          ? 'bg-green-50/50 dark:bg-green-900/10 border-l-green-500 border-y border-r border-green-100 dark:border-green-800/30'
-          : 'bg-yellow-50/50 dark:bg-yellow-900/10 border-l-yellow-500 border-y border-r border-yellow-100 dark:border-yellow-800/30'
-      }`}>
-        <div className="flex items-center">
-          <Terminal className={`h-5 w-5 ${
-            catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
-          }`} />
-          <div className="ml-3">
-            <h3 className={`font-medium ${
-              catalogSource === 'cli' ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'
-            }`}>
-              {catalogSource === 'cli' ? 'HomelabARR CLI Connected' : 'Template Mode Active'}
-            </h3>
-            <p className={`text-sm ${
-              catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
-            }`}>
-              {catalogSource === 'cli'
-                ? `${cliApps.length} proven applications available from HomelabARR CLI`
-                : 'Using fallback template mode'
-              }
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-
     // Category header
     const displayCat = getDisplayCategory(activeCategory);
     const currentCategoryInfo = activeCategory === 'all-apps'
@@ -572,8 +542,6 @@ export default function App() {
 
     return (
       <div>
-        {statusBanner}
-
         {/* Category Header */}
         {!searchQuery && currentCategoryInfo && (
           <div className="mb-6 p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -691,6 +659,36 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[calc(100vh-80px)]">
 
+        {/* CLI Status Banner */}
+        {!catalogLoading && (
+          <div className={`mb-6 px-4 py-3 rounded-lg border-l-4 ${
+            catalogSource === 'cli'
+              ? 'bg-green-50/50 dark:bg-green-900/10 border-l-green-500 border-y border-r border-green-100 dark:border-green-800/30'
+              : 'bg-yellow-50/50 dark:bg-yellow-900/10 border-l-yellow-500 border-y border-r border-yellow-100 dark:border-yellow-800/30'
+          }`}>
+            <div className="flex items-center">
+              <Terminal className={`h-5 w-5 ${
+                catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
+              }`} />
+              <div className="ml-3">
+                <h3 className={`font-medium ${
+                  catalogSource === 'cli' ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'
+                }`}>
+                  {catalogSource === 'cli' ? 'HomelabARR Connected' : 'Template Mode Active'}
+                </h3>
+                <p className={`text-sm ${
+                  catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
+                }`}>
+                  {catalogSource === 'cli'
+                    ? `${cliApps.length} applications available`
+                    : 'Using fallback template mode'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Search Bar */}
         <div className="relative mb-8">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -698,7 +696,7 @@ export default function App() {
           </div>
           <Input
             type="text"
-            placeholder={`Search across ${cliApps.length || '...'} CLI apps...`}
+            placeholder="Search apps..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="h-auto w-full pl-12 pr-24 py-4 bg-white dark:bg-gray-800/80 rounded-2xl border-gray-200 dark:border-gray-700/60 shadow-sm hover:shadow-md focus-visible:shadow-lg focus-visible:shadow-indigo-500/10 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-400 dark:focus-visible:border-indigo-500 transition-all duration-200 text-base"
@@ -722,7 +720,7 @@ export default function App() {
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className="flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 data-active:bg-gradient-to-r data-active:from-indigo-500 data-active:to-blue-600 data-active:text-white data-active:shadow-lg data-active:shadow-indigo-500/25 data-active:ring-0 data-active:border-transparent border border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:text-gray-900 dark:hover:text-white"
+                    className="flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/25 data-[state=active]:ring-0 data-[state=active]:border-transparent border border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:text-gray-900 dark:hover:text-white"
                   >
                     <Icon className="w-4 h-4 mr-2 shrink-0" />
                     {tab.name}
