@@ -2,11 +2,12 @@ import { useState } from "react";
 import { DeployedApp } from "../types";
 import { ContainerControls } from "./ContainerControls";
 import { ContainerStats } from "./ContainerStats";
-import { Terminal, ChevronDown, ChevronUp } from "lucide-react";
+import { Terminal, ChevronDown, ChevronUp, MoreVertical } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 interface DeployedAppCardProps {
   app: DeployedApp;
@@ -22,12 +23,10 @@ export function DeployedAppCard({ app, onViewLogs, onRefresh }: DeployedAppCardP
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <Collapsible open={showStats} onOpenChange={setShowStats}>
-            <CollapsibleTrigger
-              render={
-                <Button variant="ghost" size="icon-sm" />
-              }
-            >
-              {showStats ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="icon-sm">
+                {showStats ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
             </CollapsibleTrigger>
           </Collapsible>
           <CardTitle>{app.name}</CardTitle>
@@ -62,9 +61,19 @@ export function DeployedAppCard({ app, onViewLogs, onRefresh }: DeployedAppCardP
             status={app.status}
             onAction={onRefresh}
           />
-          <Button variant="ghost" size="icon-sm" onClick={onViewLogs} title="View Logs">
-            <Terminal className="w-4 h-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon-sm" title="More actions">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onViewLogs}>
+                <Terminal className="w-4 h-4 mr-2" />
+                View Logs
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardContent>
 

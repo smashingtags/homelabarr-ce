@@ -28,9 +28,8 @@ export function UserMenu({ onOpenSettings }: UserMenuProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<Button variant="ghost" className="flex items-center gap-2 px-2" />}
-      >
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="flex items-center gap-2 px-2">
           <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
             <User className="w-4 h-4 text-white" />
           </div>
@@ -41,6 +40,7 @@ export function UserMenu({ onOpenSettings }: UserMenuProps) {
               {user.role}
             </div>
           </div>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuLabel>
@@ -56,7 +56,7 @@ export function UserMenu({ onOpenSettings }: UserMenuProps) {
             Settings
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={handleLogout} variant="destructive">
+        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
           <LogOut className="w-4 h-4 mr-2" />
           Sign Out
         </DropdownMenuItem>
