@@ -544,7 +544,7 @@ export default function App() {
       <div>
         {/* Category Header */}
         {!searchQuery && currentCategoryInfo && (
-          <div className="mb-6 p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="mb-6 p-6 bg-white dark:bg-[hsl(222,28%,10%)] rounded-lg border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-black/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <currentCategoryInfo.icon className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
@@ -618,9 +618,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-transparent">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 dark:border-gray-700/50">
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-[hsl(222,30%,8%)]/80 backdrop-blur-xl shadow-sm dark:shadow-black/20 border-b border-gray-200/50 dark:border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homelab<span className="bg-gradient-to-r from-indigo-500 to-blue-600 bg-clip-text text-transparent">ARR</span></h1>
@@ -686,7 +686,7 @@ export default function App() {
             placeholder="Search apps..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-auto w-full pl-12 pr-24 py-4 bg-white dark:bg-gray-800/80 rounded-2xl border-gray-200 dark:border-gray-700/60 shadow-sm hover:shadow-md focus-visible:shadow-lg focus-visible:shadow-indigo-500/10 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-400 dark:focus-visible:border-indigo-500 transition-all duration-200 text-base"
+            className="h-auto w-full pl-12 pr-24 py-4 bg-white dark:bg-[hsl(222,28%,10%)] rounded-2xl border-gray-200 dark:border-white/[0.08] shadow-sm hover:shadow-md focus-visible:shadow-lg focus-visible:shadow-indigo-500/10 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-400 dark:focus-visible:border-indigo-500 transition-all duration-200 text-base"
           />
           {searchQuery && (
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
@@ -712,7 +712,7 @@ export default function App() {
                       "flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border",
                       isActive
                         ? "bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25 border-transparent ring-0"
-                        : "border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60 hover:border-indigo-300 dark:hover:border-indigo-600/50 hover:text-gray-900 dark:hover:text-white"
+                        : "border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[hsl(222,28%,10%)] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[hsl(222,28%,13%)] hover:border-indigo-300 dark:hover:border-indigo-500/30 hover:text-gray-900 dark:hover:text-white"
                     )}
                   >
                     <Icon className="w-4 h-4 mr-2 shrink-0" />
