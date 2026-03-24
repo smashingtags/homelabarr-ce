@@ -30,6 +30,8 @@ import {
   Search as SearchIcon,
 } from 'lucide-react';
 import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes } from './lib/api';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 
 // Tab type encompasses display categories + special views
 type TabId = string; // display category ids, 'deployed', 'all-apps', 'leaderboard'
@@ -689,18 +691,18 @@ export default function App() {
         {/* Search Bar */}
         <div className="relative mb-6">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+            <Search className="h-5 w-5 text-muted-foreground" />
           </div>
-          <input
+          <Input
             type="text"
             placeholder={`Search across ${cliApps.length || '...'} CLI apps...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-3 py-4 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-inner shadow-gray-100 dark:shadow-gray-900 focus:shadow-glow"
+            className="pl-10 pr-20 py-4 h-auto rounded-xl shadow-inner shadow-gray-100 dark:shadow-gray-900 focus:shadow-glow"
           />
           {searchQuery && (
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-muted-foreground">
                 {filteredApps.length} results
               </span>
             </div>
@@ -708,24 +710,23 @@ export default function App() {
         </div>
 
         {/* Category Navigation */}
-        <div className="flex flex-wrap gap-3 mb-8">
-          {categoryTabs.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveCategory(tab.id)}
-                className={`flex items-center px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium ${activeCategory === tab.id
-                  ? 'bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-md shadow-indigo-500/25'
-                  : 'bg-white dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/80 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600'
-                  }`}
-              >
-                <Icon className="w-4 h-4 mr-2" />
-                {tab.name}
-              </button>
-            );
-          })}
-        </div>
+        <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
+          <TabsList className="flex flex-wrap gap-1 h-auto bg-transparent p-0 mb-8">
+            {categoryTabs.map(tab => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="flex items-center px-4 py-2 rounded-lg text-sm font-medium data-active:bg-gradient-to-r data-active:from-indigo-500 data-active:to-blue-600 data-active:text-white data-active:shadow-md data-active:shadow-indigo-500/25 border border-transparent data-[state=inactive]:bg-white dark:data-[state=inactive]:bg-gray-800/60 data-[state=inactive]:text-gray-600 dark:data-[state=inactive]:text-gray-300 data-[state=inactive]:border-gray-200 dark:data-[state=inactive]:border-gray-700"
+                >
+                  <Icon className="w-4 h-4 mr-2" />
+                  {tab.name}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
 
         {/* Main Content Area */}
         {renderContent()}

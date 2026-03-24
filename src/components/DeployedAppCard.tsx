@@ -1,8 +1,12 @@
-import { useState } from 'react';
-import { DeployedApp } from '../types';
-import { ContainerControls } from './ContainerControls';
-import { ContainerStats } from './ContainerStats';
-import { Terminal, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from "react";
+import { DeployedApp } from "../types";
+import { ContainerControls } from "./ContainerControls";
+import { ContainerStats } from "./ContainerStats";
+import { Terminal, ChevronDown, ChevronUp } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface DeployedAppCardProps {
   app: DeployedApp;
@@ -14,79 +18,61 @@ export function DeployedAppCard({ app, onViewLogs, onRefresh }: DeployedAppCardP
   const [showStats, setShowStats] = useState(false);
 
   return (
-    <div className="bg-white dark:bg-gray-800/80 dark:backdrop-blur-xl rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700/50">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <button
-              onClick={() => setShowStats(!showStats)}
-              className="mr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              title={showStats ? 'Hide Stats' : 'Show Stats'}
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Collapsible open={showStats} onOpenChange={setShowStats}>
+            <CollapsibleTrigger
+              render={
+                <Button variant="ghost" size="icon-sm" />
+              }
             >
-              {showStats ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-            </button>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {app.name}
-            </h3>
-          </div>
-          <span className={`flex items-center gap-1.5 px-2 py-1 text-xs font-semibold rounded-full ${
-            app.status === 'running'
-              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100'
-              : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100'
-          }`}>
-            <span className={`w-2 h-2 rounded-full ${
-              app.status === 'running'
-                ? 'bg-green-500 animate-pulse-slow'
-                : 'bg-red-500'
-            }`}></span>
-            {app.status}
-          </span>
+              {showStats ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </CollapsibleTrigger>
+          </Collapsible>
+          <CardTitle>{app.name}</CardTitle>
         </div>
+        <Badge variant={app.status === "running" ? "default" : "destructive"} className={app.status === "running" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100" : ""}>
+          <span className={`w-2 h-2 rounded-full mr-1.5 ${
+            app.status === "running" ? "bg-green-500 animate-pulse-slow" : "bg-red-500"
+          }`} />
+          {app.status}
+        </Badge>
+      </CardHeader>
 
-        <div className="space-y-4">
-          {app.url && (
-            <div>
-              <a
-                href={app.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
-              >
-                {app.url}
-              </a>
-            </div>
-          )}
+      <CardContent className="space-y-4">
+        {app.url && (
+          <a
+            href={app.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+          >
+            {app.url}
+          </a>
+        )}
 
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Deployed: {new Date(app.deployedAt).toLocaleString()}
-          </div>
+        <p className="text-sm text-muted-foreground">
+          Deployed: {new Date(app.deployedAt).toLocaleString()}
+        </p>
 
-          <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
-            <ContainerControls
-              containerId={app.id}
-              status={app.status}
-              onAction={onRefresh}
-            />
-            <button
-              onClick={onViewLogs}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-              title="View Logs"
-            >
-              <Terminal className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="flex justify-between items-center pt-4 border-t">
+          <ContainerControls
+            containerId={app.id}
+            status={app.status}
+            onAction={onRefresh}
+          />
+          <Button variant="ghost" size="icon-sm" onClick={onViewLogs} title="View Logs">
+            <Terminal className="w-4 h-4" />
+          </Button>
         </div>
-      </div>
+      </CardContent>
 
       {showStats && app.stats && (
-        <div className="border-t border-gray-200 dark:border-gray-700">
+        <div className="border-t">
           <ContainerStats stats={app.stats} />
         </div>
       )}
-    </div>
+    </Card>
   );
 }

@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
-import { AppTemplate, ConfigField, DeploymentMode } from '../types';
-import { X, Settings2, ChevronDown, ChevronUp, Loader2, Home } from 'lucide-react';
-import { validateConfig, validatePortConflicts } from '../lib/validation';
+import React, { useState } from "react";
+import { AppTemplate, ConfigField, DeploymentMode } from "../types";
+import { Settings2, ChevronDown, ChevronUp, Loader2, Home } from "lucide-react";
+import { validateConfig, validatePortConflicts } from "../lib/validation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 
 interface DeployModalProps {
   app: AppTemplate;
@@ -13,14 +19,14 @@ interface DeployModalProps {
   cliIntegration?: boolean;
 }
 
-export function DeployModal({ 
-  app, 
-  onClose, 
-  onDeploy, 
-  loading, 
-  isOpen, 
-  deploymentModes = [], 
-  cliIntegration = false 
+export function DeployModal({
+  app,
+  onClose,
+  onDeploy,
+  loading,
+  isOpen,
+  deploymentModes = [],
+  cliIntegration = false,
 }: DeployModalProps) {
   const [config, setConfig] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<string[]>([]);
@@ -28,28 +34,22 @@ export function DeployModal({
   const [validating, setValidating] = useState(false);
   const [autheliaEnabled, setAutheliaEnabled] = useState(false);
   const [deploymentMode, setDeploymentMode] = useState<DeploymentMode>(
-    deploymentModes.length > 0 
-      ? deploymentModes[0] 
-      : { type: 'local', name: 'Local', description: 'Direct port mapping', features: [], icon: Home }
+    deploymentModes.length > 0
+      ? deploymentModes[0]
+      : { type: "local", name: "Local", description: "Direct port mapping", features: [], icon: Home }
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setValidating(true);
-    
     try {
-      // Basic validation
       const validationErrors = validateConfig(app, config, showAdvanced);
-      
-      // Port conflict validation
       const portErrors = await validatePortConflicts(app, config);
-      
       const allErrors = [...validationErrors, ...portErrors];
       if (allErrors.length > 0) {
         setErrors(allErrors);
         return;
       }
-      
       setErrors([]);
       onDeploy(app.id, config, deploymentMode);
     } finally {
@@ -62,27 +62,20 @@ export function DeployModal({
     setErrors([]);
   };
 
-  const isTraefikMode = deploymentMode.type === 'traefik' || deploymentMode.type === 'authelia';
+  const isTraefikMode = deploymentMode.type === "traefik" || deploymentMode.type === "authelia";
   const basicFields = app.configFields?.filter(field => !field.advanced && (!field.trafikOnly || isTraefikMode)) || [];
   const advancedFields = app.configFields?.filter(field => field.advanced) || [];
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full p-6 animate-slide-up">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Deploy {app.name}</h2>
-          <button 
-            onClick={onClose} 
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Deploy {app.name}</DialogTitle>
+          <DialogDescription>Configure deployment settings</DialogDescription>
+        </DialogHeader>
 
         {errors.length > 0 && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-md">
+          <div className="p-3 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-md">
             <h3 className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">
               Please fix the following errors:
             </h3>
@@ -96,94 +89,61 @@ export function DeployModal({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Deployment Mode Selection */}
-          <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+          <div className="p-4 bg-muted/50 rounded-lg">
+            <h3 className="text-sm font-medium mb-3">
               Deployment Mode
-              {cliIntegration && (
-                <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 rounded">
-                  CLI
-                </span>
-              )}
+              {cliIntegration && <Badge variant="secondary" className="ml-2">CLI</Badge>}
             </h3>
             <div className="space-y-3">
               {deploymentModes.length > 0 ? (
                 deploymentModes.map((mode) => (
-                  <div key={mode.type} className="space-y-2">
-                    <label className="flex items-start space-x-3">
-                      <input
-                        type="radio"
-                        checked={deploymentMode.type === mode.type}
-                        onChange={() => setDeploymentMode(mode)}
-                        className="h-4 w-4 text-blue-600 mt-0.5"
-                      />
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {mode.name || mode.type}
+                  <label key={mode.type} className="flex items-start space-x-3">
+                    <input
+                      type="radio"
+                      checked={deploymentMode.type === mode.type}
+                      onChange={() => setDeploymentMode(mode)}
+                      className="h-4 w-4 text-blue-600 mt-0.5"
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{mode.name || mode.type}</div>
+                      {mode.description && (
+                        <div className="text-xs text-muted-foreground mt-1">{mode.description}</div>
+                      )}
+                      {mode.features && mode.features.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {mode.features.map((feature, index) => (
+                            <Badge key={index} variant="secondary">{feature}</Badge>
+                          ))}
                         </div>
-                        {mode.description && (
-                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                            {mode.description}
-                          </div>
-                        )}
-                        {mode.features && mode.features.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {mode.features.map((feature, index) => (
-                              <span
-                                key={index}
-                                className="px-2 py-1 text-xs bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded"
-                              >
-                                {feature}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </label>
-                  </div>
+                      )}
+                    </div>
+                  </label>
                 ))
               ) : (
-                // Fallback for template mode
                 <div className="space-y-3">
                   <label className="flex items-center space-x-3">
-                    <input
-                      type="radio"
-                      checked={deploymentMode.type === 'local'}
-                      onChange={() => setDeploymentMode({ type: 'local', name: 'Local', description: 'Direct port mapping', features: [], icon: Home })}
-                      className="h-4 w-4 text-blue-600"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Local (Direct Port Mapping)
-                    </span>
+                    <input type="radio" checked={deploymentMode.type === "local"} onChange={() => setDeploymentMode({ type: "local", name: "Local", description: "Direct port mapping", features: [], icon: Home })} className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm">Local (Direct Port Mapping)</span>
                   </label>
                   <label className="flex items-center space-x-3">
-                    <input
-                      type="radio"
-                      checked={deploymentMode.type === 'traefik'}
-                      onChange={() => setDeploymentMode({ type: 'traefik', name: 'Traefik', description: 'Reverse proxy', features: [], icon: Home })}
-                      className="h-4 w-4 text-blue-600"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Traefik (Reverse Proxy)
-                    </span>
+                    <input type="radio" checked={deploymentMode.type === "traefik"} onChange={() => setDeploymentMode({ type: "traefik", name: "Traefik", description: "Reverse proxy", features: [], icon: Home })} className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm">Traefik (Reverse Proxy)</span>
                   </label>
-                  {(deploymentMode.type === 'traefik' || deploymentMode.type === 'authelia') && (
+                  {(deploymentMode.type === "traefik" || deploymentMode.type === "authelia") && (
                     <label className="flex items-center space-x-3 ml-6 mt-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={autheliaEnabled}
                         onChange={(e) => {
                           setAutheliaEnabled(e.target.checked);
-                          if (e.target.checked) {
-                            setDeploymentMode({ type: 'authelia', name: 'Traefik + Authelia', description: 'Reverse proxy with 2FA authentication', features: ['Traefik', 'Authelia 2FA'], icon: Home });
-                          } else {
-                            setDeploymentMode({ type: 'traefik', name: 'Traefik', description: 'Reverse proxy', features: [], icon: Home });
-                          }
+                          setDeploymentMode(e.target.checked
+                            ? { type: "authelia", name: "Traefik + Authelia", description: "Reverse proxy with 2FA authentication", features: ["Traefik", "Authelia 2FA"], icon: Home }
+                            : { type: "traefik", name: "Traefik", description: "Reverse proxy", features: [], icon: Home }
+                          );
                         }}
                         className="h-4 w-4 text-blue-600 rounded"
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        Enable Authelia Authentication
-                      </span>
+                      <span className="text-sm">Enable Authelia Authentication</span>
                     </label>
                   )}
                 </div>
@@ -195,123 +155,99 @@ export function DeployModal({
           <div className="space-y-4">
             {basicFields.map((field) => (
               <div key={field.name}>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <Label htmlFor={field.name}>
                   {field.label}
                   {field.required && <span className="text-red-500 ml-1">*</span>}
-                </label>
-                {field.type === 'select' ? (
+                </Label>
+                {field.type === "select" ? (
                   <select
                     name={field.name}
                     required={field.required}
                     onChange={(e) => handleInputChange(field, e.target.value)}
-                    className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
                     <option value="">Select an option</option>
                     {field.options?.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
+                      <option key={option} value={option}>{option}</option>
                     ))}
                   </select>
                 ) : (
-                  <input
+                  <Input
                     type={field.type}
                     name={field.name}
                     placeholder={field.placeholder}
                     required={field.required}
                     defaultValue={field.defaultValue}
                     onChange={(e) => handleInputChange(field, e.target.value)}
-                    className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="mt-1"
                   />
                 )}
                 {field.helpText && (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{field.helpText}</p>
                 )}
               </div>
             ))}
           </div>
 
-          {/* Advanced Configuration Toggle */}
+          {/* Advanced Configuration */}
           {advancedFields.length > 0 && (
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+            <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
+              <CollapsibleTrigger
+                render={<Button type="button" variant="ghost" className="gap-1" />}
               >
-                <Settings2 className="w-4 h-4 mr-1" />
+                <Settings2 className="w-4 h-4" />
                 Advanced Configuration
-                {showAdvanced ? (
-                  <ChevronUp className="w-4 h-4 ml-1" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 ml-1" />
-                )}
-              </button>
-
-              {/* Advanced Configuration Fields */}
-              {showAdvanced && (
-                <div className="mt-4 space-y-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="mt-4 space-y-4 p-4 bg-muted/50 rounded-lg">
                   {advancedFields.map((field) => (
                     <div key={field.name}>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <Label htmlFor={field.name}>
                         {field.label}
                         {field.required && <span className="text-red-500 ml-1">*</span>}
-                      </label>
-                      {field.type === 'select' ? (
+                      </Label>
+                      {field.type === "select" ? (
                         <select
                           name={field.name}
                           required={field.required}
                           onChange={(e) => handleInputChange(field, e.target.value)}
-                          className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                          className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
                         >
                           <option value="">Select an option</option>
                           {field.options?.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
+                            <option key={option} value={option}>{option}</option>
                           ))}
                         </select>
                       ) : (
-                        <input
+                        <Input
                           type={field.type}
                           name={field.name}
                           placeholder={field.placeholder}
                           required={field.required}
                           defaultValue={field.defaultValue}
                           onChange={(e) => handleInputChange(field, e.target.value)}
-                          className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                          className="mt-1"
                         />
                       )}
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </CollapsibleContent>
+            </Collapsible>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
-              disabled={loading}
-            >
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-800 flex items-center"
-              disabled={loading || validating}
-            >
-              {(loading || validating) && (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              )}
-              {loading ? 'Deploying...' : validating ? 'Validating...' : 'Deploy'}
-            </button>
-          </div>
+            </Button>
+            <Button type="submit" disabled={loading || validating}>
+              {(loading || validating) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {loading ? "Deploying..." : validating ? "Validating..." : "Deploy"}
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
