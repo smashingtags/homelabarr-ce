@@ -32,6 +32,8 @@ import {
 import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes } from './lib/api';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Tab type encompasses display categories + special views
 type TabId = string; // display category ids, 'deployed', 'all-apps', 'leaderboard'
@@ -413,65 +415,63 @@ export default function App() {
         <div>
           <div className="mb-4 flex flex-wrap gap-2 justify-between">
             <div className="flex flex-wrap gap-2">
-              <button
+              <Button
+                variant={sortField === 'name' ? 'secondary' : 'outline'}
+                size="sm"
                 onClick={() => handleSort('name')}
-                className={`flex items-center px-3 py-1.5 rounded-md text-sm ${sortField === 'name'
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                  }`}
+                className={sortField === 'name' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' : ''}
               >
                 Name
                 {sortField === 'name' && (
                   <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={sortField === 'status' ? 'secondary' : 'outline'}
+                size="sm"
                 onClick={() => handleSort('status')}
-                className={`flex items-center px-3 py-1.5 rounded-md text-sm ${sortField === 'status'
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                  }`}
+                className={sortField === 'status' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' : ''}
               >
                 Status
                 {sortField === 'status' && (
                   <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={sortField === 'deployedAt' ? 'secondary' : 'outline'}
+                size="sm"
                 onClick={() => handleSort('deployedAt')}
-                className={`flex items-center px-3 py-1.5 rounded-md text-sm ${sortField === 'deployedAt'
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                  }`}
+                className={sortField === 'deployedAt' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' : ''}
               >
                 Deployment Date
                 {sortField === 'deployedAt' && (
                   <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={sortField === 'uptime' ? 'secondary' : 'outline'}
+                size="sm"
                 onClick={() => handleSort('uptime')}
-                className={`flex items-center px-3 py-1.5 rounded-md text-sm ${sortField === 'uptime'
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                  }`}
+                className={sortField === 'uptime' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' : ''}
               >
                 Uptime
                 {sortField === 'uptime' && (
                   <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
-              </button>
+              </Button>
             </div>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 info('Refreshing Statistics', 'Updating container statistics...');
                 fetchContainers(true);
               }}
-              className="flex items-center px-3 py-1.5 rounded-md text-sm bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800"
+              className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 hover:bg-green-200 dark:hover:bg-green-800"
             >
               <RefreshCw className="w-4 h-4 mr-1" />
               Refresh Stats
-            </button>
+            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedDeployedApps.map(app => {
@@ -486,15 +486,15 @@ export default function App() {
                     onRefresh={fetchContainers}
                   />
                   {isEnhancedMount && (
-                    <button
+                    <Button
                       onClick={() => setSelectedEnhancedMount({
                         containerId: app.id,
                         containerName: app.name
                       })}
-                      className="w-full px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                     >
                       Enhanced Mount Dashboard
-                    </button>
+                    </Button>
                   )}
                 </div>
               );
@@ -523,9 +523,9 @@ export default function App() {
             <div className="ml-3">
               <h3 className="text-red-800 dark:text-red-200 font-medium">Failed to load applications</h3>
               <p className="text-red-600 dark:text-red-400 text-sm mt-1">{catalogError}</p>
-              <button onClick={loadCatalog} className="mt-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 text-sm underline">
+              <Button variant="link" onClick={loadCatalog} className="mt-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 px-0">
                 Try again
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -609,12 +609,13 @@ export default function App() {
                   Found {filteredApps.length} applications matching your search
                 </p>
               </div>
-              <button
+              <Button
+                variant="link"
                 onClick={() => setSearchQuery('')}
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-sm font-medium"
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 px-0"
               >
                 Clear search
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -655,21 +656,23 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homelab<span className="bg-gradient-to-r from-indigo-500 to-blue-600 bg-clip-text text-transparent">ARR</span></h1>
           <div className="flex items-center space-x-4">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setPortManagerOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               aria-label="Port Manager"
               title="Manage Ports"
             >
               <Network className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setHelpModalOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               aria-label="Help"
             >
               <HelpCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            </button>
+            </Button>
             <ThemeToggle />
 
             {isAuthenticated ? (
@@ -693,12 +696,12 @@ export default function App() {
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-indigo-400" />
           </div>
-          <input
+          <Input
             type="text"
             placeholder={`Search across ${cliApps.length || '...'} CLI apps...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-12 pr-24 py-4 bg-white dark:bg-gray-800/80 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-2xl border border-gray-200 dark:border-gray-700/60 ring-2 ring-transparent focus:ring-indigo-500/30 focus:border-indigo-400 dark:focus:border-indigo-500 shadow-sm hover:shadow-md focus:shadow-lg focus:shadow-indigo-500/10 transition-all duration-200 text-base outline-none"
+            className="h-auto w-full pl-12 pr-24 py-4 bg-white dark:bg-gray-800/80 rounded-2xl border-gray-200 dark:border-gray-700/60 shadow-sm hover:shadow-md focus-visible:shadow-lg focus-visible:shadow-indigo-500/10 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-400 dark:focus-visible:border-indigo-500 transition-all duration-200 text-base"
           />
           {searchQuery && (
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
@@ -710,9 +713,9 @@ export default function App() {
         </div>
 
         {/* Category Navigation */}
-        <div className="mb-10 -mx-4 px-4 overflow-x-auto" style={{ scrollbarWidth: 'thin' }}>
+        <div className="mb-10">
           <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
-            <TabsList className="inline-flex gap-2 h-auto bg-transparent p-0 min-w-max pb-2">
+            <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-0 w-full">
               {categoryTabs.map(tab => {
                 const Icon = tab.icon;
                 return (
@@ -786,31 +789,19 @@ export default function App() {
         />
 
         {/* Enhanced Mount Manager Modal */}
-        {selectedEnhancedMount && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto animate-slide-up">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Enhanced Mount Dashboard
-                  </h2>
-                  <button
-                    onClick={() => setSelectedEnhancedMount(null)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <EnhancedMountManager
-                  containerId={selectedEnhancedMount.containerId}
-                  containerName={selectedEnhancedMount.containerName}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <Dialog open={!!selectedEnhancedMount} onOpenChange={(open) => { if (!open) setSelectedEnhancedMount(null); }}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Enhanced Mount Dashboard</DialogTitle>
+            </DialogHeader>
+            {selectedEnhancedMount && (
+              <EnhancedMountManager
+                containerId={selectedEnhancedMount.containerId}
+                containerName={selectedEnhancedMount.containerName}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Help Modal */}
         <HelpModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
