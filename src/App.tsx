@@ -715,7 +715,7 @@ export default function App() {
         {/* Category Navigation */}
         <div className="mb-10">
           <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
-            <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-0 w-full">
+            <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-4 w-full">
               {categoryTabs.map(tab => {
                 const Icon = tab.icon;
                 return (

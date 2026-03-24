@@ -192,12 +192,12 @@ export function DeployModal({
           {/* Advanced Configuration */}
           {advancedFields.length > 0 && (
             <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
-              <CollapsibleTrigger
-                render={<Button type="button" variant="ghost" className="gap-1" />}
-              >
-                <Settings2 className="w-4 h-4" />
-                Advanced Configuration
-                {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              <CollapsibleTrigger asChild>
+                <Button type="button" variant="ghost" className="gap-1">
+                  <Settings2 className="w-4 h-4" />
+                  Advanced Configuration
+                  {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </Button>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-4 space-y-4 p-4 bg-muted/50 rounded-lg">
