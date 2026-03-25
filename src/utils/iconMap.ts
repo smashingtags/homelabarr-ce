@@ -8,52 +8,26 @@ const nameToIconFile: Record<string, string> = {
   'wg-easy': 'wg-easy',
   'wg-manager': 'wg-manager',
   'n8n-mcp': 'n8n-mcp',
-  'chrome': 'google-chrome',
-  'cloudflared': 'cloudflare',
-  'ferdi': 'ferdium',
-  'joplin-server': 'joplin',
-  'rclone-gui': 'rclone',
-  'pihole-cloudflared': 'pi-hole',
-  'pihole-unbound': 'pi-hole',
-  'traktarr': 'trakt',
-  'traktarr4k': 'trakt',
-  'traktarrhdr': 'trakt',
-  'youtubedl-material': 'youtube',
-  'grafana-loki-prometheus': 'grafana',
-  'loki-config': 'loki',
-  'wiki': 'bookstack',
 };
-
-// Set of icons that only have a light variant (no dark counterpart)
-const lightOnlyIcons = new Set([
-  'dashy', 'deemix', 'diun', 'fail2ban', 'fenrus', 'firefox',
-  'handbrake', 'homepage', 'lazylibrarian', 'muximux', 'nzbhydra',
-  'organizr', 'petio', 'restic', 'sui', 'tdarr', 'unmanic',
-  'webtop', 'whoogle'
-]);
 
 // Set of all available local icon names (light variants)
 const availableIcons = new Set([
   'amd', 'autoscan', 'backup', 'bazarr', 'bazarr4k', 'bitwarden',
   'calibre-web', 'changedetection', 'cloudbeaver', 'cloudflare-ddns',
-  'coder', 'conreq', 'dashy', 'deemix', 'deluge', 'discord', 'diun',
-  'dozzle', 'duplicati', 'emby', 'embystats', 'fail2ban', 'fenrus',
-  'filerun', 'filezilla', 'firefox', 'flaresolverr', 'freshrss', 'gaps',
-  'gluetun', 'gluetun-socks5', 'gotify', 'guacamole', 'handbrake',
+  'coder', 'conreq', 'dashy', 'deluge', 'diun', 'dozzle', 'duplicati',
+  'emby', 'embystats', 'fail2ban', 'fenrus', 'filezilla', 'flaresolverr',
+  'freshrss', 'gaps', 'gluetun', 'gluetun-socks5', 'gotify', 'guacamole',
   'homeassistant', 'homepage', 'iobroker', 'jackett', 'jellyfin', 'kitana',
   'koel', 'kometa', 'komga', 'krusader', 'lazylibrarian', 'lidarr',
-  'makemkv', 'mariadb', 'moviematch', 'muximux', 'n8n', 'n8n-mcp',
-  'netbox', 'netdata', 'nextcloud', 'notifiarr', 'nowshowing', 'nzbget',
-  'nzbhydra', 'olivetin', 'onlyoffice', 'organizr', 'overseerr', 'petio',
-  'pihole', 'plex', 'plex-gluetun', 'plex-test', 'plex-utills', 'portainer',
-  'projectsend', 'prometheus', 'prowlarr', 'prowlarr4k', 'prowlarrhdr',
-  'qbittorrent', 'qbittorrent-gluetun', 'qbittorrentvpn', 'radarr',
-  'radarr4k', 'radarrhdr', 'readarr', 'recyclarr', 'remmina', 'restic',
-  'sabnzbd', 'signal', 'snapdrop', 'sonarr', 'sonarr4k', 'sonarrhdr',
-  'speedtest', 'steam', 'striparr', 'sui', 'tauticord', 'tautulli', 'tdarr',
-  'teamspeak', 'telegram', 'tor', 'tubesync', 'unbound', 'unmanic',
-  'uptime-kuma', 'watchtower', 'webtop', 'wg-easy', 'wg-manager',
-  'whoogle', 'wireguard', 'wordpress', 'yacht'
+  'mariadb', 'moviematch', 'muximux', 'n8n', 'n8n-mcp', 'netbox',
+  'netdata', 'notifiarr', 'nowshowing', 'nzbget', 'nzbhydra', 'olivetin',
+  'organizr', 'overseerr', 'petio', 'pihole', 'plex', 'plex-gluetun',
+  'plex-test', 'plex-utills', 'portainer', 'prowlarr', 'prowlarr4k',
+  'prowlarrhdr', 'qbittorrent', 'qbittorrent-gluetun', 'qbittorrentvpn',
+  'radarr', 'radarr4k', 'radarrhdr', 'readarr', 'recyclarr', 'remmina',
+  'restic', 'sabnzbd', 'snapdrop', 'sonarr', 'sonarr4k', 'sonarrhdr',
+  'speedtest', 'sui', 'tauticord', 'tautulli', 'teamspeak', 'tubesync',
+  'unbound', 'webtop', 'wg-easy', 'wg-manager', 'wireguard', 'wordpress', 'yacht'
 ]);
 
 function normalizeAppName(name: string): string {
@@ -67,18 +41,15 @@ function normalizeAppName(name: string): string {
  * 2. Local light icon (if dark requested but unavailable)
  * 3. selfh.st CDN URL
  */
-export function getAppIconPath(appName: string, theme: 'light' | 'dark'): string {
+export function getAppIconPath(appName: string, _theme: 'light' | 'dark'): string {
   const normalized = normalizeAppName(appName);
 
   if (!availableIcons.has(normalized)) {
     return `https://cdn.jsdelivr.net/gh/selfhst/icons/png/${normalized}.png`;
   }
 
-  if (theme === 'dark' && lightOnlyIcons.has(normalized)) {
-    return `/icons/apps/light/${normalized}.png`;
-  }
-
-  return `/icons/apps/${theme}/${normalized}.png`;
+  // Always use light icons — they pop better on both backgrounds
+  return `/icons/apps/light/${normalized}.png`;
 }
 
 /**
