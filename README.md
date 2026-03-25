@@ -57,7 +57,7 @@
     </a>
 </p>
 
-**GUI-driven Docker container management for homelabbers.** Deploy and manage 157 self-hosted apps from a single dashboard — no more copy-pasting Docker Compose files.
+**GUI-driven Docker container management for homelabbers.** Deploy and manage 123+ self-hosted apps from a single dashboard — no more copy-pasting Docker Compose files.
 
 ---
 
@@ -130,7 +130,7 @@ docker compose -f homelabarr.yml up -d
 
 ## Features
 
-- **157 app templates across 12 categories** — Plex, Sonarr, Radarr, Jellyfin, qBittorrent, Overseerr, Grafana, and more
+- **123+ app templates across 11 categories (including AI & ML)** — Plex, Sonarr, Radarr, Jellyfin, qBittorrent, Overseerr, Grafana, and more
 - **One-click deployment** — select an app, hit deploy
 - **Automatic Cloudflare DNS** — deploy a container, DNS record appears. No more manual CNAMEs. Powered by [CF Companion](https://github.com/smashingtags/cf-companion)
 - **Container management** — start, stop, restart, remove from the UI
@@ -139,7 +139,11 @@ docker compose -f homelabarr.yml up -d
 - **Two modes** — Full Mode (Traefik + domain + SSL + auto DNS) or Local Mode (direct IP:PORT)
 - **Traefik + Authelia + CF Companion** — reverse proxy, 2FA, and auto DNS all deploy as one stack
 - **JWT authentication** — secure your dashboard
-- **Dark theme** — easy on the eyes
+- **Premium dark mode** — gradient backgrounds, card depth, noise overlays
+- **14 AI & ML apps** — Ollama, Open WebUI, ComfyUI, Stable Diffusion, and more with GPU configs
+- **166 app icons** — every active app has a real logo
+- **Alphabetical sorting** — A→Z / Z→A toggle on all views
+- **shadcn/ui components** — modern, accessible, consistent design
 
 ---
 
@@ -262,24 +266,27 @@ chmod +x homelabarr-cli.sh
 ```
 
 This launches an interactive menu with:
-- Browse and deploy from 157 app templates across 12 categories organized by category
+- Browse and deploy from 123+ app templates across 11 categories (including AI & ML) organized by category
 - Deploy apps in Docker Compose or local mode
 - Configure environment variables, ports, and volumes per app
 - Start/stop/restart/remove containers
 - View logs and health status
 
-### CLI App Categories
+### App Categories
 
 | Category | Apps | Examples |
 |----------|------|---------|
-| `addons` | 33 | Autoscan, Cloudflare DDNS, Dozzle, Flaresolverr, Homepage |
+| `ai` | 14 | Ollama, Open WebUI, ComfyUI, Stable Diffusion, LocalAI, Flowise |
 | `backup` | 3 | Duplicati, Restic, Borgmatic |
-| `downloadclients` | 14 | qBittorrent, SABnzbd, NZBGet, Transmission, Deluge |
-| `mediamanager` | 25 | Sonarr, Radarr, Lidarr, Readarr, Prowlarr, Bazarr, Recyclarr |
-| `mediaserver` | 7 | Plex, Jellyfin, Emby, Navidrome, Kavita |
-| `monitoring` | — | Netdata, Grafana, Prometheus, Uptime Kuma |
-| `request` | 2 | Overseerr, Ombi |
-| `selfhosted` | 37 | Nextcloud, Vaultwarden, Immich, Bookstack, Ghost, Gitea |
+| `downloads` | 14 | qBittorrent, SABnzbd, NZBGet, Transmission, Deluge |
+| `media-management` | 16 | Sonarr, Radarr, Lidarr, Readarr, Prowlarr, Bazarr, Recyclarr |
+| `media-servers` | 5 | Plex, Jellyfin, Emby, Navidrome, Kavita |
+| `monitoring` | 9 | Netdata, Grafana, Prometheus, Uptime Kuma, Tauticord |
+| `self-hosted` | 37 | Nextcloud, Vaultwarden, Immich, Bookstack, Ghost, Gitea |
+| `system` | 13 | Portainer, Dozzle, Watchtower, CF-Companion, Traefik |
+| `transcoding` | 5 | Tdarr, Handbrake, MakeMKV, Unmanic, Striparr |
+| `virtual-desktops` | 10 | Kasm Workspaces, Firefox, Chrome, Tor Browser |
+| `myapps` | — | Your custom templates |
 
 ### Deploy an App via CLI
 
@@ -298,12 +305,18 @@ Each app is a YAML file in `apps/<category>/<app>.yml`:
 
 ```bash
 apps/
-├── addons/          # Utility containers
+├── ai/              # AI & Machine Learning
 ├── backup/          # Backup solutions
-├── downloadclients/ # Torrent/Usenet clients
-├── mediamanager/    # *arr stack
-├── mediaserver/     # Plex, Jellyfin, etc.
+├── downloads/       # Torrent/Usenet clients
+├── media-management/ # *arr stack
+├── media-servers/   # Plex, Jellyfin, etc.
 ├── monitoring/      # Dashboards and metrics
+├── self-hosted/     # Nextcloud, Vaultwarden, etc.
+├── system/          # Portainer, Traefik, etc.
+├── transcoding/     # Tdarr, Handbrake, etc.
+├── virtual-desktops/ # Kasm workspaces
+├── myapps/          # Your custom templates
+├── legacy/          # Deprecated (drag to myapps if needed)
 ├── request/         # Media request tools
 └── selfhosted/      # Everything else
 ```
