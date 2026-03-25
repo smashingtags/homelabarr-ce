@@ -32,7 +32,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.ollama-rtr.entrypoints=https"
-      - "traefik.http.routers.ollama-rtr.rule=Host(\`ollama.${DOMAIN}\`)"
+      - "traefik.http.routers.ollama-rtr.rule=Host(`ollama.${DOMAIN}`)"
       - "traefik.http.routers.ollama-rtr.tls=true"
       - "traefik.http.routers.ollama-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.ollama-rtr.middlewares=chain-authelia@file"
