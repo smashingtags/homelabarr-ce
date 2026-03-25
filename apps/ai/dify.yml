@@ -1,0 +1,37 @@
+# Open-source LLM app development platform — RAG, agents, workflows
+# GPU Optional | HomelabARR AI Category
+
+services:
+  dify:
+    hostname: "dify"
+    container_name: "dify"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+      - "MODE=api"
+      - "SECRET_KEY=sk-change-me-dify"
+      - "CONSOLE_WEB_URL=https://dify.${DOMAIN}"
+    image: "langgenius/dify-api:latest"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "5001:5001"
+    volumes:
+      - "${APPFOLDER}/dify/storage:/app/api/storage:rw"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.dify-rtr.entrypoints=https"
+      - "traefik.http.routers.dify-rtr.rule=Host(`dify.${DOMAIN}`)"
+      - "traefik.http.routers.dify-rtr.tls=true"
+      - "traefik.http.routers.dify-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.dify-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.dify-rtr.service=dify-svc"
+      - "traefik.http.services.dify-svc.loadbalancer.server.port=5001"
+networks:
+  proxy:
+    driver: bridge
+    external: true

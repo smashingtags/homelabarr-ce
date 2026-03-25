@@ -1,0 +1,41 @@
+# Professional AI image generation with unified canvas, nodes, and model management
+# GPU Required | HomelabARR AI Category
+
+services:
+  invokeai:
+    hostname: "invokeai"
+    container_name: "invokeai"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+    image: "ghcr.io/invoke-ai/invokeai:latest"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "9090:9090"
+    volumes:
+      - "${APPFOLDER}/invokeai:/invokeai:rw"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.invokeai-rtr.entrypoints=https"
+      - "traefik.http.routers.invokeai-rtr.rule=Host(`invokeai.${DOMAIN}`)"
+      - "traefik.http.routers.invokeai-rtr.tls=true"
+      - "traefik.http.routers.invokeai-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.invokeai-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.invokeai-rtr.service=invokeai-svc"
+      - "traefik.http.services.invokeai-svc.loadbalancer.server.port=9090"
+networks:
+  proxy:
+    driver: bridge
+    external: true

@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react';
+import { Brain, LucideIcon } from 'lucide-react';
 import {
   Video,
   Network,
@@ -219,7 +219,6 @@ export const APP_ICON_MAP: Record<string, LucideIcon> = {
   'endlessh': Shield,
   'homelabarr-uploader': Zap,
   'homelabarr-web-interface': LayoutDashboard,
-  'local-persist-plugin': Database,
   'mount': HardDrive,
   'rclone-gui': Cloud,
   'socket-proxy': Network,
@@ -244,7 +243,7 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     description: 'Media servers, management tools, and entertainment applications',
     icon: Film,
     color: 'from-purple-500 to-pink-500',
-    cliCategories: ['mediaserver', 'mediamanager', 'request', 'encoder'],
+    cliCategories: ['media-servers', 'media-management', 'requests', 'transcoding'],
   },
   {
     id: 'downloads',
@@ -252,7 +251,7 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     description: 'Download clients, indexers, and automation tools',
     icon: DownloadIcon,
     color: 'from-blue-500 to-cyan-500',
-    cliCategories: ['downloadclients'],
+    cliCategories: ['downloads'],
   },
   {
     id: 'monitoring',
@@ -268,7 +267,7 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     description: 'Code editors, development tools, and AI utilities',
     icon: Code2,
     color: 'from-indigo-500 to-purple-500',
-    cliCategories: ['coding', 'ai-tools', 'kasmworkspace'],
+    cliCategories: ['development', 'virtual-desktops'],
   },
   {
     id: 'backup',
@@ -292,7 +291,15 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     description: 'Self-hosted services, dashboards, and productivity tools',
     icon: Globe,
     color: 'from-teal-500 to-cyan-500',
-    cliCategories: ['selfhosted', 'share'],
+    cliCategories: ['self-hosted', 'sharing'],
+  },
+  {
+    id: 'ai',
+    name: 'AI & Machine Learning',
+    description: 'Local LLMs, image generation, speech-to-text, and AI infrastructure',
+    icon: Brain,
+    color: 'from-rose-500 to-orange-500',
+    cliCategories: ['ai'],
   },
   {
     id: 'myapps',

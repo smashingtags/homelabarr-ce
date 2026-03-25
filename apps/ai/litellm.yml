@@ -1,0 +1,36 @@
+# Unified LLM proxy — one API for OpenAI, Anthropic, Ollama, and 100+ providers
+# GPU Optional | HomelabARR AI Category
+
+services:
+  litellm:
+    hostname: "litellm"
+    container_name: "litellm"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+      - "LITELLM_MASTER_KEY=sk-change-me"
+      - "DATABASE_URL=sqlite:///app/litellm.db"
+    image: "ghcr.io/berriai/litellm:main-latest"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "4000:4000"
+    volumes:
+      - "${APPFOLDER}/litellm:/app:rw"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.litellm-rtr.entrypoints=https"
+      - "traefik.http.routers.litellm-rtr.rule=Host(`litellm.${DOMAIN}`)"
+      - "traefik.http.routers.litellm-rtr.tls=true"
+      - "traefik.http.routers.litellm-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.litellm-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.litellm-rtr.service=litellm-svc"
+      - "traefik.http.services.litellm-svc.loadbalancer.server.port=4000"
+networks:
+  proxy:
+    driver: bridge
+    external: true
