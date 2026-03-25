@@ -38,7 +38,7 @@ const availableIcons = new Set([
 ]);
 
 function normalizeAppName(name: string): string {
-  const lower = name.toLowerCase().replace(/\s+/g, '');
+  const lower = name.toLowerCase().replace(/\s+/g, '-');
   return nameToIconFile[lower] || lower;
 }
 
