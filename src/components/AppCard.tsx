@@ -78,7 +78,7 @@ export function AppCard({ app, onDeploy }: AppCardProps) {
               </Badge>
             );
           })}
-          <Badge variant="secondary" className="capitalize text-xs">
+          <Badge variant="outline" className="capitalize text-xs bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 border-amber-200 dark:border-amber-800">
             {cliApp?.category || app.category}
           </Badge>
         </div>
