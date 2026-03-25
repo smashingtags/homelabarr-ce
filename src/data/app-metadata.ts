@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react';
+import { Brain, LucideIcon } from 'lucide-react';
 import {
   Video,
   Network,
@@ -267,7 +267,7 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     description: 'Code editors, development tools, and AI utilities',
     icon: Code2,
     color: 'from-indigo-500 to-purple-500',
-    cliCategories: ['development', 'ai', 'virtual-desktops'],
+    cliCategories: ['development', 'virtual-desktops'],
   },
   {
     id: 'backup',
@@ -292,6 +292,14 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     icon: Globe,
     color: 'from-teal-500 to-cyan-500',
     cliCategories: ['self-hosted', 'sharing'],
+  },
+  {
+    id: 'ai',
+    name: 'AI & Machine Learning',
+    description: 'Local LLMs, image generation, speech-to-text, and AI infrastructure',
+    icon: Brain,
+    color: 'from-rose-500 to-orange-500',
+    cliCategories: ['ai'],
   },
   {
     id: 'myapps',

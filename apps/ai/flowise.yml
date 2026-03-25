@@ -1,0 +1,36 @@
+# Drag-and-drop LLM workflow builder — build AI chains and agents visually
+# GPU Optional | HomelabARR AI Category
+
+services:
+  flowise:
+    hostname: "flowise"
+    container_name: "flowise"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+      - "FLOWISE_USERNAME=${FLOWISE_USER:-admin}"
+      - "FLOWISE_PASSWORD=${FLOWISE_PASSWORD:-changeme}"
+    image: "flowiseai/flowise:latest"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "3000:3000"
+    volumes:
+      - "${APPFOLDER}/flowise:/root/.flowise:rw"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.flowise-rtr.entrypoints=https"
+      - "traefik.http.routers.flowise-rtr.rule=Host(`flowise.${DOMAIN}`)"
+      - "traefik.http.routers.flowise-rtr.tls=true"
+      - "traefik.http.routers.flowise-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.flowise-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.flowise-rtr.service=flowise-svc"
+      - "traefik.http.services.flowise-svc.loadbalancer.server.port=3000"
+networks:
+  proxy:
+    driver: bridge
+    external: true
