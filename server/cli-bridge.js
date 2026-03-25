@@ -173,6 +173,17 @@ export class CLIBridge {
   /**
    * Parse individual application configuration from YAML
    */
+  /**
+   * Resolve ${VAR} template variables in a string using default environment values.
+   * This prevents raw template variables from appearing on the dashboard.
+   */
+  resolveTemplateVar(value) {
+    if (typeof value !== 'string') return value;
+    return value.replace(/\$\{([^}]+)\}/g, (match, varName) => {
+      return CLIBridge.ENV_DEFAULTS[varName] || match;
+    });
+  }
+
   async parseApplicationConfig(filePath, category) {
     try {
       const fileContent = fs.readFileSync(filePath, 'utf8');
@@ -201,7 +212,7 @@ export class CLIBridge {
         labels: this.extractLabels(service),
         filePath: filePath,
         healthcheck: service.healthcheck || null,
-        restart: service.restart || '${RESTARTAPP}',
+        restart: this.resolveTemplateVar(service.restart || '${RESTARTAPP}'),
         requiresTraefik: this.requiresTraefik(service),
         requiresAuthelia: this.requiresAuthelia(service)
       };
@@ -651,3 +662,48 @@ export class CLIBridge {
     Object.assign(process.env, defaultEnv, config);
   }
 }
+
+/**
+ * Static default environment values used to resolve ${VAR} template variables
+ * for dashboard display. Keeps YAML files intact for Docker Compose while
+ * preventing raw template strings from showing in the UI.
+ */
+CLIBridge.ENV_DEFAULTS = {
+  // Docker images — LinuxServer.io defaults
+  PLEXIMAGE: 'lscr.io/linuxserver/plex:latest',
+  RADARRIMAGE: 'lscr.io/linuxserver/radarr:latest',
+  RADARR4KIMAGE: 'lscr.io/linuxserver/radarr:latest',
+  RADARRHDRIMAGE: 'lscr.io/linuxserver/radarr:latest',
+  SONARRIMAGE: 'lscr.io/linuxserver/sonarr:latest',
+  SONARR4KIMAGE: 'lscr.io/linuxserver/sonarr:latest',
+  SONARRHDRIMAGE: 'lscr.io/linuxserver/sonarr:latest',
+  BAZARRIMAGE: 'lscr.io/linuxserver/bazarr:latest',
+  BAZARR4KIMAGE: 'lscr.io/linuxserver/bazarr:latest',
+  OVERSEERRIMAGE: 'lscr.io/linuxserver/overseerr:latest',
+  QBITORRENTIMAGE: 'lscr.io/linuxserver/qbittorrent:latest',
+  CALIBREIMAGE: 'lscr.io/linuxserver/calibre:latest',
+  LIDARRIMAGE: 'lscr.io/linuxserver/lidarr:latest',
+  JELLYFINIMAGE: 'lscr.io/linuxserver/jellyfin:latest',
+  PROWLARRIMAGE: 'lscr.io/linuxserver/prowlarr:latest',
+  PROWLARR4KIMAGE: 'lscr.io/linuxserver/prowlarr:latest',
+  PROWLARRHDRIMAGE: 'lscr.io/linuxserver/prowlarr:latest',
+  KOMGAIMAGE: 'lscr.io/linuxserver/komga:latest',
+  SABNZBDIMAGE: 'lscr.io/linuxserver/sabnzbd:latest',
+  DELUGEIMAGE: 'lscr.io/linuxserver/deluge:latest',
+  PIHOLEIMAGE: 'pihole/pihole:latest',
+  LAZYLIBRARIANIMAGE: 'lscr.io/linuxserver/lazylibrarian:latest',
+  NZBGETIMAGE: 'lscr.io/linuxserver/nzbget:latest',
+  TAUTULLIIMAGE: 'lscr.io/linuxserver/tautulli:latest',
+  JACKETTIMAGE: 'lscr.io/linuxserver/jackett:latest',
+  FENRUSIMAGE: 'lscr.io/linuxserver/fenrus:latest',
+  EMBYIMAGE: 'lscr.io/linuxserver/emby:latest',
+  READARRIMAGE: 'lscr.io/linuxserver/readarr:latest',
+  PORTAINERIMAGE: 'portainer/portainer-ce:latest',
+  WEBTOP_IMAGE: 'lscr.io/linuxserver/webtop:latest',
+  MOUNT_ENHANCED_IMAGE: 'rclone/rclone:latest',
+
+  // Core system defaults
+  RESTARTAPP: 'unless-stopped',
+  DOCKERNETWORK: 'bridge',
+  APPFOLDER: '/opt/appdata',
+};
