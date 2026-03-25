@@ -115,18 +115,14 @@ export class CLIBridge {
       // Only scan specific HomelabARR application directories
       // This prevents duplicates from local-mode-apps and other test directories
       const allowedCategories = [
-        'addons',
         'ai',
         'backup',
-        'development',
         'downloads',
         'media-management',
         'media-servers',
         'monitoring',
         'myapps',
-        'requests',
         'self-hosted',
-        'sharing',
         'system',
         'transcoding',
         'virtual-desktops'
