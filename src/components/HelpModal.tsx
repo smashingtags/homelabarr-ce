@@ -1,4 +1,6 @@
-import { X, HelpCircle } from 'lucide-react';
+import { HelpCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -6,25 +8,17 @@ interface HelpModalProps {
 }
 
 export function HelpModal({ isOpen, onClose }: HelpModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full h-[90vh] flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center">
-            <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Help & Documentation</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-auto p-6">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            Help & Documentation
+          </DialogTitle>
+        </DialogHeader>
+
+        <ScrollArea className="flex-1 pr-4">
           <div className="prose dark:prose-invert max-w-none">
             <h3>Quick Start Guide</h3>
             <ol>
@@ -60,7 +54,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
             <h3>Troubleshooting</h3>
             <h4>Common Issues</h4>
             <ul>
-              <li><strong>Container won't start:</strong> Check logs for errors</li>
+              <li><strong>Container won&apos;t start:</strong> Check logs for errors</li>
               <li><strong>Network issues:</strong> Verify Traefik configuration</li>
               <li><strong>Permission errors:</strong> Check volume permissions</li>
             </ul>
@@ -76,20 +70,19 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
 
             <h3>Need More Help?</h3>
             <p>
-              For detailed documentation, please refer to the{' '}
+              For detailed documentation, please visit the{" "}
               <a
-                href="https://github.com/yourusername/homelabarr/blob/main/HELP.md"
+                href="https://wiki.homelabarr.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 dark:text-blue-400 hover:underline"
               >
-                full documentation
-              </a>
-              .
+                HomelabARR Wiki
+              </a>.
             </p>
           </div>
-        </div>
-      </div>
-    </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 }

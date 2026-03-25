@@ -131,7 +131,7 @@ export function CLIApplicationBrowser({ onDeploy }: CLIApplicationBrowserProps) 
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        <span className="ml-3 text-gray-600">Loading HomelabARR CLI applications...</span>
+        <span className="ml-3 text-gray-600">Loading applications...</span>
       </div>
     );
   }
@@ -185,14 +185,14 @@ export function CLIApplicationBrowser({ onDeploy }: CLIApplicationBrowserProps) 
             <h3 className={`font-medium ${
               catalog.source === 'cli' ? 'text-green-800' : 'text-yellow-800'
             }`}>
-              {catalog.source === 'cli' ? 'HomelabARR CLI Connected' : 'Template Mode Active'}
+              {catalog.source === 'cli' ? 'HomelabARR Connected' : 'Browse Mode Active'}
             </h3>
             <p className={`text-sm ${
               catalog.source === 'cli' ? 'text-green-600' : 'text-yellow-600'
             }`}>
               {catalog.source === 'cli' 
-                ? `${catalog.totalApps} proven applications available from HomelabARR CLI` 
-                : catalog.message || 'Using fallback template mode'
+                ? `${catalog.totalApps} proven applications available` 
+                : catalog.message || 'Using browse mode'
               }
             </p>
           </div>
@@ -205,7 +205,7 @@ export function CLIApplicationBrowser({ onDeploy }: CLIApplicationBrowserProps) 
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <input
             type="text"
-            placeholder="Search applications..."
+            placeholder="Search apps..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
