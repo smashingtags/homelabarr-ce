@@ -14,7 +14,7 @@ export function AppCard({ app, onDeploy }: AppCardProps) {
   const cliApp = (app as any)._cliApp as CLIApplication | undefined;
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/20 hover:translate-y-[-3px] flex flex-col h-full border-0 ring-1 ring-gray-200 dark:ring-gray-700/50 hover:ring-indigo-400/50 dark:hover:ring-indigo-500/40 bg-white dark:bg-gray-800/90">
+    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/20 hover:translate-y-[-3px] flex flex-col h-full border-0 ring-1 ring-gray-200 dark:ring-white/[0.08] hover:ring-indigo-400/50 dark:hover:ring-indigo-500/40 bg-white dark:bg-card">
       {/* Category accent stripe */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 opacity-60 group-hover:opacity-100 transition-opacity" />
 

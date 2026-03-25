@@ -19,7 +19,7 @@ export function DeployedAppCard({ app, onViewLogs, onRefresh }: DeployedAppCardP
   const [showStats, setShowStats] = useState(false);
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden dark:bg-card">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <Collapsible open={showStats} onOpenChange={setShowStats}>
