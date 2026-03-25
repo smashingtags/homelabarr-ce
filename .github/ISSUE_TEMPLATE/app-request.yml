@@ -1,0 +1,61 @@
+name: App Request
+description: Request a new app template for the catalog
+labels: ["app-request"]
+body:
+  - type: input
+    id: app-name
+    attributes:
+      label: App Name
+      placeholder: "e.g. Immich, Audiobookshelf"
+    validations:
+      required: true
+  - type: input
+    id: docker-image
+    attributes:
+      label: Docker Image
+      placeholder: "e.g. ghcr.io/immich-app/immich-server:latest"
+    validations:
+      required: true
+  - type: input
+    id: project-url
+    attributes:
+      label: Project URL
+      placeholder: "e.g. https://github.com/immich-app/immich"
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - AI & Machine Learning
+        - Backup & Storage
+        - Downloads & Automation
+        - Media Management
+        - Media Servers
+        - Monitoring & Analytics
+        - Self-hosted
+        - System & Utilities
+        - Transcoding
+        - Virtual Desktops
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What does this app do?
+      description: Brief description and why it belongs in HomelabARR
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: This app is actively maintained
+          required: true
+        - label: This app has a public Docker image
+          required: true
+        - label: I've checked it's not already in the catalog
+          required: true
