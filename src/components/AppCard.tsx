@@ -29,8 +29,15 @@ export function AppCard({ app, onDeploy }: AppCardProps) {
             onError={(e) => {
               const target = e.currentTarget;
               const cdnUrl = getCdnFallbackUrl(app.name);
-              if (target.src !== cdnUrl) {
+              if (!target.dataset.triedCdn && target.src !== cdnUrl) {
+                target.dataset.triedCdn = "1";
                 target.src = cdnUrl;
+              } else {
+                target.style.display = "none";
+                const letter = document.createElement("span");
+                letter.className = "w-7 h-7 flex items-center justify-center rounded-md bg-indigo-500/20 text-indigo-300 text-sm font-bold";
+                letter.textContent = (target.alt || "?")[0].toUpperCase();
+                target.parentElement?.appendChild(letter);
               }
             }}
           />
