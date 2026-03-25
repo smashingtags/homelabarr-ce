@@ -1,5 +1,10 @@
-import { AppTemplate, CLIApplication } from '../types';
-import { Shield, Network, Monitor } from 'lucide-react';
+import { AppTemplate, CLIApplication } from "../types";
+import { Shield, Network, Monitor } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { getAppIconPath, getCdnFallbackUrl } from '../utils/iconMap';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface AppCardProps {
   app: AppTemplate;
@@ -7,75 +12,94 @@ interface AppCardProps {
 }
 
 export function AppCard({ app, onDeploy }: AppCardProps) {
-  const Icon = app.logo;
+  const { theme } = useTheme();
   const cliApp = (app as any)._cliApp as CLIApplication | undefined;
 
-  // Deployment mode icons and labels
-  const deploymentModeInfo = {
-    traefik: { icon: Network, label: 'Traefik', color: 'text-green-600 bg-green-50' },
-    authelia: { icon: Shield, label: 'Authelia', color: 'text-purple-600 bg-purple-50' },
-    local: { icon: Monitor, label: 'Local', color: 'text-blue-600 bg-blue-50' }
-  };
-
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 flex flex-col">
-      <div className="flex items-center mb-3">
-        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20 hover:translate-y-[-3px] flex flex-col h-full border-0 ring-1 ring-gray-200 dark:ring-white/[0.08] hover:ring-indigo-400/50 dark:hover:ring-indigo-500/40 bg-white dark:bg-[hsl(222,28%,10%)]">
+      {/* Category accent stripe */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 opacity-60 group-hover:opacity-100 transition-opacity" />
+
+      <CardHeader className="flex flex-row items-center gap-4 pt-5 pb-3">
+        <div className="p-3 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/20 rounded-xl ring-1 ring-indigo-100 dark:ring-indigo-800/30 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-indigo-500/20">
+          <img
+            src={getAppIconPath(app.name, theme)}
+            alt={`${app.name} icon`}
+            className="w-7 h-7 object-contain"
+            onError={(e) => {
+              const target = e.currentTarget;
+              const cdnUrl = getCdnFallbackUrl(app.name);
+              if (!target.dataset.triedCdn && target.src !== cdnUrl) {
+                target.dataset.triedCdn = "1";
+                target.src = cdnUrl;
+              } else {
+                target.style.display = "none";
+                const letter = document.createElement("span");
+                letter.className = "w-7 h-7 flex items-center justify-center rounded-md bg-indigo-500/20 text-indigo-300 text-sm font-bold";
+                letter.textContent = (target.alt || "?")[0].toUpperCase();
+                target.parentElement?.appendChild(letter);
+              }
+            }}
+          />
         </div>
-        <div className="ml-3 flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 dark:text-white truncate">{app.name}</h3>
+        <div className="min-w-0 flex-1">
+          <CardTitle className="text-base font-semibold truncate">{app.name}</CardTitle>
           {cliApp && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              {cliApp.image.split(':')[0]}
-            </p>
+            <CardDescription className="truncate text-xs mt-0.5">
+              {cliApp.image.split(":")[0]}
+            </CardDescription>
           )}
         </div>
-      </div>
+      </CardHeader>
 
-      <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm leading-relaxed line-clamp-2 flex-grow">
-        {app.description}
-      </p>
-
-      {/* Deployment Mode Badges */}
-      <div className="mb-3">
+      <CardContent className="flex-grow pb-3">
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-4">
+          {app.description}
+        </p>
         <div className="flex flex-wrap gap-1.5">
           {cliApp?.requiresTraefik && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded">
+            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50" variant="outline">
+              <Network className="w-3 h-3 mr-1" />
               Traefik
-            </span>
+            </Badge>
           )}
           {cliApp?.requiresAuthelia && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300 rounded">
+            <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800/50" variant="outline">
+              <Shield className="w-3 h-3 mr-1" />
               Auth
-            </span>
+            </Badge>
           )}
           {!cliApp && app.deploymentModes && app.deploymentModes.map(mode => {
-            const modeInfo = deploymentModeInfo[mode];
-            if (!modeInfo) return null;
-            const ModeIcon = modeInfo.icon;
+            const styles: Record<string, string> = {
+              traefik: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50",
+              authelia: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800/50",
+              local: "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300 border-sky-200 dark:border-sky-800/50",
+            };
+            const icons: Record<string, typeof Network> = { traefik: Network, authelia: Shield, local: Monitor };
+            const labels: Record<string, string> = { traefik: "Traefik", authelia: "Authelia", local: "Local" };
+            const ModeIcon = icons[mode] || Monitor;
             return (
-              <div
-                key={mode}
-                className={`flex items-center px-2 py-0.5 rounded text-xs font-medium ${modeInfo.color} dark:bg-gray-700 dark:text-gray-300`}
-              >
+              <Badge key={mode} variant="outline" className={styles[mode] || ""}>
                 <ModeIcon className="w-3 h-3 mr-1" />
-                {modeInfo.label}
-              </div>
+                {labels[mode] || mode}
+              </Badge>
             );
           })}
-          <span className="inline-block px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded capitalize">
+          <Badge variant="outline" className="capitalize text-xs bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 border-amber-200 dark:border-amber-800">
             {cliApp?.category || app.category}
-          </span>
+          </Badge>
         </div>
-      </div>
+      </CardContent>
 
-      <button
-        onClick={() => onDeploy(app)}
-        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 px-4 rounded-md transition-all duration-200 font-medium shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 text-sm"
-      >
-        Deploy
-      </button>
-    </div>
+      <CardFooter className="pt-0 pb-4">
+        <Button
+          onClick={() => onDeploy(app)}
+          className="w-full bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-medium shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-200"
+          size="default"
+        >
+          Deploy
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

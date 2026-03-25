@@ -9,7 +9,6 @@ import { DeploymentProgressModal } from './components/DeploymentProgressModal';
 import { LogViewer } from './components/LogViewer';
 import { ThemeToggle } from './components/ThemeToggle';
 import { HelpModal } from './components/HelpModal';
-import { Leaderboard } from './components/Leaderboard';
 import { PortManager } from './components/PortManager';
 import { EnhancedMountManager } from './components/EnhancedMountManager';
 import { EnhancedMountOnboarding } from './components/EnhancedMountOnboarding';
@@ -23,16 +22,19 @@ import {
   Network,
   Box,
   HelpCircle,
-  Trophy,
   RefreshCw,
-  Terminal,
   Package,
   Search as SearchIcon,
 } from 'lucide-react';
 import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes } from './lib/api';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Tab type encompasses display categories + special views
-type TabId = string; // display category ids, 'deployed', 'all-apps', 'leaderboard'
+type TabId = string; // display category ids, 'deployed', 'all-apps'
 
 // Build category tabs from DISPLAY_CATEGORIES + special views
 const categoryTabs = [
@@ -43,7 +45,6 @@ const categoryTabs = [
     icon: dc.icon,
   })),
   { id: 'all-apps', name: 'All Apps', icon: SearchIcon },
-  { id: 'leaderboard', name: 'Leaderboard', icon: Trophy },
 ];
 
 // Convert a CLIApplication to an AppTemplate for rendering in AppCard and DeployModal
@@ -79,9 +80,10 @@ export default function App() {
   const [selectedApp, setSelectedApp] = useState<AppTemplate | null>(null);
   const [deployedApps, setDeployedApps] = useState<DeployedApp[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<TabId>('media');
+  const [activeCategory, setActiveCategory] = useState<TabId>('all-apps');
   const [sortField, setSortField] = useState<'name' | 'status' | 'deployedAt' | 'uptime'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [catalogSort, setCatalogSort] = useState<'asc' | 'desc'>('asc');
   const [selectedContainerLogs, setSelectedContainerLogs] = useState<string | null>(null);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [portManagerOpen, setPortManagerOpen] = useState(false);
@@ -141,7 +143,7 @@ export default function App() {
     let apps = allAppTemplates;
 
     // Category filter
-    if (activeCategory !== 'all-apps' && activeCategory !== 'deployed' && activeCategory !== 'leaderboard') {
+    if (activeCategory !== 'all-apps' && activeCategory !== 'deployed') {
       const displayCat = getDisplayCategory(activeCategory);
       if (displayCat) {
         apps = apps.filter(app => {
@@ -393,9 +395,6 @@ export default function App() {
   };
 
   const renderContent = () => {
-    if (activeCategory === 'leaderboard') {
-      return <Leaderboard deployedApps={deployedApps} />;
-    }
 
     if (activeCategory === 'deployed') {
       const handleSort = (field: typeof sortField) => {
@@ -411,65 +410,63 @@ export default function App() {
         <div>
           <div className="mb-4 flex flex-wrap gap-2 justify-between">
             <div className="flex flex-wrap gap-2">
-              <button
+              <Button
+                variant={sortField === 'name' ? 'secondary' : 'outline'}
+                size="sm"
                 onClick={() => handleSort('name')}
-                className={`flex items-center px-3 py-1.5 rounded-md text-sm ${sortField === 'name'
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                  }`}
+                className={sortField === 'name' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' : ''}
               >
                 Name
                 {sortField === 'name' && (
                   <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={sortField === 'status' ? 'secondary' : 'outline'}
+                size="sm"
                 onClick={() => handleSort('status')}
-                className={`flex items-center px-3 py-1.5 rounded-md text-sm ${sortField === 'status'
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                  }`}
+                className={sortField === 'status' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' : ''}
               >
                 Status
                 {sortField === 'status' && (
                   <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={sortField === 'deployedAt' ? 'secondary' : 'outline'}
+                size="sm"
                 onClick={() => handleSort('deployedAt')}
-                className={`flex items-center px-3 py-1.5 rounded-md text-sm ${sortField === 'deployedAt'
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                  }`}
+                className={sortField === 'deployedAt' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' : ''}
               >
                 Deployment Date
                 {sortField === 'deployedAt' && (
                   <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={sortField === 'uptime' ? 'secondary' : 'outline'}
+                size="sm"
                 onClick={() => handleSort('uptime')}
-                className={`flex items-center px-3 py-1.5 rounded-md text-sm ${sortField === 'uptime'
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                  }`}
+                className={sortField === 'uptime' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' : ''}
               >
                 Uptime
                 {sortField === 'uptime' && (
                   <ArrowUpDown className={`w-4 h-4 ml-1 ${sortDirection === 'desc' ? 'transform rotate-180' : ''}`} />
                 )}
-              </button>
+              </Button>
             </div>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 info('Refreshing Statistics', 'Updating container statistics...');
                 fetchContainers(true);
               }}
-              className="flex items-center px-3 py-1.5 rounded-md text-sm bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800"
+              className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800 hover:bg-green-200 dark:hover:bg-green-800"
             >
               <RefreshCw className="w-4 h-4 mr-1" />
               Refresh Stats
-            </button>
+            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedDeployedApps.map(app => {
@@ -484,15 +481,15 @@ export default function App() {
                     onRefresh={fetchContainers}
                   />
                   {isEnhancedMount && (
-                    <button
+                    <Button
                       onClick={() => setSelectedEnhancedMount({
                         containerId: app.id,
                         containerName: app.name
                       })}
-                      className="w-full px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                     >
                       Enhanced Mount Dashboard
-                    </button>
+                    </Button>
                   )}
                 </div>
               );
@@ -521,44 +518,14 @@ export default function App() {
             <div className="ml-3">
               <h3 className="text-red-800 dark:text-red-200 font-medium">Failed to load applications</h3>
               <p className="text-red-600 dark:text-red-400 text-sm mt-1">{catalogError}</p>
-              <button onClick={loadCatalog} className="mt-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 text-sm underline">
+              <Button variant="link" onClick={loadCatalog} className="mt-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 px-0">
                 Try again
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       );
     }
-
-    // CLI status banner
-    const statusBanner = (
-      <div className={`mb-6 p-4 rounded-lg border ${
-        catalogSource === 'cli'
-          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-          : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-      }`}>
-        <div className="flex items-center">
-          <Terminal className={`h-5 w-5 ${
-            catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
-          }`} />
-          <div className="ml-3">
-            <h3 className={`font-medium ${
-              catalogSource === 'cli' ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'
-            }`}>
-              {catalogSource === 'cli' ? 'HomelabARR CLI Connected' : 'Template Mode Active'}
-            </h3>
-            <p className={`text-sm ${
-              catalogSource === 'cli' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'
-            }`}>
-              {catalogSource === 'cli'
-                ? `${cliApps.length} proven applications available from HomelabARR CLI`
-                : 'Using fallback template mode'
-              }
-            </p>
-          </div>
-        </div>
-      </div>
-    );
 
     // Category header
     const displayCat = getDisplayCategory(activeCategory);
@@ -570,11 +537,9 @@ export default function App() {
 
     return (
       <div>
-        {statusBanner}
-
         {/* Category Header */}
         {!searchQuery && currentCategoryInfo && (
-          <div className="mb-6 p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="mb-6 p-6 bg-white dark:bg-[hsl(222,28%,10%)] rounded-lg border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-black/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <currentCategoryInfo.icon className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
@@ -607,20 +572,39 @@ export default function App() {
                   Found {filteredApps.length} applications matching your search
                 </p>
               </div>
-              <button
+              <Button
+                variant="link"
                 onClick={() => setSearchQuery('')}
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-sm font-medium"
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 px-0"
               >
                 Clear search
-              </button>
+              </Button>
             </div>
+          </div>
+        )}
+
+        {/* Sort Control */}
+        {filteredApps.length > 1 && (
+          <div className="flex items-center justify-end mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCatalogSort(prev => prev === 'asc' ? 'desc' : 'asc')}
+              className="text-gray-600 dark:text-gray-300 border-gray-300 dark:border-white/[0.15] hover:bg-gray-100 dark:hover:bg-white/[0.05]"
+            >
+              <ArrowUpDown className="w-4 h-4 mr-1.5" />
+              {catalogSort === 'asc' ? 'A → Z' : 'Z → A'}
+            </Button>
           </div>
         )}
 
         {/* Apps Grid */}
         {filteredApps.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredApps.map(app => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...filteredApps].sort((a, b) => {
+              const cmp = a.name.localeCompare(b.name);
+              return catalogSort === 'asc' ? cmp : -cmp;
+            }).map(app => (
               <AppCard
                 key={app.id}
                 app={app}
@@ -647,60 +631,79 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-background">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homelabarr</h1>
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-[hsl(222,30%,8%)]/80 backdrop-blur-xl shadow-sm dark:shadow-black/20 border-b border-gray-200/50 dark:border-white/[0.06]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Homelab<span className="bg-gradient-to-r from-indigo-500 to-blue-600 bg-clip-text text-transparent">ARR</span></h1>
+            {/* Connection status indicator */}
+            {!catalogLoading && (
+              <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
+                catalogSource === 'cli'
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                  : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  catalogSource === 'cli' ? 'bg-green-500' : 'bg-yellow-500'
+                }`} />
+                {catalogSource === 'cli' ? `Connected · ${cliApps.length} apps` : 'Browse Mode'}
+              </span>
+            )}
+          </div>
           <div className="flex items-center space-x-4">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setPortManagerOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               aria-label="Port Manager"
               title="Manage Ports"
             >
               <Network className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setHelpModalOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
               aria-label="Help"
             >
               <HelpCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            </button>
+            </Button>
             <ThemeToggle />
 
             {isAuthenticated ? (
               <UserMenu onOpenSettings={() => setSettingsModalOpen(true)} />
             ) : (
-              <button
+              <Button
                 onClick={() => setLoginModalOpen(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                className="bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white shadow-md shadow-indigo-500/20"
               >
                 Sign In
-              </button>
+              </Button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-h-[calc(100vh-80px)]">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[calc(100vh-80px)]">
+
+        {/* Status banner removed — indicator now in header */}
 
         {/* Search Bar */}
-        <div className="relative mb-6">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+        <div className="relative mb-8">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-indigo-400" />
           </div>
-          <input
+          <Input
             type="text"
-            placeholder={`Search across ${cliApps.length || '...'} CLI apps...`}
+            placeholder="Search apps..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+            className="h-auto w-full pl-12 pr-24 py-4 bg-white dark:bg-[hsl(222,28%,10%)] rounded-2xl border-gray-200 dark:border-white/[0.08] shadow-sm hover:shadow-md focus-visible:shadow-lg focus-visible:shadow-indigo-500/10 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-400 dark:focus-visible:border-indigo-500 transition-all duration-200 text-base"
           />
           {searchQuery && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+              <span className="text-sm font-medium text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-lg">
                 {filteredApps.length} results
               </span>
             </div>
@@ -708,23 +711,30 @@ export default function App() {
         </div>
 
         {/* Category Navigation */}
-        <div className="flex flex-wrap gap-3 mb-8">
-          {categoryTabs.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveCategory(tab.id)}
-                className={`flex items-center px-4 py-2 rounded-md transition-colors text-sm ${activeCategory === tab.id
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
-                  }`}
-              >
-                <Icon className="w-4 h-4 mr-2" />
-                {tab.name}
-              </button>
-            );
-          })}
+        <div className="mb-10">
+          <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
+            <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-4 w-full justify-start">
+              {categoryTabs.map(tab => {
+                const Icon = tab.icon;
+                const isActive = activeCategory === tab.id;
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className={cn(
+                      "flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border",
+                      isActive
+                        ? "bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25 border-transparent ring-0"
+                        : "border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[hsl(222,28%,10%)] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[hsl(222,28%,13%)] hover:border-indigo-300 dark:hover:border-indigo-500/30 hover:text-gray-900 dark:hover:text-white"
+                    )}
+                  >
+                    <Icon className="w-4 h-4 mr-2 shrink-0" />
+                    {tab.name}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Main Content Area */}
@@ -783,35 +793,41 @@ export default function App() {
         />
 
         {/* Enhanced Mount Manager Modal */}
-        {selectedEnhancedMount && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Enhanced Mount Dashboard
-                  </h2>
-                  <button
-                    onClick={() => setSelectedEnhancedMount(null)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <EnhancedMountManager
-                  containerId={selectedEnhancedMount.containerId}
-                  containerName={selectedEnhancedMount.containerName}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <Dialog open={!!selectedEnhancedMount} onOpenChange={(open) => { if (!open) setSelectedEnhancedMount(null); }}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Enhanced Mount Dashboard</DialogTitle>
+            </DialogHeader>
+            {selectedEnhancedMount && (
+              <EnhancedMountManager
+                containerId={selectedEnhancedMount.containerId}
+                containerName={selectedEnhancedMount.containerName}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Help Modal */}
         <HelpModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
       </main>
+
+      {/* Footer */}
+      <footer className="w-full border-t border-border/40 dark:border-white/[0.06] bg-background/80 dark:bg-transparent py-4 px-6 mt-8">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <span>Built with</span>
+            <span className="text-red-500">♥</span>
+            <span>by</span>
+            <a href="https://imogenlabs.ai" target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 dark:text-indigo-400 underline decoration-indigo-400/50 hover:decoration-indigo-500 transition-colors">Imogen Labs AI</a>
+          </div>
+          <div className="flex items-center gap-4">
+            <a href="https://wiki.homelabarr.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Docs</a>
+            <a href="https://discord.gg/Pc7mXX786x" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
+            <a href="https://github.com/smashingtags/homelabarr-ce" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <span>© 2026 HomelabARR</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

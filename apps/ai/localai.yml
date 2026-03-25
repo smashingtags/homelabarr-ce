@@ -1,0 +1,44 @@
+# OpenAI-compatible local AI API server — drop-in replacement for GPT endpoints
+# GPU Required | HomelabARR AI Category
+
+services:
+  localai:
+    hostname: "localai"
+    container_name: "localai"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+      - "DEBUG=false"
+      - "MODELS_PATH=/models"
+      - "THREADS=4"
+    image: "localai/localai:latest-gpu-nvidia-cuda-12"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "${APPFOLDER}/localai/models:/models:rw"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.localai-rtr.entrypoints=https"
+      - "traefik.http.routers.localai-rtr.rule=Host(`localai.${DOMAIN}`)"
+      - "traefik.http.routers.localai-rtr.tls=true"
+      - "traefik.http.routers.localai-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.localai-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.localai-rtr.service=localai-svc"
+      - "traefik.http.services.localai-svc.loadbalancer.server.port=8080"
+networks:
+  proxy:
+    driver: bridge
+    external: true

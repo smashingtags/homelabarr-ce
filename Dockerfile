@@ -29,8 +29,8 @@ COPY index.html ./
 # Copy source code
 COPY src/ ./src/
 
-# Create public directory if it doesn't exist (optional assets)
-RUN mkdir -p public
+# Copy public assets (icons, favicon, etc.)
+COPY public/ ./public/
 
 # Build the application for production
 ENV NODE_ENV=production
