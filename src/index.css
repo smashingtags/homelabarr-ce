@@ -109,7 +109,7 @@
 }
 
 /* Ensure content sits above noise overlay */
-.dark body > * {
+.dark body > *:not([data-radix-portal]) {
   position: relative;
   z-index: 1;
 }
