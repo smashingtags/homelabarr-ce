@@ -25,7 +25,7 @@ export function DeploymentProgress({ steps }: DeploymentProgressProps) {
               <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
             )}
             {step.status === 'pending' && (
-              <Circle className="w-5 h-5 text-gray-300" />
+              <Circle className="w-5 h-5 text-gray-300 dark:text-gray-600" />
             )}
             {step.status === 'error' && (
               <Circle className="w-5 h-5 text-red-500" />
