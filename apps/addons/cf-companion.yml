@@ -1,0 +1,23 @@
+---
+services:
+  cf-companion:
+    image: "smashingtags/cf-companion:latest"
+    container_name: "cf-companion"
+    restart: unless-stopped
+    environment:
+      - CF_TOKEN=${CF_TOKEN}
+      - TARGET_DOMAIN=${DOMAIN}
+      - DOMAIN1=${DOMAIN}
+      - DOMAIN1_ZONE_ID=${CF_ZONE_ID}
+      - DOMAIN1_PROXIED=true
+      - DEFAULT_TTL=1
+      - REFRESH_ENTRIES=true
+      - LOG_LEVEL=INFO
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "com.homelabarr.name=CF Companion"
+      - "com.homelabarr.description=Auto-create Cloudflare DNS records for containers with Traefik labels"
+      - "com.homelabarr.category=addons"
+      - "com.homelabarr.url=https://github.com/smashingtags/cf-companion"
+      - "com.homelabarr.icon=cloudflare"
