@@ -171,7 +171,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
               </div>
             </section>
 
-            {/* Credit */}            <div className="pt-4 mt-4 border-t border-border/40 dark:border-white/[0.06] text-center">              <p className="text-xs text-muted-foreground">                HomelabARR is built and maintained by{" "}                <a href="https://imogenlabs.ai" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">Imogen Labs AI</a>                {" "}· © 2026              </p>            </div>
+            {/* Credit */}            <div className="pt-4 mt-4 border-t border-border/40 dark:border-white/[0.06] text-center">              <p className="text-xs text-muted-foreground">                HomelabARR is built and maintained by{" "}                <a href="https://imogenlabs.ai" target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 dark:text-indigo-400 underline decoration-indigo-400/50 hover:decoration-indigo-500 transition-colors">Imogen Labs AI</a>                {" "}· © 2026              </p>            </div>
           </div>
         </ScrollArea>
       </DialogContent>

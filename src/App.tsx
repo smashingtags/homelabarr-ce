@@ -805,7 +805,7 @@ export default function App() {
             <span>Built with</span>
             <span className="text-red-500">♥</span>
             <span>by</span>
-            <a href="https://imogenlabs.ai" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground/70 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">Imogen Labs AI</a>
+            <a href="https://imogenlabs.ai" target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 dark:text-indigo-400 underline decoration-indigo-400/50 hover:decoration-indigo-500 transition-colors">Imogen Labs AI</a>
           </div>
           <div className="flex items-center gap-4">
             <a href="https://wiki.homelabarr.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Docs</a>
