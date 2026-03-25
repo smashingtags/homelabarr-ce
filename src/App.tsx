@@ -83,6 +83,7 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState<TabId>('media');
   const [sortField, setSortField] = useState<'name' | 'status' | 'deployedAt' | 'uptime'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [catalogSort, setCatalogSort] = useState<'asc' | 'desc'>('asc');
   const [selectedContainerLogs, setSelectedContainerLogs] = useState<string | null>(null);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [portManagerOpen, setPortManagerOpen] = useState(false);
@@ -582,10 +583,28 @@ export default function App() {
           </div>
         )}
 
+        {/* Sort Control */}
+        {filteredApps.length > 1 && (
+          <div className="flex items-center justify-end mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCatalogSort(prev => prev === 'asc' ? 'desc' : 'asc')}
+              className="text-gray-600 dark:text-gray-300 border-gray-300 dark:border-white/[0.15] hover:bg-gray-100 dark:hover:bg-white/[0.05]"
+            >
+              <ArrowUpDown className="w-4 h-4 mr-1.5" />
+              {catalogSort === 'asc' ? 'A → Z' : 'Z → A'}
+            </Button>
+          </div>
+        )}
+
         {/* Apps Grid */}
         {filteredApps.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredApps.map(app => (
+            {[...filteredApps].sort((a, b) => {
+              const cmp = a.name.localeCompare(b.name);
+              return catalogSort === 'asc' ? cmp : -cmp;
+            }).map(app => (
               <AppCard
                 key={app.id}
                 app={app}
