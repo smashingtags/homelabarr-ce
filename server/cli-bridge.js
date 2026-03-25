@@ -116,20 +116,20 @@ export class CLIBridge {
       // This prevents duplicates from local-mode-apps and other test directories
       const allowedCategories = [
         'addons',
-        'ai-tools',
+        'ai',
         'backup',
-        'coding',
-        'downloadclients',
-        'encoder',
-        'kasmworkspace',
-        'mediamanager',
-        'mediaserver',
+        'development',
+        'downloads',
+        'media-management',
+        'media-servers',
         'monitoring',
         'myapps',
-        'request',
-        'selfhosted',
-        'share',
-        'system'
+        'requests',
+        'self-hosted',
+        'sharing',
+        'system',
+        'transcoding',
+        'virtual-desktops'
       ];
 
       for (const category of allowedCategories) {
