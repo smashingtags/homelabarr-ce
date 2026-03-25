@@ -797,6 +797,24 @@ export default function App() {
         {/* Help Modal */}
         <HelpModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
       </main>
+
+      {/* Footer */}
+      <footer className="w-full border-t border-border/40 dark:border-white/[0.06] bg-background/80 dark:bg-transparent py-4 px-6 mt-8">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <span>Built with</span>
+            <span className="text-red-500">♥</span>
+            <span>by</span>
+            <a href="https://imogenlabs.ai" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground/70 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">Imogen Labs AI</a>
+          </div>
+          <div className="flex items-center gap-4">
+            <a href="https://wiki.homelabarr.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Docs</a>
+            <a href="https://discord.gg/Pc7mXX786x" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Discord</a>
+            <a href="https://github.com/smashingtags/homelabarr-ce" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
+            <span>© 2026 HomelabARR</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
