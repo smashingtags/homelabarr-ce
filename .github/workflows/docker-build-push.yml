@@ -2,7 +2,7 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, dev ]
     tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
@@ -101,8 +101,8 @@ jobs:
         labels: ${{ steps.meta-frontend.outputs.labels }}
         cache-from: type=gha
         cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
-        provenance: true
-        sbom: true
+        provenance: ${{ github.event_name != 'pull_request' }}
+        sbom: ${{ github.event_name != 'pull_request' }}
         build-args: |
           NODE_ENV=production
 
@@ -119,8 +119,8 @@ jobs:
         labels: ${{ steps.meta-backend.outputs.labels }}
         cache-from: type=gha
         cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
-        provenance: true
-        sbom: true
+        provenance: ${{ github.event_name != 'pull_request' }}
+        sbom: ${{ github.event_name != 'pull_request' }}
         build-args: |
           NODE_ENV=production
 
