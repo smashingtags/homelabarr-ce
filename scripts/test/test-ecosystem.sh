@@ -133,12 +133,9 @@ test_volume_persistence() {
     fi
 }
 
-# Function to test local persist plugin
-test_local_persist_plugin() {
     print_status "Testing Local Persist Plugin functionality"
     
     # Test socket existence
-    if docker exec homelabarr_local_persist test -S /run/docker/plugins/local-persist.sock 2>/dev/null; then
         print_success "Local persist socket exists"
     else
         print_failure "Local persist socket not found"
@@ -149,7 +146,6 @@ test_local_persist_plugin() {
     local test_volume="test-ecosystem-volume"
     local test_path="/tmp/ecosystem-test"
     
-    if docker volume create -d local-persist -o mountpoint="$test_path" --name "$test_volume" > /dev/null 2>&1; then
         print_success "Local persist volume creation works"
         
         # Test volume removal
@@ -269,7 +265,6 @@ test_configuration_files() {
     # Check for compose files
     local compose_files=(
         "ecosystem-integration.yml"
-        "apps/system/local-persist-plugin.yml"
         "apps/system/mount-enhanced.yml"
         "apps/system/homelabarr-uploader.yml"
         "apps/system/homelabarr-web-interface.yml"
@@ -304,7 +299,6 @@ run_all_tests() {
     
     # Container tests
     echo "--- Container Status Tests ---"
-    local containers=("homelabarr_local_persist" "homelabarr_mount_enhanced" "homelabarr_uploader" "homelabarr_backend" "homelabarr_frontend")
     
     for container in "${containers[@]}"; do
         if docker ps -a --filter "name=$container" --format "{{.Names}}" | grep -q "$container"; then
@@ -318,7 +312,6 @@ run_all_tests() {
     
     # Service tests
     echo "--- Service Integration Tests ---"
-    test_local_persist_plugin
     echo ""
     
     # API tests

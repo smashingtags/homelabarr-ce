@@ -1,0 +1,43 @@
+# AUTOMATIC1111 Stable Diffusion web interface for AI image generation
+# GPU Required | HomelabARR AI Category
+
+services:
+  stable-diffusion-webui:
+    hostname: "stable-diffusion-webui"
+    container_name: "stable-diffusion-webui"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+      - "CLI_ARGS=--xformers --api"
+    image: "ghcr.io/ai-dock/stable-diffusion-webui:latest"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "7860:7860"
+    volumes:
+      - "${APPFOLDER}/sd-webui/models:/opt/stable-diffusion-webui/models:rw"
+      - "${APPFOLDER}/sd-webui/outputs:/opt/stable-diffusion-webui/outputs:rw"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.stable-diffusion-webui-rtr.entrypoints=https"
+      - "traefik.http.routers.stable-diffusion-webui-rtr.rule=Host(`stable-diffusion-webui.${DOMAIN}`)"
+      - "traefik.http.routers.stable-diffusion-webui-rtr.tls=true"
+      - "traefik.http.routers.stable-diffusion-webui-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.stable-diffusion-webui-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.stable-diffusion-webui-rtr.service=stable-diffusion-webui-svc"
+      - "traefik.http.services.stable-diffusion-webui-svc.loadbalancer.server.port=7860"
+networks:
+  proxy:
+    driver: bridge
+    external: true

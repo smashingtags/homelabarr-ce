@@ -1,0 +1,43 @@
+# Node-based Stable Diffusion GUI for advanced image generation workflows
+# GPU Required | HomelabARR AI Category
+
+services:
+  comfyui:
+    hostname: "comfyui"
+    container_name: "comfyui"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+    image: "ghcr.io/ai-dock/comfyui:latest"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "8188:8188"
+    volumes:
+      - "${APPFOLDER}/comfyui/output:/opt/ComfyUI/output:rw"
+      - "${APPFOLDER}/comfyui/models:/opt/ComfyUI/models:rw"
+      - "${APPFOLDER}/comfyui/input:/opt/ComfyUI/input:rw"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.comfyui-rtr.entrypoints=https"
+      - "traefik.http.routers.comfyui-rtr.rule=Host(`comfyui.${DOMAIN}`)"
+      - "traefik.http.routers.comfyui-rtr.tls=true"
+      - "traefik.http.routers.comfyui-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.comfyui-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.comfyui-rtr.service=comfyui-svc"
+      - "traefik.http.services.comfyui-svc.loadbalancer.server.port=8188"
+networks:
+  proxy:
+    driver: bridge
+    external: true

@@ -1,95 +1,180 @@
-import { X, HelpCircle } from 'lucide-react';
+import {
+  HelpCircle, Rocket, Layout, Shield, PlayCircle, Terminal,
+  RefreshCw, Trash2, BarChart3, BookOpen, MessageCircle,
+  ExternalLink, Zap, Server, Film, Download, HardDrive,
+  Activity, Code, Globe, FolderOpen, Monitor, Box
+} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const categories = [
+  { name: "Media Management", icon: Film, count: 25, desc: "Sonarr, Radarr, Bazarr, Lidarr, and more", color: "text-blue-500 dark:text-blue-400" },
+  { name: "Self-hosted", icon: Globe, count: 37, desc: "Wikis, dashboards, bookmarks, and utilities", color: "text-emerald-500 dark:text-emerald-400" },
+  { name: "Add-ons", icon: Box, count: 33, desc: "Companion services and integrations", color: "text-purple-500 dark:text-purple-400" },
+  { name: "Media Servers", icon: Server, count: 7, desc: "Plex, Jellyfin, Emby, and more", color: "text-orange-500 dark:text-orange-400" },
+  { name: "Downloads", icon: Download, count: 14, desc: "Torrent and Usenet clients", color: "text-red-500 dark:text-red-400" },
+  { name: "System", icon: Monitor, count: 14, desc: "Traefik, Portainer, Watchtower, and more", color: "text-gray-500 dark:text-gray-400" },
+  { name: "Kasm Workspaces", icon: Layout, count: 10, desc: "Browser-based desktop environments", color: "text-indigo-500 dark:text-indigo-400" },
+  { name: "Encoding", icon: Zap, count: 5, desc: "Tdarr, Handbrake, Unmanic", color: "text-yellow-500 dark:text-yellow-400" },
+  { name: "Monitoring", icon: Activity, count: 4, desc: "Uptime, metrics, and alerting", color: "text-green-500 dark:text-green-400" },
+  { name: "Development", icon: Code, count: 3, desc: "Code Server, Gitea, and more", color: "text-sky-500 dark:text-sky-400" },
+  { name: "Backup", icon: HardDrive, count: 3, desc: "Duplicati, Restic, and more", color: "text-amber-500 dark:text-amber-400" },
+  { name: "Requests", icon: MessageCircle, count: 2, desc: "Overseerr, Petio", color: "text-pink-500 dark:text-pink-400" },
+];
+
+const actions = [
+  { icon: PlayCircle, label: "Start / Stop", desc: "Toggle containers on or off", color: "text-green-500" },
+  { icon: RefreshCw, label: "Restart", desc: "Restart a running container", color: "text-blue-500" },
+  { icon: Terminal, label: "Logs", desc: "View real-time container logs", color: "text-purple-500" },
+  { icon: BarChart3, label: "Stats", desc: "Monitor CPU, memory, and network", color: "text-orange-500" },
+  { icon: Trash2, label: "Remove", desc: "Stop and remove a container", color: "text-red-500" },
+];
+
 export function HelpModal({ isOpen, onClose }: HelpModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full h-[90vh] flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center">
-            <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Help & Documentation</h2>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-2xl h-[85vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <HelpCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            Help & Documentation
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Everything you need to manage your self-hosted Docker stack.
+          </p>
+        </DialogHeader>
+
+        <ScrollArea className="flex-1">
+          <div className="px-6 py-5 space-y-8">
+
+            {/* Quick Start */}
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <Rocket className="w-5 h-5 text-indigo-500" />
+                <h3 className="font-semibold text-base">Quick Start</h3>
+              </div>
+              <div className="grid gap-2">
+                {["Browse apps by category or search by name",
+                  "Click Deploy on any application",
+                  "Configure ports, volumes, and environment variables",
+                  "Hit Deploy — your container is live"
+                ].map((step, i) => (
+                  <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/50 dark:bg-white/[0.03]">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    <span className="text-sm text-foreground">{step}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Managing Containers */}
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <Layout className="w-5 h-5 text-emerald-500" />
+                <h3 className="font-semibold text-base">Managing Containers</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {actions.map((a) => (
+                  <div key={a.label} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/50 dark:bg-white/[0.03] border border-transparent dark:border-white/[0.04]">
+                    <a.icon className={`w-4 h-4 flex-shrink-0 ${a.color}`} />
+                    <div>
+                      <span className="text-sm font-medium">{a.label}</span>
+                      <p className="text-xs text-muted-foreground">{a.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* App Categories */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <FolderOpen className="w-5 h-5 text-amber-500" />
+                  <h3 className="font-semibold text-base">App Categories</h3>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  157 apps
+                </Badge>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {categories.map((cat) => (
+                  <div key={cat.name} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/50 dark:bg-white/[0.03] border border-transparent dark:border-white/[0.04]">
+                    <cat.icon className={`w-4 h-4 flex-shrink-0 ${cat.color}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{cat.name}</span>
+                        <span className="text-xs text-muted-foreground ml-2">{cat.count}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">{cat.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Troubleshooting */}
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="w-5 h-5 text-red-500" />
+                <h3 className="font-semibold text-base">Troubleshooting</h3>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { q: "Container won't start", a: "Check the Logs tab for error messages. Common causes: port conflicts, missing volumes, or incorrect environment variables." },
+                  { q: "Can't access via domain", a: "Verify Traefik labels are correct and DNS points to your server. Check Traefik dashboard for routing errors." },
+                  { q: "Permission denied errors", a: "Ensure PUID/PGID match your host user. Check volume mount permissions with ls -la." },
+                ].map((item) => (
+                  <div key={item.q} className="p-3 rounded-lg bg-muted/50 dark:bg-white/[0.03] border border-transparent dark:border-white/[0.04]">
+                    <p className="text-sm font-medium text-foreground">{item.q}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{item.a}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Links */}
+            <section className="pb-2">
+              <div className="flex items-center gap-2 mb-3">
+                <BookOpen className="w-5 h-5 text-blue-500" />
+                <h3 className="font-semibold text-base">Resources</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  { label: "Wiki & Docs", href: "https://wiki.homelabarr.com", desc: "Full documentation" },
+                  { label: "GitHub", href: "https://github.com/smashingtags/homelabarr-ce", desc: "Source code & issues" },
+                  { label: "Discord Community", href: "https://discord.gg/Pc7mXX786x", desc: "Get help & chat" },
+                  { label: "Reddit", href: "https://reddit.com/r/homelabarr", desc: "r/homelabarr" },
+                ].map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/50 dark:bg-white/[0.03] border border-transparent dark:border-white/[0.04] hover:border-indigo-400/50 dark:hover:border-indigo-500/30 transition-colors group"
+                  >
+                    <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-indigo-500 transition-colors flex-shrink-0" />
+                    <div>
+                      <span className="text-sm font-medium group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors">{link.label}</span>
+                      <p className="text-xs text-muted-foreground">{link.desc}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+
+            {/* Credit */}            <div className="pt-4 mt-4 border-t border-border/40 dark:border-white/[0.06] text-center">              <p className="text-xs text-muted-foreground">                HomelabARR is built and maintained by{" "}                <a href="https://imogenlabs.ai" target="_blank" rel="noopener noreferrer" className="font-medium text-indigo-600 dark:text-indigo-400 underline decoration-indigo-400/50 hover:decoration-indigo-500 transition-colors">Imogen Labs AI</a>                {" "}· © 2026              </p>            </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-auto p-6">
-          <div className="prose dark:prose-invert max-w-none">
-            <h3>Quick Start Guide</h3>
-            <ol>
-              <li>Browse available applications in the categories above</li>
-              <li>Click "Deploy" on your chosen application</li>
-              <li>Fill in the required configuration</li>
-              <li>Click "Deploy" to start the container</li>
-            </ol>
-
-            <h3>Managing Applications</h3>
-            <ul>
-              <li><strong>Start/Stop:</strong> Use the play/stop buttons</li>
-              <li><strong>Restart:</strong> Click the refresh button</li>
-              <li><strong>Remove:</strong> Click the trash button</li>
-              <li><strong>Logs:</strong> Click the terminal button</li>
-              <li><strong>Stats:</strong> Click the expand button</li>
-            </ul>
-
-            <h3>Application Categories</h3>
-            <ul>
-              <li><strong>Infrastructure:</strong> Core services like Traefik and Homepage</li>
-              <li><strong>Security:</strong> Authentication and password management</li>
-              <li><strong>Media:</strong> Streaming servers and media management</li>
-              <li><strong>Downloads:</strong> Torrent and Usenet clients</li>
-              <li><strong>Storage:</strong> File synchronization and document management</li>
-              <li><strong>Monitoring:</strong> System and service monitoring</li>
-              <li><strong>Automation:</strong> Media automation tools</li>
-              <li><strong>Development:</strong> Development tools and services</li>
-              <li><strong>Productivity:</strong> Notes and collaboration tools</li>
-              <li><strong>Communication:</strong> Chat and email servers</li>
-            </ul>
-
-            <h3>Troubleshooting</h3>
-            <h4>Common Issues</h4>
-            <ul>
-              <li><strong>Container won't start:</strong> Check logs for errors</li>
-              <li><strong>Network issues:</strong> Verify Traefik configuration</li>
-              <li><strong>Permission errors:</strong> Check volume permissions</li>
-            </ul>
-
-            <h3>Security Best Practices</h3>
-            <ul>
-              <li>Use strong passwords for all services</li>
-              <li>Keep containers updated regularly</li>
-              <li>Enable authentication for sensitive services</li>
-              <li>Use SSL/TLS encryption</li>
-              <li>Regular backups of important data</li>
-            </ul>
-
-            <h3>Need More Help?</h3>
-            <p>
-              For detailed documentation, please refer to the{' '}
-              <a
-                href="https://github.com/yourusername/homelabarr/blob/main/HELP.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                full documentation
-              </a>
-              .
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 }

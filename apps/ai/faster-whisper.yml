@@ -1,0 +1,45 @@
+# Fast speech-to-text transcription using CTranslate2 — LinuxServer.io image
+# GPU Required | HomelabARR AI Category
+
+services:
+  faster-whisper:
+    hostname: "faster-whisper"
+    container_name: "faster-whisper"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+      - "PUID=${ID}"
+      - "PGID=${ID}"
+      - "WHISPER_MODEL=base"
+      - "WHISPER_LANG=en"
+    image: "lscr.io/linuxserver/faster-whisper:gpu"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "10300:10300"
+    volumes:
+      - "${APPFOLDER}/faster-whisper:/config:rw"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.faster-whisper-rtr.entrypoints=https"
+      - "traefik.http.routers.faster-whisper-rtr.rule=Host(`faster-whisper.${DOMAIN}`)"
+      - "traefik.http.routers.faster-whisper-rtr.tls=true"
+      - "traefik.http.routers.faster-whisper-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.faster-whisper-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.faster-whisper-rtr.service=faster-whisper-svc"
+      - "traefik.http.services.faster-whisper-svc.loadbalancer.server.port=10300"
+networks:
+  proxy:
+    driver: bridge
+    external: true
