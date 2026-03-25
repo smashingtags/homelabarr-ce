@@ -18,6 +18,50 @@ function sanitizePathComponent(input) {
  * Provides seamless integration with 100+ proven Docker applications
  */
 export class CLIBridge {
+  // Default Docker image map for template variable resolution
+  static IMAGE_DEFAULTS = {
+    PLEXIMAGE: 'lscr.io/linuxserver/plex:latest',
+    RADARRIMAGE: 'lscr.io/linuxserver/radarr:latest',
+    RADARR4KIMAGE: 'lscr.io/linuxserver/radarr:latest',
+    RADARRHDRIMAGE: 'lscr.io/linuxserver/radarr:latest',
+    SONARRIMAGE: 'lscr.io/linuxserver/sonarr:latest',
+    SONARR4KIMAGE: 'lscr.io/linuxserver/sonarr:latest',
+    SONARRHDRIMAGE: 'lscr.io/linuxserver/sonarr:latest',
+    BAZARRIMAGE: 'lscr.io/linuxserver/bazarr:latest',
+    BAZARR4KIMAGE: 'lscr.io/linuxserver/bazarr:latest',
+    OVERSEERRIMAGE: 'lscr.io/linuxserver/overseerr:latest',
+    QBITORRENTIMAGE: 'lscr.io/linuxserver/qbittorrent:latest',
+    CALIBREIMAGE: 'lscr.io/linuxserver/calibre:latest',
+    LIDARRIMAGE: 'lscr.io/linuxserver/lidarr:latest',
+    JELLYFINIMAGE: 'lscr.io/linuxserver/jellyfin:latest',
+    PROWLARRIMAGE: 'lscr.io/linuxserver/prowlarr:latest',
+    PROWLARR4KIMAGE: 'lscr.io/linuxserver/prowlarr:latest',
+    PROWLARRHDRIMAGE: 'lscr.io/linuxserver/prowlarr:latest',
+    KOMGAIMAGE: 'lscr.io/linuxserver/komga:latest',
+    SABNZBDIMAGE: 'lscr.io/linuxserver/sabnzbd:latest',
+    DELUGEIMAGE: 'lscr.io/linuxserver/deluge:latest',
+    PIHOLEIMAGE: 'pihole/pihole:latest',
+    LAZYLIBRARIANIMAGE: 'lscr.io/linuxserver/lazylibrarian:latest',
+    NZBGETIMAGE: 'lscr.io/linuxserver/nzbget:latest',
+    TAUTULLIIMAGE: 'lscr.io/linuxserver/tautulli:latest',
+    JACKETTIMAGE: 'lscr.io/linuxserver/jackett:latest',
+    FENRUSIMAGE: 'lscr.io/linuxserver/fenrus:latest',
+    EMBYIMAGE: 'lscr.io/linuxserver/emby:latest',
+    READARRIMAGE: 'lscr.io/linuxserver/readarr:latest',
+    PORTAINERIMAGE: 'portainer/portainer-ce:latest',
+    WEBTOP_IMAGE: 'lscr.io/linuxserver/webtop:latest',
+    MOUNT_ENHANCED_IMAGE: 'rclone/rclone:latest',
+    RESTARTAPP: 'unless-stopped',
+  };
+
+  static resolveTemplateVar(value) {
+    if (!value || typeof value !== 'string') return value;
+    return value.replace(/\${([^}]+)}/g, (match, varName) => {
+      return CLIBridge.IMAGE_DEFAULTS[varName] || match;
+    });
+  }
+
+
   constructor() {
     // Path to the main HomelabARR CLI repository
     // CLI_BRIDGE_HOST_PATH env var allows override for Docker deployments
@@ -149,7 +193,7 @@ export class CLIBridge {
         displayName: this.formatDisplayName(appName),
         category: category,
         description: this.extractDescription(service),
-        image: service.image || 'Unknown',
+        image: CLIBridge.resolveTemplateVar(service.image) || 'Unknown',
         ports: this.extractPorts(service),
         environment: this.extractEnvironmentVars(service),
         volumes: this.extractVolumes(service),
@@ -473,7 +517,7 @@ export class CLIBridge {
         return descLabel.split('=')[1];
       }
     }
-    return `${service.image} container`;
+    return `${CLIBridge.resolveTemplateVar(service.image)} container`;
   }
 
   extractPorts(service) {
