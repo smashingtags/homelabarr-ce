@@ -9,7 +9,6 @@ import { DeploymentProgressModal } from './components/DeploymentProgressModal';
 import { LogViewer } from './components/LogViewer';
 import { ThemeToggle } from './components/ThemeToggle';
 import { HelpModal } from './components/HelpModal';
-import { Leaderboard } from './components/Leaderboard';
 import { PortManager } from './components/PortManager';
 import { EnhancedMountManager } from './components/EnhancedMountManager';
 import { EnhancedMountOnboarding } from './components/EnhancedMountOnboarding';
@@ -23,7 +22,6 @@ import {
   Network,
   Box,
   HelpCircle,
-  Trophy,
   RefreshCw,
   Package,
   Search as SearchIcon,
@@ -36,7 +34,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Tab type encompasses display categories + special views
-type TabId = string; // display category ids, 'deployed', 'all-apps', 'leaderboard'
+type TabId = string; // display category ids, 'deployed', 'all-apps'
 
 // Build category tabs from DISPLAY_CATEGORIES + special views
 const categoryTabs = [
@@ -47,7 +45,6 @@ const categoryTabs = [
     icon: dc.icon,
   })),
   { id: 'all-apps', name: 'All Apps', icon: SearchIcon },
-  { id: 'leaderboard', name: 'Leaderboard', icon: Trophy },
 ];
 
 // Convert a CLIApplication to an AppTemplate for rendering in AppCard and DeployModal
@@ -145,7 +142,7 @@ export default function App() {
     let apps = allAppTemplates;
 
     // Category filter
-    if (activeCategory !== 'all-apps' && activeCategory !== 'deployed' && activeCategory !== 'leaderboard') {
+    if (activeCategory !== 'all-apps' && activeCategory !== 'deployed') {
       const displayCat = getDisplayCategory(activeCategory);
       if (displayCat) {
         apps = apps.filter(app => {
@@ -397,9 +394,6 @@ export default function App() {
   };
 
   const renderContent = () => {
-    if (activeCategory === 'leaderboard') {
-      return <Leaderboard deployedApps={deployedApps} />;
-    }
 
     if (activeCategory === 'deployed') {
       const handleSort = (field: typeof sortField) => {
