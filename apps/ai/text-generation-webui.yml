@@ -1,0 +1,47 @@
+# oobabooga text generation web UI for running LLMs locally with GPU
+# GPU Required | HomelabARR AI Category
+
+services:
+  text-generation-webui:
+    hostname: "text-generation-webui"
+    container_name: "text-generation-webui"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+      - "EXTRA_LAUNCH_ARGS=--listen --api"
+    image: "atinoda/text-generation-webui:default-nvidia"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "7860:7860"
+    volumes:
+      - "${APPFOLDER}/text-gen-webui/characters:/app/characters:rw"
+      - "${APPFOLDER}/text-gen-webui/loras:/app/loras:rw"
+      - "${APPFOLDER}/text-gen-webui/models:/app/models:rw"
+      - "${APPFOLDER}/text-gen-webui/presets:/app/presets:rw"
+      - "${APPFOLDER}/text-gen-webui/prompts:/app/prompts:rw"
+      - "${APPFOLDER}/text-gen-webui/extensions:/app/extensions:rw"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.text-generation-webui-rtr.entrypoints=https"
+      - "traefik.http.routers.text-generation-webui-rtr.rule=Host(`text-generation-webui.${DOMAIN}`)"
+      - "traefik.http.routers.text-generation-webui-rtr.tls=true"
+      - "traefik.http.routers.text-generation-webui-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.text-generation-webui-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.text-generation-webui-rtr.service=text-generation-webui-svc"
+      - "traefik.http.services.text-generation-webui-svc.loadbalancer.server.port=7860"
+networks:
+  proxy:
+    driver: bridge
+    external: true

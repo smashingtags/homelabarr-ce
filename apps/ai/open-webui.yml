@@ -1,0 +1,44 @@
+# ChatGPT-style web interface for Ollama and OpenAI-compatible APIs
+# GPU Required | HomelabARR AI Category
+
+services:
+  open-webui:
+    hostname: "open-webui"
+    container_name: "open-webui"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+      - "OLLAMA_BASE_URL=http://ollama:11434"
+      - "WEBUI_AUTH=true"
+      - "ENABLE_RAG_WEB_SEARCH=true"
+    image: "ghcr.io/open-webui/open-webui:cuda"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "8080:8080"
+    volumes:
+      - "${APPFOLDER}/open-webui:/app/backend/data:rw"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.open-webui-rtr.entrypoints=https"
+      - "traefik.http.routers.open-webui-rtr.rule=Host(`open-webui.${DOMAIN}`)"
+      - "traefik.http.routers.open-webui-rtr.tls=true"
+      - "traefik.http.routers.open-webui-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.open-webui-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.open-webui-rtr.service=open-webui-svc"
+      - "traefik.http.services.open-webui-svc.loadbalancer.server.port=8080"
+networks:
+  proxy:
+    driver: bridge
+    external: true
