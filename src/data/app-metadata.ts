@@ -219,7 +219,6 @@ export const APP_ICON_MAP: Record<string, LucideIcon> = {
   'endlessh': Shield,
   'homelabarr-uploader': Zap,
   'homelabarr-web-interface': LayoutDashboard,
-  'local-persist-plugin': Database,
   'mount': HardDrive,
   'rclone-gui': Cloud,
   'socket-proxy': Network,
