@@ -1,0 +1,42 @@
+# Simplified Stable Diffusion — Midjourney-style UI with minimal setup
+# GPU Required | HomelabARR AI Category
+
+services:
+  fooocus:
+    hostname: "fooocus"
+    container_name: "fooocus"
+    environment:
+      - "TZ=${TZ}"
+      - "NVIDIA_VISIBLE_DEVICES=all"
+    image: "ghcr.io/lllyasviel/fooocus:main"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    ports:
+      - "7865:7865"
+    volumes:
+      - "${APPFOLDER}/fooocus/outputs:/app/outputs:rw"
+      - "${APPFOLDER}/fooocus/models:/app/models:rw"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.fooocus-rtr.entrypoints=https"
+      - "traefik.http.routers.fooocus-rtr.rule=Host(`fooocus.${DOMAIN}`)"
+      - "traefik.http.routers.fooocus-rtr.tls=true"
+      - "traefik.http.routers.fooocus-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.fooocus-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.fooocus-rtr.service=fooocus-svc"
+      - "traefik.http.services.fooocus-svc.loadbalancer.server.port=7865"
+networks:
+  proxy:
+    driver: bridge
+    external: true
