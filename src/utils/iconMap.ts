@@ -10,13 +10,6 @@ const nameToIconFile: Record<string, string> = {
   'n8n-mcp': 'n8n-mcp',
 };
 
-// Set of icons that only have a light variant (no dark counterpart)
-const lightOnlyIcons = new Set([
-  'dashy', 'diun', 'fail2ban', 'fenrus', 'homepage',
-  'lazylibrarian', 'muximux', 'nzbhydra', 'organizr',
-  'petio', 'restic', 'sui', 'webtop', 'whoogle'
-]);
-
 // Set of all available local icon names (light variants)
 const availableIcons = new Set([
   'amd', 'autoscan', 'backup', 'bazarr', 'bazarr4k', 'bitwarden',
@@ -48,18 +41,15 @@ function normalizeAppName(name: string): string {
  * 2. Local light icon (if dark requested but unavailable)
  * 3. selfh.st CDN URL
  */
-export function getAppIconPath(appName: string, theme: 'light' | 'dark'): string {
+export function getAppIconPath(appName: string, _theme: 'light' | 'dark'): string {
   const normalized = normalizeAppName(appName);
 
   if (!availableIcons.has(normalized)) {
     return `https://cdn.jsdelivr.net/gh/selfhst/icons/png/${normalized}.png`;
   }
 
-  if (theme === 'dark' && lightOnlyIcons.has(normalized)) {
-    return `/icons/apps/light/${normalized}.png`;
-  }
-
-  return `/icons/apps/${theme}/${normalized}.png`;
+  // Always use light icons — they pop better on both backgrounds
+  return `/icons/apps/light/${normalized}.png`;
 }
 
 /**
