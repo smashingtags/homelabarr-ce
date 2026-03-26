@@ -67,3 +67,9 @@ tmp/
 temp/
 server/config/users.json
 server/data/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
