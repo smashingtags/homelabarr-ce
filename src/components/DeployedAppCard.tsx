@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { AppIcon } from "./AppIcon";
 
 interface DeployedAppCardProps {
   app: DeployedApp;
@@ -21,7 +22,7 @@ export function DeployedAppCard({ app, onViewLogs, onRefresh }: DeployedAppCardP
   return (
     <Card className="overflow-hidden dark:bg-card">
       <CardHeader className="flex flex-row items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Collapsible open={showStats} onOpenChange={setShowStats}>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="icon-sm">
@@ -29,6 +30,7 @@ export function DeployedAppCard({ app, onViewLogs, onRefresh }: DeployedAppCardP
               </Button>
             </CollapsibleTrigger>
           </Collapsible>
+          <AppIcon appName={app.name} size={28} />
           <CardTitle>{app.name}</CardTitle>
         </div>
         <Badge variant={app.status === "running" ? "default" : "destructive"} className={app.status === "running" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100" : ""}>

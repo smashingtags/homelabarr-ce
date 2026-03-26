@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Cpu, HardDrive, Network, Clock, Trophy } from 'lucide-react';
+import { Cpu, HardDrive, Network, Clock } from 'lucide-react';
 
 interface ContainerStatsProps {
   stats: {
@@ -40,43 +40,27 @@ function formatUptime(seconds: number): string {
   return `${minutes}m`;
 }
 
-function calculateUptimeAchievement(uptime: number): {
-  level: string;
-  progress: number;
-  nextGoal: number;
-} {
-  const levels = [
-    { name: 'Bronze', threshold: 24 * 60 * 60 }, // 1 day
-    { name: 'Silver', threshold: 7 * 24 * 60 * 60 }, // 1 week
-    { name: 'Gold', threshold: 30 * 24 * 60 * 60 }, // 30 days
-    { name: 'Platinum', threshold: 90 * 24 * 60 * 60 }, // 90 days
-    { name: 'Diamond', threshold: 365 * 24 * 60 * 60 }, // 1 year
-  ];
+function getUptimeColor(seconds: number): string {
+  const days = seconds / (24 * 60 * 60);
+  if (days >= 30) return 'text-green-500 dark:text-green-400';
+  if (days >= 7) return 'text-emerald-500 dark:text-emerald-400';
+  if (days >= 1) return 'text-yellow-500 dark:text-yellow-400';
+  return 'text-orange-500 dark:text-orange-400';
+}
 
-  for (let i = 0; i < levels.length; i++) {
-    if (uptime < levels[i].threshold) {
-      const previousThreshold = i > 0 ? levels[i - 1].threshold : 0;
-      const progress = ((uptime - previousThreshold) / (levels[i].threshold - previousThreshold)) * 100;
-      return {
-        level: i > 0 ? levels[i - 1].name : 'Starting',
-        progress: Math.min(progress, 100),
-        nextGoal: levels[i].threshold,
-      };
-    }
-  }
-
-  return {
-    level: 'Diamond',
-    progress: 100,
-    nextGoal: levels[levels.length - 1].threshold,
-  };
+function getUptimeLabel(seconds: number): string {
+  const days = seconds / (24 * 60 * 60);
+  if (days >= 90) return 'Excellent';
+  if (days >= 30) return 'Stable';
+  if (days >= 7) return 'Good';
+  if (days >= 1) return 'Recent';
+  return 'Just started';
 }
 
 function useStatsHistory() {
   const updateHistory = (_stats: ContainerStatsProps['stats']) => {
-    // History tracking removed for now - will be implemented with charts in a future update
+    // History tracking — will be implemented with charts in a future update
   };
-
   return { updateHistory };
 }
 
@@ -95,47 +79,50 @@ export function ContainerStats({ stats }: ContainerStatsProps) {
     { rx: 0, tx: 0 }
   );
 
-  const achievement = calculateUptimeAchievement(stats.uptime);
+  const uptimeColor = getUptimeColor(stats.uptime);
+  const uptimeLabel = getUptimeLabel(stats.uptime);
 
   return (
-    <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="space-y-3 p-4 bg-muted/50 dark:bg-muted/20 rounded-lg">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* CPU Usage */}
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
             <Cpu className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">CPU</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">{stats.cpu.toFixed(1)}%</div>
+            <div className="text-xs font-medium text-muted-foreground">CPU</div>
+            <div className="text-sm font-semibold">{stats.cpu.toFixed(1)}%</div>
           </div>
         </div>
 
         {/* Memory Usage */}
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+          <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
             <HardDrive className="w-4 h-4 text-green-600 dark:text-green-400" />
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Memory</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-xs font-medium text-muted-foreground">Memory</div>
+            <div className="text-sm font-semibold">
               {stats.memory.percentage.toFixed(1)}%
-              <span className="text-xs ml-1">
-                ({formatBytes(stats.memory.usage)} / {formatBytes(stats.memory.limit)})
-              </span>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {formatBytes(stats.memory.usage)} / {formatBytes(stats.memory.limit)}
             </div>
           </div>
         </div>
 
         {/* Network Usage */}
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+          <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
             <Network className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Network</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              <span className="text-green-500">↓</span> {formatBytes(totalNetwork.rx)}{' '}
+            <div className="text-xs font-medium text-muted-foreground">Network</div>
+            <div className="text-sm font-semibold">
+              <span className="text-green-500">↓</span> {formatBytes(totalNetwork.rx)}
+            </div>
+            <div className="text-sm font-semibold">
               <span className="text-red-500">↑</span> {formatBytes(totalNetwork.tx)}
             </div>
           </div>
@@ -143,37 +130,15 @@ export function ContainerStats({ stats }: ContainerStatsProps) {
 
         {/* Uptime */}
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+          <div className="p-2 bg-yellow-100 dark:bg-yellow-900/40 rounded-lg">
             <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
           </div>
           <div>
-            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Uptime</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-xs font-medium text-muted-foreground">Uptime</div>
+            <div className={`text-sm font-semibold ${uptimeColor}`}>
               {formatUptime(stats.uptime)}
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Uptime Achievement */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-        <div className="flex items-center space-x-2 mb-2">
-          <Trophy className="w-4 h-4 text-yellow-500" />
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            Uptime Achievement: {achievement.level}
-          </span>
-        </div>
-        <div className="relative">
-          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-yellow-500 transition-all duration-500"
-              style={{ width: `${achievement.progress}%` }}
-            />
-          </div>
-          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {achievement.level !== 'Diamond' && (
-              <>Next goal: {formatUptime(achievement.nextGoal)}</>
-            )}
+            <div className="text-xs text-muted-foreground">{uptimeLabel}</div>
           </div>
         </div>
       </div>
