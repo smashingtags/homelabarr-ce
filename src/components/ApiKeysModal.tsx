@@ -225,8 +225,7 @@ export function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
         ) : (
           <Button
             onClick={() => setShowCreate(true)}
-            variant="outline"
-            className="w-full"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20"
           >
             <Plus className="w-4 h-4 mr-2" />
             Generate New Key
