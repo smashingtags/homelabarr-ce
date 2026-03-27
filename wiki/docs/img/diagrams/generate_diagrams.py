@@ -62,41 +62,41 @@ def new_fig(w, h):
 # 1. SYSTEM ARCHITECTURE
 # ═══════════════════════════════════════════════════════════════
 def gen_system():
-    fig, ax = new_fig(18, 12)
+    fig, ax = new_fig(20, 16)
 
-    ax.text(0.5, 0.96, 'HOMELABARR CE  --  SYSTEM ARCHITECTURE',
-            fontsize=19, fontweight='bold', color=PRIMARY, ha='center',
+    ax.text(0.5, 0.97, 'HOMELABARR CE  --  SYSTEM ARCHITECTURE',
+            fontsize=20, fontweight='bold', color=PRIMARY, ha='center',
             fontfamily='monospace')
-    ax.text(0.5, 0.935, 'How the pieces fit together',
-            fontsize=10, color=TEXT_DIM, ha='center', fontfamily='monospace')
+    ax.text(0.5, 0.955, 'How the pieces fit together',
+            fontsize=11, color=TEXT_DIM, ha='center', fontfamily='monospace')
 
     # Docker Host boundary
-    p = FancyBboxPatch((0.03, 0.04), 0.94, 0.86, boxstyle="round,pad=0.02",
+    p = FancyBboxPatch((0.03, 0.03), 0.94, 0.90, boxstyle="round,pad=0.02",
                        fc=CARD_BG, alpha=0.5, ec=CARD_BORDER, lw=2, ls='--')
     ax.add_patch(p)
-    ax.text(0.06, 0.885, 'DOCKER HOST', fontsize=11, fontweight='bold',
+    ax.text(0.06, 0.915, 'DOCKER HOST', fontsize=11, fontweight='bold',
             color=TEXT_DIM, fontfamily='monospace')
 
     # ── Browser ──
-    box(ax, 0.30, 0.77, 0.40, 0.07, 'BROWSER',
-        'http://your-server:8084', color=FLOW, fs=13, sub_fs=9)
+    box(ax, 0.30, 0.83, 0.40, 0.06, 'BROWSER',
+        'http://your-server:8084', color=FLOW, fs=14, sub_fs=10, sub_gap=0.02)
 
-    # ── Frontend ──
-    box(ax, 0.04, 0.54, 0.26, 0.16, '', color=PRIMARY)
-    ax.text(0.17, 0.685, 'FRONTEND', fontsize=13, fontweight='bold',
+    # ── Frontend ── card: y=0.60 h=0.18
+    box(ax, 0.04, 0.60, 0.26, 0.18, '', color=PRIMARY)
+    ax.text(0.17, 0.76, 'FRONTEND', fontsize=14, fontweight='bold',
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.17, 0.66, ':8084 | nginx + React', fontsize=9,
+    ax.text(0.17, 0.73, ':8084 | nginx + React', fontsize=10,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
     techs = ['React 19', 'shadcn/ui', 'Vite', 'Dark / Light']
     for i, t in enumerate(techs):
-        ax.text(0.17, 0.62 - i*0.025, '> ' + t, fontsize=8,
+        ax.text(0.17, 0.69 - i*0.028, '> ' + t, fontsize=9,
                 color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # ── Backend ──
-    box(ax, 0.36, 0.40, 0.30, 0.30, '', color=ACCENT, fs=14)
-    ax.text(0.51, 0.685, 'BACKEND', fontsize=14, fontweight='bold',
+    # ── Backend ── card: y=0.38 h=0.40
+    box(ax, 0.36, 0.38, 0.30, 0.40, '', color=ACCENT)
+    ax.text(0.51, 0.755, 'BACKEND', fontsize=15, fontweight='bold',
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.51, 0.66, ':8092 | Node.js + Express', fontsize=9,
+    ax.text(0.51, 0.725, ':8092 | Node.js + Express', fontsize=10,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
     comps = [
         ('CLI Bridge', 'Reads app templates'),
@@ -105,90 +105,98 @@ def gen_system():
         ('SSE Stream', 'Real-time deploy logs'),
     ]
     for i, (c, d) in enumerate(comps):
-        yp = 0.615 - i * 0.05
-        ax.text(0.51, yp, '> ' + c, fontsize=9, fontweight='bold',
+        yp = 0.68 - i * 0.06
+        ax.text(0.51, yp, '> ' + c, fontsize=10, fontweight='bold',
                 color=TEXT, ha='center', fontfamily='monospace')
-        ax.text(0.51, yp - 0.018, d, fontsize=7,
+        ax.text(0.51, yp - 0.022, d, fontsize=8,
                 color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # ── Docker Socket ──
-    box(ax, 0.38, 0.28, 0.26, 0.07, 'DOCKER SOCKET',
-        '/var/run/docker.sock', color=RED, alpha=0.12, fs=10, sub_fs=8)
+    # ── Docker Socket ── card: y=0.29 h=0.06
+    box(ax, 0.38, 0.29, 0.26, 0.06, 'DOCKER SOCKET',
+        '/var/run/docker.sock', color=RED, alpha=0.12, fs=10, sub_fs=8, sub_gap=0.018)
 
-    # ── App Templates ──
-    box(ax, 0.04, 0.28, 0.26, 0.16, '', color=PURPLE)
-    ax.text(0.17, 0.425, 'APP TEMPLATES', fontsize=12, fontweight='bold',
+    # ── App Templates ── card: y=0.29 h=0.22
+    box(ax, 0.04, 0.29, 0.26, 0.22, '', color=PURPLE)
+    ax.text(0.17, 0.49, 'APP TEMPLATES', fontsize=12, fontweight='bold',
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.17, 0.40, '100+ YAML files', fontsize=9,
+    ax.text(0.17, 0.46, '100+ YAML files', fontsize=10,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
     cats = ['ai/', 'media-servers/', 'downloads/', 'self-hosted/',
             'monitoring/', 'virtual-desktops/', 'backup/', 'system/']
     for i, c in enumerate(cats):
         col = i % 2; row = i // 2
-        ax.text(0.07 + col * 0.13, 0.365 - row * 0.022, c, fontsize=7,
+        ax.text(0.07 + col * 0.14, 0.42 - row * 0.028, c, fontsize=8,
                 color=PURPLE, ha='left', fontfamily='monospace', alpha=0.7)
 
-    # ── Deployed Containers ──
-    box(ax, 0.72, 0.40, 0.24, 0.30, '', color=GREEN, alpha=0.12, fs=13)
-    ax.text(0.84, 0.685, 'DEPLOYED', fontsize=13, fontweight='bold',
+    # ── Deployed Containers ── card: y=0.38 h=0.40
+    box(ax, 0.72, 0.38, 0.24, 0.40, '', color=GREEN, alpha=0.12)
+    ax.text(0.84, 0.755, 'DEPLOYED', fontsize=14, fontweight='bold',
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.84, 0.66, 'Your running apps', fontsize=9,
+    ax.text(0.84, 0.725, 'Your running apps', fontsize=10,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
     apps = ['Plex', 'Radarr', 'Sonarr', 'Ollama', 'Nextcloud',
             'Grafana', 'qBittorrent', '...100+ more']
     for i, a in enumerate(apps):
-        ax.text(0.84, 0.625 - i * 0.028, '[*] ' + a, fontsize=8,
+        ax.text(0.84, 0.685 - i * 0.035, '[*] ' + a, fontsize=9,
                 color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # ── Data Storage ──
-    box(ax, 0.04, 0.06, 0.26, 0.14, '', color='#8b949e', alpha=0.1)
-    ax.text(0.17, 0.185, 'DATA STORAGE', fontsize=11, fontweight='bold',
+    # ── Bottom row ── y=0.05 h=0.18 (much taller cards)
+
+    # Data Storage
+    box(ax, 0.04, 0.05, 0.26, 0.18, '', color='#8b949e', alpha=0.1)
+    ax.text(0.17, 0.21, 'DATA STORAGE', fontsize=12, fontweight='bold',
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.17, 0.145, '/opt/appdata/', fontsize=9,
+    ax.text(0.17, 0.175, '/opt/appdata/', fontsize=10,
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.17, 0.12, 'plex/  radarr/  sonarr/', fontsize=8,
+    ax.text(0.17, 0.145, 'plex/  radarr/  sonarr/', fontsize=9,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
-    ax.text(0.17, 0.095, 'homelabarr-data (Docker vol)', fontsize=7,
+    ax.text(0.17, 0.115, 'homelabarr-data', fontsize=8,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
+    ax.text(0.17, 0.09, '(Docker volume)', fontsize=8,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # ── CI/CD ──
-    box(ax, 0.38, 0.06, 0.26, 0.14, '', color=ORANGE, alpha=0.12)
-    ax.text(0.51, 0.185, 'CI / CD', fontsize=12, fontweight='bold',
+    # CI/CD
+    box(ax, 0.38, 0.05, 0.26, 0.18, '', color=ORANGE, alpha=0.12)
+    ax.text(0.51, 0.21, 'CI / CD', fontsize=13, fontweight='bold',
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.51, 0.145, 'GitHub Actions -> GHCR', fontsize=9,
+    ax.text(0.51, 0.175, 'GitHub Actions', fontsize=10,
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.51, 0.12, 'dev -> staging -> main', fontsize=8,
+    ax.text(0.51, 0.145, 'GHCR image registry', fontsize=9,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
+    ax.text(0.51, 0.115, 'dev -> staging -> main', fontsize=9,
             color=ORANGE, ha='center', fontfamily='monospace')
-    ax.text(0.51, 0.095, 'Watchtower auto-updates', fontsize=7,
+    ax.text(0.51, 0.09, 'Watchtower auto-updates', fontsize=8,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # ── Traefik ──
-    box(ax, 0.72, 0.06, 0.24, 0.14, '', color=FLOW, alpha=0.1)
-    ax.text(0.84, 0.185, 'TRAEFIK', fontsize=12, fontweight='bold',
+    # Traefik
+    box(ax, 0.72, 0.05, 0.24, 0.18, '', color=FLOW, alpha=0.1)
+    ax.text(0.84, 0.21, 'TRAEFIK', fontsize=13, fontweight='bold',
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.84, 0.16, 'Optional reverse proxy', fontsize=8,
+    ax.text(0.84, 0.175, 'Reverse proxy', fontsize=10,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
-    ax.text(0.84, 0.13, 'SSL | Routing | Auth', fontsize=9,
+    ax.text(0.84, 0.145, 'SSL | Routing | Auth', fontsize=10,
             color=FLOW, ha='center', fontfamily='monospace')
-    ax.text(0.84, 0.095, 'app.yourdomain.com', fontsize=8,
+    ax.text(0.84, 0.115, 'app.yourdomain.com', fontsize=9,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
+    ax.text(0.84, 0.09, '(optional)', fontsize=8,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
     # ── Arrows ──
-    arrow(ax, (0.40, 0.77), (0.26, 0.70), color=FLOW, w=2.5)
-    ax.text(0.30, 0.745, 'HTTP', fontsize=8, color=FLOW, fontfamily='monospace',
-            rotation=22)
-    arrow(ax, (0.30, 0.62), (0.36, 0.60), color=PRIMARY, w=2.5)
-    ax.text(0.325, 0.625, 'proxy', fontsize=7, color=PRIMARY, fontfamily='monospace')
-    arrow(ax, (0.51, 0.40), (0.51, 0.35), color=RED, w=2)
-    arrow(ax, (0.36, 0.52), (0.30, 0.44), color=PURPLE, w=2,
-          cs="arc3,rad=0.1")
-    ax.text(0.31, 0.49, 'reads', fontsize=7, color=PURPLE, fontfamily='monospace')
+    arrow(ax, (0.40, 0.83), (0.26, 0.78), color=FLOW, w=2.5)
+    ax.text(0.30, 0.81, 'HTTP', fontsize=9, color=FLOW, fontfamily='monospace',
+            rotation=15)
+    arrow(ax, (0.30, 0.69), (0.36, 0.66), color=PRIMARY, w=2.5)
+    ax.text(0.31, 0.685, 'proxy', fontsize=8, color=PRIMARY, fontfamily='monospace')
+    arrow(ax, (0.51, 0.38), (0.51, 0.35), color=RED, w=2)
+    arrow(ax, (0.36, 0.52), (0.30, 0.51), color=PURPLE, w=2,
+          cs="arc3,rad=0.05")
+    ax.text(0.31, 0.53, 'reads', fontsize=8, color=PURPLE, fontfamily='monospace')
     arrow(ax, (0.64, 0.32), (0.72, 0.50), color=GREEN, w=2,
           cs="arc3,rad=-0.2")
-    ax.text(0.70, 0.38, 'manages', fontsize=7, color=GREEN, fontfamily='monospace')
-    arrow(ax, (0.72, 0.48), (0.30, 0.17), color='#8b949e', w=1.5,
+    ax.text(0.70, 0.40, 'manages', fontsize=8, color=GREEN, fontfamily='monospace')
+    arrow(ax, (0.72, 0.48), (0.30, 0.20), color='#8b949e', w=1.5,
           cs="arc3,rad=0.25")
-    arrow(ax, (0.84, 0.40), (0.84, 0.20), color=FLOW, w=1.5)
+    arrow(ax, (0.84, 0.38), (0.84, 0.23), color=FLOW, w=1.5)
 
     wm(ax)
     plt.tight_layout()
