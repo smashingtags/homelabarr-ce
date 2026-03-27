@@ -715,7 +715,7 @@ export default function App() {
         {/* Category Navigation */}
         <div className="mb-10">
           <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
-            <TabsList className="flex flex-wrap gap-2 h-auto bg-transparent p-4 w-full justify-start">
+            <TabsList className="flex gap-2 h-auto bg-transparent p-4 w-full overflow-x-auto md:flex-wrap md:overflow-x-visible scrollbar-hide snap-x snap-mandatory md:snap-none justify-start">
               {categoryTabs.map(tab => {
                 const Icon = tab.icon;
                 const isActive = activeCategory === tab.id;
@@ -724,7 +724,7 @@ export default function App() {
                     key={tab.id}
                     value={tab.id}
                     className={cn(
-                      "flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border",
+                      "flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border snap-start shrink-0",
                       isActive
                         ? "bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25 border-transparent ring-0"
                         : "border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[hsl(222,28%,10%)] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[hsl(222,28%,13%)] hover:border-indigo-300 dark:hover:border-indigo-500/30 hover:text-gray-900 dark:hover:text-white"

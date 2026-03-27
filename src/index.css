@@ -165,3 +165,12 @@
 .dark .overflow-x-auto::-webkit-scrollbar-thumb {
   @apply bg-gray-600/50;
 }
+
+/* Hide scrollbar for category tabs on mobile */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
