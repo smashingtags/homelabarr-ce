@@ -1,4 +1,4 @@
-import { User, LogOut, Settings, Shield } from "lucide-react";
+import { User, LogOut, Settings, Shield, Key } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNotifications } from "../contexts/NotificationContext";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,10 @@ import {
 
 interface UserMenuProps {
   onOpenSettings?: () => void;
+  onOpenApiKeys?: () => void;
 }
 
-export function UserMenu({ onOpenSettings }: UserMenuProps) {
+export function UserMenu({ onOpenSettings, onOpenApiKeys }: UserMenuProps) {
   const { user, logout, isAdmin } = useAuth();
   const { success } = useNotifications();
 
@@ -50,6 +51,12 @@ export function UserMenu({ onOpenSettings }: UserMenuProps) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {onOpenApiKeys && (
+          <DropdownMenuItem onClick={onOpenApiKeys}>
+            <Key className="w-4 h-4 mr-2" />
+            API Keys
+          </DropdownMenuItem>
+        )}
         {onOpenSettings && (
           <DropdownMenuItem onClick={onOpenSettings}>
             <Settings className="w-4 h-4 mr-2" />

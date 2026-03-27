@@ -16,6 +16,7 @@ import { useNotifications } from './contexts/NotificationContext';
 import { useLoading } from './hooks/useLoading';
 import { useAuth } from './contexts/AuthContext';
 import { LoginModal } from './components/LoginModal';
+import { ApiKeysModal } from './components/ApiKeysModal';
 import { UserMenu } from './components/UserMenu';
 import { UserSettings } from './components/UserSettings';
 import {
@@ -89,6 +90,7 @@ export default function App() {
   const [portManagerOpen, setPortManagerOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [apiKeysModalOpen, setApiKeysModalOpen] = useState(false);
   const [selectedEnhancedMount, setSelectedEnhancedMount] = useState<{ containerId: string; containerName: string } | null>(null);
   const [onboardingModalOpen, setOnboardingModalOpen] = useState(false);
   const [pendingDeployment, setPendingDeployment] = useState<{ app: AppTemplate; config: Record<string, string>; mode: DeploymentMode } | null>(null);
@@ -672,7 +674,7 @@ export default function App() {
             <ThemeToggle />
 
             {isAuthenticated ? (
-              <UserMenu onOpenSettings={() => setSettingsModalOpen(true)} />
+              <UserMenu onOpenSettings={() => setSettingsModalOpen(true)} onOpenApiKeys={() => setApiKeysModalOpen(true)} />
             ) : (
               <Button
                 onClick={() => setLoginModalOpen(true)}
@@ -781,6 +783,7 @@ export default function App() {
 
         {/* Login Modal */}
         <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} />
+        <ApiKeysModal isOpen={apiKeysModalOpen} onClose={() => setApiKeysModalOpen(false)} />
 
         {/* User Settings Modal */}
         <UserSettings isOpen={settingsModalOpen} onClose={() => setSettingsModalOpen(false)} />
