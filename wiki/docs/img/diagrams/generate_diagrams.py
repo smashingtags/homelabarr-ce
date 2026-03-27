@@ -82,11 +82,14 @@ def gen_system():
         'http://your-server:8084', color=FLOW, fs=13, sub_fs=9)
 
     # ── Frontend ──
-    box(ax, 0.04, 0.54, 0.26, 0.16, 'FRONTEND',
-        ':8084  |  nginx + React', color=PRIMARY, fs=13)
+    box(ax, 0.04, 0.54, 0.26, 0.16, '', color=PRIMARY)
+    ax.text(0.17, 0.685, 'FRONTEND', fontsize=13, fontweight='bold',
+            color=TEXT, ha='center', fontfamily='monospace')
+    ax.text(0.17, 0.66, ':8084 | nginx + React', fontsize=9,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
     techs = ['React 19', 'shadcn/ui', 'Vite', 'Dark / Light']
     for i, t in enumerate(techs):
-        ax.text(0.17, 0.63 - i*0.025, '> ' + t, fontsize=8,
+        ax.text(0.17, 0.62 - i*0.025, '> ' + t, fontsize=8,
                 color=TEXT_DIM, ha='center', fontfamily='monospace')
 
     # ── Backend ──
@@ -113,13 +116,16 @@ def gen_system():
         '/var/run/docker.sock', color=RED, alpha=0.12, fs=10, sub_fs=8)
 
     # ── App Templates ──
-    box(ax, 0.04, 0.28, 0.26, 0.16, 'APP TEMPLATES',
-        '100+ YAML files', color=PURPLE, fs=12, sub_fs=9)
+    box(ax, 0.04, 0.28, 0.26, 0.16, '', color=PURPLE)
+    ax.text(0.17, 0.425, 'APP TEMPLATES', fontsize=12, fontweight='bold',
+            color=TEXT, ha='center', fontfamily='monospace')
+    ax.text(0.17, 0.40, '100+ YAML files', fontsize=9,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
     cats = ['ai/', 'media-servers/', 'downloads/', 'self-hosted/',
             'monitoring/', 'virtual-desktops/', 'backup/', 'system/']
     for i, c in enumerate(cats):
         col = i % 2; row = i // 2
-        ax.text(0.07 + col * 0.13, 0.385 - row * 0.022, c, fontsize=7,
+        ax.text(0.07 + col * 0.13, 0.365 - row * 0.022, c, fontsize=7,
                 color=PURPLE, ha='left', fontfamily='monospace', alpha=0.7)
 
     # ── Deployed Containers ──
@@ -135,29 +141,36 @@ def gen_system():
                 color=TEXT_DIM, ha='center', fontfamily='monospace')
 
     # ── Data Storage ──
-    box(ax, 0.04, 0.06, 0.26, 0.14, 'DATA STORAGE', color='#8b949e', alpha=0.1, fs=11)
-    ax.text(0.17, 0.155, '/opt/appdata/', fontsize=9, fontweight='bold',
+    box(ax, 0.04, 0.06, 0.26, 0.14, '', color='#8b949e', alpha=0.1)
+    ax.text(0.17, 0.185, 'DATA STORAGE', fontsize=11, fontweight='bold',
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.17, 0.13, 'plex/  radarr/  sonarr/', fontsize=8,
+    ax.text(0.17, 0.145, '/opt/appdata/', fontsize=9,
+            color=TEXT, ha='center', fontfamily='monospace')
+    ax.text(0.17, 0.12, 'plex/  radarr/  sonarr/', fontsize=8,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
-    ax.text(0.17, 0.105, 'homelabarr-data (Docker vol)', fontsize=7,
+    ax.text(0.17, 0.095, 'homelabarr-data (Docker vol)', fontsize=7,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
     # ── CI/CD ──
-    box(ax, 0.38, 0.06, 0.26, 0.14, 'CI / CD', color=ORANGE, alpha=0.12, fs=12)
-    ax.text(0.51, 0.155, 'GitHub Actions -> GHCR', fontsize=9, fontweight='bold',
+    box(ax, 0.38, 0.06, 0.26, 0.14, '', color=ORANGE, alpha=0.12)
+    ax.text(0.51, 0.185, 'CI / CD', fontsize=12, fontweight='bold',
             color=TEXT, ha='center', fontfamily='monospace')
-    ax.text(0.51, 0.13, 'dev -> staging -> main', fontsize=8,
+    ax.text(0.51, 0.145, 'GitHub Actions -> GHCR', fontsize=9,
+            color=TEXT, ha='center', fontfamily='monospace')
+    ax.text(0.51, 0.12, 'dev -> staging -> main', fontsize=8,
             color=ORANGE, ha='center', fontfamily='monospace')
-    ax.text(0.51, 0.105, 'Watchtower auto-updates', fontsize=7,
+    ax.text(0.51, 0.095, 'Watchtower auto-updates', fontsize=7,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
     # ── Traefik ──
-    box(ax, 0.72, 0.06, 0.24, 0.14, 'TRAEFIK',
-        'Optional reverse proxy', color=FLOW, alpha=0.1, fs=12, sub_fs=8)
-    ax.text(0.84, 0.14, 'SSL | Routing | Auth', fontsize=9,
+    box(ax, 0.72, 0.06, 0.24, 0.14, '', color=FLOW, alpha=0.1)
+    ax.text(0.84, 0.185, 'TRAEFIK', fontsize=12, fontweight='bold',
+            color=TEXT, ha='center', fontfamily='monospace')
+    ax.text(0.84, 0.16, 'Optional reverse proxy', fontsize=8,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
+    ax.text(0.84, 0.13, 'SSL | Routing | Auth', fontsize=9,
             color=FLOW, ha='center', fontfamily='monospace')
-    ax.text(0.84, 0.105, 'app.yourdomain.com', fontsize=8,
+    ax.text(0.84, 0.095, 'app.yourdomain.com', fontsize=8,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
     # ── Arrows ──
