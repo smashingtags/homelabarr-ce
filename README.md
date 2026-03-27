@@ -2,7 +2,7 @@
 
 <p align="center">
     <a href="https://github.com/smashingtags/homelabarr-ce">
-      <img src="https://raw.githubusercontent.com/smashingtags/homelabarr-assets/main/homelabber-wiki/homelabarr-header.png" alt="HomelabARR CE" width="600">
+      <img src="wiki/docs/img/homelabarr-banner.jpg" alt="HomelabARR CE" width="600">
     </a>
 </p>
 
