@@ -1,8 +1,8 @@
 import {
   HelpCircle, Rocket, Layout, Shield, PlayCircle, Terminal,
-  RefreshCw, Trash2, BarChart3, BookOpen, MessageCircle,
+  RefreshCw, Trash2, BarChart3, BookOpen,
   ExternalLink, Zap, Server, Film, Download, HardDrive,
-  Activity, Code, Globe, FolderOpen, Monitor, Box
+  Activity, Code, Globe, FolderOpen, Monitor
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,18 +14,16 @@ interface HelpModalProps {
 }
 
 const categories = [
-  { name: "Media Management", icon: Film, count: 25, desc: "Sonarr, Radarr, Bazarr, Lidarr, and more", color: "text-blue-500 dark:text-blue-400" },
-  { name: "Self-hosted", icon: Globe, count: 37, desc: "Wikis, dashboards, bookmarks, and utilities", color: "text-emerald-500 dark:text-emerald-400" },
-  { name: "Add-ons", icon: Box, count: 33, desc: "Companion services and integrations", color: "text-purple-500 dark:text-purple-400" },
-  { name: "Media Servers", icon: Server, count: 7, desc: "Plex, Jellyfin, Emby, and more", color: "text-orange-500 dark:text-orange-400" },
+  { name: "Self-hosted", icon: Globe, count: 37, desc: "Dashboards, wikis, bookmarks, and utilities", color: "text-emerald-500 dark:text-emerald-400" },
+  { name: "Media Management", icon: Film, count: 16, desc: "Sonarr, Radarr, Bazarr, Lidarr, Overseerr", color: "text-blue-500 dark:text-blue-400" },
   { name: "Downloads", icon: Download, count: 14, desc: "Torrent and Usenet clients", color: "text-red-500 dark:text-red-400" },
-  { name: "System", icon: Monitor, count: 14, desc: "Traefik, Portainer, Watchtower, and more", color: "text-gray-500 dark:text-gray-400" },
-  { name: "Kasm Workspaces", icon: Layout, count: 10, desc: "Browser-based desktop environments", color: "text-indigo-500 dark:text-indigo-400" },
-  { name: "Encoding", icon: Zap, count: 5, desc: "Tdarr, Handbrake, Unmanic", color: "text-yellow-500 dark:text-yellow-400" },
-  { name: "Monitoring", icon: Activity, count: 4, desc: "Uptime, metrics, and alerting", color: "text-green-500 dark:text-green-400" },
-  { name: "Development", icon: Code, count: 3, desc: "Code Server, Gitea, and more", color: "text-sky-500 dark:text-sky-400" },
-  { name: "Backup", icon: HardDrive, count: 3, desc: "Duplicati, Restic, and more", color: "text-amber-500 dark:text-amber-400" },
-  { name: "Requests", icon: MessageCircle, count: 2, desc: "Overseerr, Petio", color: "text-pink-500 dark:text-pink-400" },
+  { name: "AI & Machine Learning", icon: Zap, count: 14, desc: "Ollama, ComfyUI, Stable Diffusion, and more", color: "text-rose-500 dark:text-rose-400" },
+  { name: "System", icon: Monitor, count: 13, desc: "Traefik, Portainer, Watchtower, and more", color: "text-gray-500 dark:text-gray-400" },
+  { name: "Virtual Desktops", icon: Layout, count: 10, desc: "Browser-based desktop environments via Kasm", color: "text-indigo-500 dark:text-indigo-400" },
+  { name: "Monitoring", icon: Activity, count: 6, desc: "Uptime Kuma, Netdata, Grafana, and alerting", color: "text-green-500 dark:text-green-400" },
+  { name: "Transcoding", icon: Code, count: 5, desc: "Tdarr, Handbrake, MakeMKV, Unmanic", color: "text-yellow-500 dark:text-yellow-400" },
+  { name: "Media Servers", icon: Server, count: 5, desc: "Plex, Jellyfin, Emby", color: "text-orange-500 dark:text-orange-400" },
+  { name: "Backup", icon: HardDrive, count: 3, desc: "Duplicati, Restic, Rsnapshot", color: "text-amber-500 dark:text-amber-400" },
 ];
 
 const actions = [
@@ -102,7 +100,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                   <h3 className="font-semibold text-base">App Categories</h3>
                 </div>
                 <Badge variant="outline" className="text-xs">
-                  157 apps
+                  123 apps
                 </Badge>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
