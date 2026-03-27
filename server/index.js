@@ -26,7 +26,10 @@ import {
   saveSessions,
   getUserSessions,
   invalidateSession,
-  changePassword
+  changePassword,
+  createApiKey,
+  listApiKeys,
+  revokeApiKey
 } from './auth.js';
 import { EnvironmentManager } from './environment-manager.js';
 import { NetworkManager } from './network-manager.js';
@@ -722,6 +725,35 @@ app.get('/health', async (req, res) => {
     res.status(503).json(errorResponse);
   }
 });
+
+// ─── API Key Routes ─────────────────────────────────────────────────────
+app.post('/auth/api-keys', requireAuth(), async (req, res) => {
+  try {
+    const { label } = req.body;
+    const entry = createApiKey(req.user.id, label);
+    res.status(201).json({
+      id: entry.id,
+      key: entry.key,
+      label: entry.label,
+      createdAt: entry.createdAt,
+      message: 'Save this key — it will not be shown again.'
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create API key' });
+  }
+});
+
+app.get('/auth/api-keys', requireAuth(), (req, res) => {
+  res.json({ apiKeys: listApiKeys(req.user.id) });
+});
+
+app.delete('/auth/api-keys/:keyId', requireAuth(), (req, res) => {
+  const success = revokeApiKey(req.params.keyId, req.user.id);
+  if (success) res.json({ message: 'API key revoked' });
+  else res.status(404).json({ error: 'API key not found' });
+});
+
+
 
 // Authentication routes
 app.post('/auth/login', async (req, res) => {

@@ -8,6 +8,7 @@ import path from 'path';
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const USERS_FILE = path.join(process.cwd(), 'server', 'config', 'users.json');
+const API_KEYS_FILE = path.join(process.cwd(), 'server', 'config', 'api-keys.json');
 
 // Ensure config directory exists
 const configDir = path.dirname(USERS_FILE);
@@ -134,6 +135,77 @@ export function verifyToken(token) {
 
 export function generateUserId() {
   return 'user_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+}
+
+
+// ─── API Key Management ─────────────────────────────────────────────────
+export function loadApiKeys() {
+  try {
+    if (!fs.existsSync(API_KEYS_FILE)) return [];
+    return JSON.parse(fs.readFileSync(API_KEYS_FILE, 'utf8'));
+  } catch (error) {
+    console.error('Error loading API keys:', error);
+    return [];
+  }
+}
+
+export function saveApiKeys(keys) {
+  try {
+    const dir = path.dirname(API_KEYS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(API_KEYS_FILE, JSON.stringify(keys, null, 2));
+  } catch (error) {
+    console.error('Error saving API keys:', error);
+  }
+}
+
+export function generateApiKey() {
+  return 'hlr_' + crypto.randomBytes(32).toString('hex');
+}
+
+export function createApiKey(userId, label) {
+  const keys = loadApiKeys();
+  const key = generateApiKey();
+  const entry = {
+    id: 'key_' + crypto.randomBytes(8).toString('hex'),
+    key: key,
+    userId: userId,
+    label: label || 'Mobile App',
+    createdAt: new Date().toISOString(),
+    lastUsed: null,
+    revoked: false
+  };
+  keys.push(entry);
+  saveApiKeys(keys);
+  return entry;
+}
+
+export function validateApiKey(key) {
+  if (!key || !key.startsWith('hlr_')) return null;
+  const keys = loadApiKeys();
+  const entry = keys.find(k => k.key === key && !k.revoked);
+  if (!entry) return null;
+  entry.lastUsed = new Date().toISOString();
+  saveApiKeys(keys);
+  const user = findUserById(entry.userId);
+  if (!user) return null;
+  return { id: user.id, username: user.username, role: user.role, apiKey: true };
+}
+
+export function listApiKeys(userId) {
+  const keys = loadApiKeys();
+  return keys
+    .filter(k => k.userId === userId && !k.revoked)
+    .map(({ key, ...rest }) => ({ ...rest, keyPreview: key.slice(0, 8) + '...' + key.slice(-4) }));
+}
+
+export function revokeApiKey(keyId, userId) {
+  const keys = loadApiKeys();
+  const entry = keys.find(k => k.id === keyId && k.userId === userId);
+  if (!entry) return false;
+  entry.revoked = true;
+  saveApiKeys(keys);
+  return true;
 }
 
 // Session management
@@ -288,6 +360,14 @@ export function requireAuth(role) {
     }
     
     const token = authHeader.substring(7);
+    
+    // Try API key first (hlr_ prefix)
+    if (token.startsWith('hlr_')) {
+      const apiUser = validateApiKey(token);
+      if (apiUser) { req.user = apiUser; next(); return; }
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+    
     const decoded = verifyToken(token);
     
     if (!decoded) {
@@ -315,6 +395,20 @@ export function requireAuth(role) {
     }
     
     const token = authHeader.substring(7);
+    
+    // Try API key first
+    if (token.startsWith('hlr_')) {
+      const apiUser = validateApiKey(token);
+      if (apiUser) {
+        req.user = apiUser;
+        if (role && apiUser.role !== role && apiUser.role !== 'admin') {
+          return res.status(403).json({ error: 'Insufficient permissions' });
+        }
+        next(); return;
+      }
+      return res.status(401).json({ error: 'Invalid API key' });
+    }
+    
     const decoded = verifyToken(token);
     
     if (!decoded) {
@@ -363,10 +457,12 @@ export function optionalAuth(req, res, next) {
   
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
-    const decoded = verifyToken(token);
-    
-    if (decoded) {
-      req.user = decoded;
+    if (token.startsWith('hlr_')) {
+      const apiUser = validateApiKey(token);
+      if (apiUser) req.user = apiUser;
+    } else {
+      const decoded = verifyToken(token);
+      if (decoded) req.user = decoded;
     }
   }
   
