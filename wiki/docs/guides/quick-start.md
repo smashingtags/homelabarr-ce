@@ -19,24 +19,18 @@ docker compose version
 This pulls pre-built images from GitHub Container Registry. No build step needed.
 
 ```bash
-# Clone the repository (provides the app template library)
+# Clone the repository
 git clone https://github.com/smashingtags/homelabarr-ce.git /opt/homelabarr
-
-# Download the production compose file
-curl -O https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
+cd /opt/homelabarr
 
 # Set required environment variables
 export JWT_SECRET=$(openssl rand -hex 32)
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
-export CLI_BRIDGE_HOST_PATH=/opt/homelabarr
 export CORS_ORIGIN=http://your-server-ip:8084
 
 # Start HomelabARR
 docker compose -f homelabarr.yml up -d
 ```
-
-!!! important "The repo clone is required"
-    The backend reads Docker Compose templates from the `apps/` directory. Without cloning the repo to `CLI_BRIDGE_HOST_PATH`, the dashboard loads but shows "Failed to load applications."
 
 !!! warning "CORS_ORIGIN is important"
     If you see API errors after login, set `CORS_ORIGIN` to the URL you use to access the dashboard. For local access: `http://your-server-ip:8084`. For domain access: `https://homelabarr.yourdomain.com`.
