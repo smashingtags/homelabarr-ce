@@ -1,17 +1,17 @@
 # API Reference
 
-The HomelabARR CE backend exposes a REST API. There are two ways to reach it:
+The HomelabARR CE backend exposes a REST API on port 8092.
 
-- **Via the frontend proxy (recommended):** `http://your-server:8084/api/<endpoint>` — the nginx frontend strips the `/api` prefix and forwards to the backend
-- **Direct backend access:** `http://your-server:8092/<endpoint>` — bypasses the frontend entirely
+**Access methods:**
 
-All endpoints return JSON unless noted otherwise (e.g., SSE streams). Protected endpoints require a JWT token in the `Authorization` header:
+- Via the frontend proxy: `http://your-server:8084/api/<endpoint>` (nginx strips `/api` prefix)
+- Direct: `http://your-server:8092/<endpoint>`
+
+All endpoints return JSON unless noted. Protected endpoints require a JWT token or API key in the `Authorization` header:
 
 ```
-Authorization: Bearer <jwt-token>
+Authorization: Bearer <jwt-token-or-hlr_api-key>
 ```
-
-Tokens are obtained from the login endpoint and expire after 24 hours by default (configurable via `JWT_EXPIRES_IN`).
 
 ---
 
@@ -25,7 +25,7 @@ Tokens are obtained from the login endpoint and expire after 24 hours by default
 | `POST` | `/auth/change-password` | Required | Change your password |
 | `GET` | `/auth/sessions` | Required | List your active sessions |
 | `DELETE` | `/auth/sessions/:sessionId` | Required | Revoke a specific session |
-| `POST` | `/auth/register` | Admin | Create a new user account |
+| `POST` | `/auth/users` | Admin | Create a new user account |
 | `GET` | `/auth/users` | Admin | List all users |
 
 ### POST /auth/login
@@ -41,29 +41,46 @@ Tokens are obtained from the login endpoint and expire after 24 hours by default
   "user": {
     "id": "admin",
     "username": "admin",
-    "email": "admin@homelabarr.local",
-    "role": "admin",
-    "lastLogin": "2024-01-15T10:30:00Z"
+    "role": "admin"
   }
 }
 ```
 
-### POST /auth/change-password
+---
+
+## API Keys
+
+API keys provide persistent authentication for scripts, mobile apps, and automation. Keys are prefixed with `hlr_` and don't expire unless revoked.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/auth/api-keys` | Required | Generate a new API key |
+| `GET` | `/auth/api-keys` | Required | List your API keys |
+| `DELETE` | `/auth/api-keys/:keyId` | Required | Revoke an API key |
+
+### POST /auth/api-keys
 
 ```json
 // Request
-{ "currentPassword": "admin", "newPassword": "my-new-password" }
+{ "name": "my-script" }
+
 // Response
-{ "success": true, "message": "Password changed successfully" }
+{
+  "success": true,
+  "key": "hlr_a1b2c3d4e5f6...",
+  "id": "key_abc123",
+  "name": "my-script"
+}
 ```
 
-### POST /auth/register (Admin only)
+!!! warning "Save the key"
+    The full API key is only shown once at creation. Store it securely.
 
-```json
-// Request
-{ "username": "viewer", "password": "secret", "email": "user@example.com", "role": "user" }
-// Response
-{ "success": true, "user": { "id": "user_abc123", "username": "viewer", "role": "user" } }
+### Using an API Key
+
+```bash
+curl -H "Authorization: Bearer hlr_a1b2c3d4e5f6..." \
+  http://your-server:8092/applications
 ```
 
 ---
@@ -72,27 +89,34 @@ Tokens are obtained from the login endpoint and expire after 24 hours by default
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET` | `/applications` | None | List all apps from the CLI Bridge or template fallback |
+| `GET` | `/applications` | None | List all apps from the catalog |
 | `POST` | `/applications/:appId/stop` | Conditional | Stop an application's containers |
-| `DELETE` | `/applications/:appId` | Conditional | Remove an application (`?removeVolumes=true` to delete data) |
-| `GET` | `/applications/:appId/logs` | Conditional | Get application logs (`?lines=100`) |
+| `DELETE` | `/applications/:appId` | Conditional | Remove an application |
+| `GET` | `/applications/:appId/logs` | Conditional | Get application logs |
 
 !!! note "Conditional auth"
     When `AUTH_ENABLED=true` (default), these endpoints require a valid token. When auth is disabled, they accept unauthenticated requests.
 
 ### GET /applications
 
+Returns the full app catalog organized by category:
+
 ```json
 {
   "success": true,
-  "source": "cli",
   "applications": {
-    "mediaserver": [ { "id": "mediaserver-plex", "name": "plex", "displayName": "Plex", ... } ],
-    "downloadclients": [ ... ],
-    "mediamanager": [ ... ]
+    "media-servers": [...],
+    "downloads": [...],
+    "ai": [...],
+    "monitoring": [...],
+    "self-hosted": [...]
   },
-  "totalApps": 112,
-  "categories": ["addons", "ai-tools", "backup", "coding", "downloadclients", ...]
+  "totalApps": 123,
+  "categories": [
+    "ai", "backup", "downloads", "media-management",
+    "media-servers", "monitoring", "self-hosted",
+    "system", "transcoding", "virtual-desktops"
+  ]
 }
 ```
 
@@ -112,7 +136,7 @@ Tokens are obtained from the login endpoint and expire after 24 hours by default
 ```json
 // Request
 {
-  "appId": "mediaserver-plex",
+  "appId": "media-servers-plex",
   "config": {
     "TZ": "America/New_York",
     "ID": "1000",
@@ -122,19 +146,16 @@ Tokens are obtained from the login endpoint and expire after 24 hours by default
   "mode": { "type": "traefik" }
 }
 
-// Response (streaming mode)
+// Response
 {
   "success": true,
-  "message": "mediaserver-plex deployment started with real-time progress tracking",
   "deploymentId": "550e8400-e29b-41d4-a716-446655440000",
-  "source": "cli-streaming",
-  "appId": "mediaserver-plex",
   "streamEndpoint": "/stream/progress",
-  "statusEndpoint": "/deployments/550e8400-e29b-41d4-a716-446655440000/status"
+  "statusEndpoint": "/deployments/550e8400-.../status"
 }
 ```
 
-The `mode.type` field accepts: `standard`, `traefik`, or `authelia`.
+`mode.type` accepts: `standard`, `traefik`, or `authelia`.
 
 ### GET /deployment-modes
 
@@ -144,9 +165,8 @@ The `mode.type` field accepts: `standard`, `traefik`, or `authelia`.
   "modes": [
     { "type": "standard", "name": "Standard", "description": "Basic Docker deployment without reverse proxy" },
     { "type": "traefik", "name": "Traefik", "description": "Deployment with Traefik reverse proxy and SSL" },
-    { "type": "authelia", "name": "Traefik + Authelia", "description": "Full production deployment with authentication" }
-  ],
-  "cliAvailable": true
+    { "type": "authelia", "name": "Traefik + Authelia", "description": "Full deployment with authentication" }
+  ]
 }
 ```
 
@@ -156,13 +176,11 @@ The `mode.type` field accepts: `standard`, `traefik`, or `authelia`.
 
 | Method | Path | Auth | Response | Description |
 |--------|------|------|----------|-------------|
-| `GET` | `/stream/progress` | None | `text/event-stream` | Open an SSE connection for real-time deployment events |
-| `POST` | `/stream/deployments/:deploymentId/subscribe` | Conditional | JSON | Subscribe an SSE client to a specific deployment |
+| `GET` | `/stream/progress` | None | `text/event-stream` | SSE connection for deployment events |
+| `POST` | `/stream/deployments/:id/subscribe` | Conditional | JSON | Subscribe to a specific deployment |
 
-!!! warning "GET /stream/progress is not JSON"
-    The progress endpoint returns `text/event-stream`, not JSON. Use `EventSource` or a streaming HTTP client — standard `fetch().then(r => r.json())` will fail. The subscribe endpoint returns normal JSON.
-
-Connect to `/stream/progress` with an `EventSource`. The server assigns a `clientId` and pushes events as deployments progress. To filter events for a single deployment, call the subscribe endpoint with your `clientId` and the target `deploymentId`.
+!!! warning "Not JSON"
+    `/stream/progress` returns `text/event-stream`. Use `EventSource` or a streaming HTTP client.
 
 ---
 
@@ -170,32 +188,15 @@ Connect to `/stream/progress` with an `EventSource`. The server assigns a `clien
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET` | `/containers` | Conditional | List all Docker containers (`?stats=true` for CPU/memory) |
-| `GET` | `/containers/:id/stats` | None | Get live stats for a single container |
-| `GET` | `/containers/:id/logs` | None | Get container logs (`?tail=100&timestamps=true`) |
+| `GET` | `/containers` | Conditional | List all Docker containers |
+| `GET` | `/containers/:id/stats` | None | Live stats for a container |
+| `GET` | `/containers/:id/logs` | None | Container logs |
 | `POST` | `/containers/:id/start` | Conditional | Start a stopped container |
 | `POST` | `/containers/:id/stop` | Conditional | Stop a running container |
 | `POST` | `/containers/:id/restart` | Conditional | Restart a container |
 | `DELETE` | `/containers/:id` | Conditional | Remove a container |
 
-### GET /containers
-
-```json
-{
-  "success": true,
-  "containers": [
-    {
-      "Id": "abc123...",
-      "Names": ["/plex"],
-      "Image": "lscr.io/linuxserver/plex:latest",
-      "State": "running",
-      "Status": "Up 3 days",
-      "Ports": "32400/tcp"
-    }
-  ],
-  "docker": { "status": "connected", "message": "CLI-based Docker access" }
-}
-```
+Add `?stats=true` to `GET /containers` for CPU and memory usage.
 
 ---
 
@@ -203,18 +204,16 @@ Connect to `/stream/progress` with an `EventSource`. The server assigns a `clien
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET` | `/ports/check` | None | List all host ports currently in use by Docker |
-| `GET` | `/ports/available` | None | Find next available port (`?start=8000&end=9000`) |
-
-### GET /ports/check
-
-```json
-{ "success": true, "usedPorts": [8080, 8084, 32400, 8096], "source": "cli" }
-```
+| `GET` | `/ports/check` | None | List all host ports in use by Docker |
+| `GET` | `/ports/available` | None | Find next available port |
 
 ### GET /ports/available
 
-```json
+```bash
+# Find next available port starting from 8000
+curl http://your-server:8092/ports/available?start=8000&end=9000
+
+# Response
 { "success": true, "availablePort": 8085 }
 ```
 
@@ -224,31 +223,21 @@ Connect to `/stream/progress` with an `EventSource`. The server assigns a `clien
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET` | `/health` | None | Comprehensive health check with Docker, platform, and config status |
+| `GET` | `/health` | None | Health check with Docker, platform, and config status |
 
-Returns `200` when healthy, `503` when degraded or in error state. The response includes Docker connection status, platform info, environment validation, CORS config, and troubleshooting guidance.
-
----
-
-## Enhanced Mount Manager
-
-These endpoints manage cloud storage providers for containers (experimental).
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/enhanced-mount/:containerId/status` | Conditional | Mount status for a container |
-| `GET` | `/enhanced-mount/:containerId/providers` | Conditional | List available storage providers |
-| `GET` | `/enhanced-mount/:containerId/costs` | Conditional | Estimated storage costs |
-| `GET` | `/enhanced-mount/:containerId/performance` | Conditional | Provider performance metrics |
-| `POST` | `/enhanced-mount/:containerId/providers/:provider/enable` | Conditional | Enable a storage provider |
-| `POST` | `/enhanced-mount/:containerId/providers/:provider/disable` | Conditional | Disable a storage provider |
-| `POST` | `/enhanced-mount/:containerId/auth/start` | Conditional | Start OAuth flow for a provider |
-| `POST` | `/enhanced-mount/:containerId/auth/complete` | Conditional | Complete OAuth flow |
-| `POST` | `/enhanced-mount/:containerId/auth/api-key` | Conditional | Authenticate via API key |
-| `POST` | `/enhanced-mount/:containerId/auth/test` | Conditional | Test provider authentication |
+Returns `200` when healthy, `503` when degraded.
 
 ---
 
 ## Error Format
 
-All errors return `{ "error": "...", "details": "..." }`. Status codes: `400` bad request, `401` not authenticated, `403` forbidden, `404` not found, `500` server error, `503` Docker unavailable.
+All errors follow this structure:
+
+```json
+{
+  "error": "Description of what went wrong",
+  "details": "Additional context"
+}
+```
+
+Status codes: `400` bad request, `401` not authenticated, `403` forbidden, `404` not found, `500` server error, `503` Docker unavailable.
