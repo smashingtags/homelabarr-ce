@@ -715,7 +715,7 @@ export default function App() {
         {/* Category Navigation */}
         <div className="mb-10">
           <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
-            <TabsList className="flex gap-2 h-auto bg-transparent p-4 w-full overflow-x-auto md:flex-wrap md:overflow-x-visible scrollbar-hide snap-x snap-mandatory md:snap-none justify-start">
+            <TabsList className="flex flex-nowrap gap-2 h-auto bg-transparent px-4 py-2 w-full overflow-x-auto md:flex-wrap md:overflow-x-visible scrollbar-hide snap-x snap-mandatory md:snap-none justify-start">
               {categoryTabs.map(tab => {
                 const Icon = tab.icon;
                 const isActive = activeCategory === tab.id;
