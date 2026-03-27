@@ -14,7 +14,7 @@ Portainer is a general-purpose Docker management UI. HomelabARR CE is purpose-bu
 
 ### Is ARM supported?
 
-Not currently. The Docker images are built for x86_64 (amd64) only.
+Yes! Docker images are built for both **x86_64 (amd64)** and **ARM64 (aarch64)**. Runs on Raspberry Pi 4/5, Apple Silicon, AWS Graviton, and standard x86 servers.
 
 ### Can I use it without Docker?
 

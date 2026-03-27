@@ -60,8 +60,8 @@ Open **http://your-server:8084** and log in with `admin` / `admin`.
 | Disk | 20 GB |
 | Docker | 24.0+ with Compose v2 |
 
-!!! warning "No ARM support"
-    HomelabARR CE Docker images are built for x86_64 (amd64) only.
+!!! success "Multi-architecture support"
+    HomelabARR CE images are built for both **x86_64 (amd64)** and **ARM64 (aarch64)** — runs on Raspberry Pi 4/5, Apple Silicon, AWS Graviton, and standard x86 servers.
 
 ## Links
 

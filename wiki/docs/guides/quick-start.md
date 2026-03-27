@@ -6,7 +6,7 @@ Get HomelabARR CE running in under 5 minutes.
 
 - A Linux server (Ubuntu 22.04+, Debian 12+, or similar)
 - Docker 24.0+ with Docker Compose v2
-- 4 GB RAM, 2 CPU cores, 20 GB disk
+- 4 GB RAM, 2 CPU cores, 20 GB disk (x86_64 or ARM64)
 
 ```bash
 # Verify Docker is installed
