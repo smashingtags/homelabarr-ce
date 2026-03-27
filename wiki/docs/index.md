@@ -13,14 +13,19 @@ HomelabARR CE gives you a web dashboard to browse, deploy, and manage 100+ self-
 ## Quick Start
 
 ```bash
-# 1. Download the compose file
+# 1. Clone the repo (app template library)
+git clone https://github.com/smashingtags/homelabarr-ce.git /opt/homelabarr
+
+# 2. Download the compose file
 curl -O https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
 
-# 2. Set required variables
+# 3. Set required variables
 export JWT_SECRET=$(openssl rand -hex 32)
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
+export CLI_BRIDGE_HOST_PATH=/opt/homelabarr
+export CORS_ORIGIN=http://your-server-ip:8084
 
-# 3. Start HomelabARR
+# 4. Start HomelabARR
 docker compose -f homelabarr.yml up -d
 ```
 
