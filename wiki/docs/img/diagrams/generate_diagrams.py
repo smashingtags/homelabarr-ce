@@ -1,528 +1,485 @@
 #!/usr/bin/env python3
 """Generate architecture diagrams for HomelabARR CE wiki.
-Uses only ASCII/Latin glyphs — no emoji (DejaVu Sans Mono doesn't support them)."""
+v2 — wider cards, smaller fonts, more breathing room."""
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
-import numpy as np
 import os
 
-# ── Color Palette (matches HomelabARR brand) ──
+# ── Color Palette ──
 BG = '#0d1117'
 CARD_BG = '#161b22'
 CARD_BORDER = '#30363d'
 PRIMARY = '#00bfa5'
-SECONDARY = '#1a237e'
 ACCENT = '#ffab00'
 TEXT = '#e6edf3'
 TEXT_DIM = '#8b949e'
-FLOW_COLOR = '#58a6ff'
-SUCCESS = '#3fb950'
-DANGER = '#f85149'
+FLOW = '#58a6ff'
+GREEN = '#3fb950'
+RED = '#f85149'
 PURPLE = '#bc8cff'
 ORANGE = '#f0883e'
 
+OUT = os.path.dirname(os.path.abspath(__file__))
 
-def rounded_box(ax, x, y, w, h, label, sublabel=None, color=PRIMARY,
-                fill_alpha=0.15, border_width=2, fontsize=13):
-    box = FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02",
-                         facecolor=color, alpha=fill_alpha,
-                         edgecolor=color, linewidth=border_width)
-    ax.add_patch(box)
-    text_y = y + h/2 + (0.015 if sublabel else 0)
-    ax.text(x + w/2, text_y, label, fontsize=fontsize,
-            fontweight='bold', color=TEXT, ha='center', va='center',
-            fontfamily='monospace')
-    if sublabel:
-        ax.text(x + w/2, text_y - 0.04, sublabel, fontsize=9,
+
+def box(ax, x, y, w, h, label, sub=None, color=PRIMARY, alpha=0.15,
+        lw=2, fs=12, sub_fs=9, sub_gap=0.025):
+    """Rounded box with centered label + optional subtitle."""
+    p = FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.015",
+                       fc=color, alpha=alpha, ec=color, lw=lw)
+    ax.add_patch(p)
+    ty = y + h/2 + (sub_gap/2 if sub else 0)
+    ax.text(x + w/2, ty, label, fontsize=fs, fontweight='bold',
+            color=TEXT, ha='center', va='center', fontfamily='monospace')
+    if sub:
+        ax.text(x + w/2, ty - sub_gap, sub, fontsize=sub_fs,
                 color=TEXT_DIM, ha='center', va='center', fontfamily='monospace')
 
 
-def draw_arrow(ax, start, end, color=FLOW_COLOR, style='->', width=2,
-               connectionstyle="arc3,rad=0.0"):
-    arrow = FancyArrowPatch(start, end, arrowstyle=style,
-                            connectionstyle=connectionstyle,
-                            color=color, linewidth=width, mutation_scale=15)
-    ax.add_patch(arrow)
+def arrow(ax, s, e, color=FLOW, w=2, style='->', cs="arc3,rad=0.0"):
+    ax.add_patch(FancyArrowPatch(s, e, arrowstyle=style,
+                                 connectionstyle=cs, color=color,
+                                 lw=w, mutation_scale=14))
 
 
-def section_label(ax, x, y, text, color=TEXT_DIM, fontsize=10):
-    ax.text(x, y, text, fontsize=fontsize, color=color,
-            fontweight='bold', ha='left', va='center',
-            fontfamily='monospace', style='italic')
+def wm(ax):
+    ax.text(0.99, 0.015, 'homelabarr.com  |  Imogen Labs',
+            fontsize=7, color=TEXT_DIM, ha='right', fontfamily='monospace', alpha=0.4)
 
 
-def watermark(ax):
-    ax.text(0.98, 0.02, 'homelabarr.com  |  Imogen Labs', fontsize=8,
-            color=TEXT_DIM, ha='right', fontfamily='monospace', alpha=0.5)
-
-
-# ═══════════════════════════════════════════════════════════════
-# DIAGRAM 1: System Architecture
-# ═══════════════════════════════════════════════════════════════
-def generate_system_architecture():
-    fig, ax = plt.subplots(1, 1, figsize=(16, 11))
+def new_fig(w, h):
+    fig, ax = plt.subplots(figsize=(w, h))
     fig.patch.set_facecolor(BG)
     ax.set_facecolor(BG)
     ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis('off')
+    return fig, ax
 
-    ax.text(0.5, 0.96, 'HOMELABARR CE  --  SYSTEM ARCHITECTURE', fontsize=20,
-            fontweight='bold', color=PRIMARY, ha='center', fontfamily='monospace')
-    ax.text(0.5, 0.93, 'How the pieces fit together', fontsize=11,
-            color=TEXT_DIM, ha='center', fontfamily='monospace')
+
+# ═══════════════════════════════════════════════════════════════
+# 1. SYSTEM ARCHITECTURE
+# ═══════════════════════════════════════════════════════════════
+def gen_system():
+    fig, ax = new_fig(18, 12)
+
+    ax.text(0.5, 0.96, 'HOMELABARR CE  --  SYSTEM ARCHITECTURE',
+            fontsize=19, fontweight='bold', color=PRIMARY, ha='center',
+            fontfamily='monospace')
+    ax.text(0.5, 0.935, 'How the pieces fit together',
+            fontsize=10, color=TEXT_DIM, ha='center', fontfamily='monospace')
 
     # Docker Host boundary
-    host_box = FancyBboxPatch((0.03, 0.05), 0.94, 0.84, boxstyle="round,pad=0.02",
-                              facecolor=CARD_BG, alpha=0.6,
-                              edgecolor=CARD_BORDER, linewidth=2, linestyle='--')
-    ax.add_patch(host_box)
-    ax.text(0.06, 0.87, '[=]  DOCKER HOST', fontsize=12, fontweight='bold',
+    p = FancyBboxPatch((0.03, 0.04), 0.94, 0.86, boxstyle="round,pad=0.02",
+                       fc=CARD_BG, alpha=0.5, ec=CARD_BORDER, lw=2, ls='--')
+    ax.add_patch(p)
+    ax.text(0.06, 0.885, 'DOCKER HOST', fontsize=11, fontweight='bold',
             color=TEXT_DIM, fontfamily='monospace')
 
-    # Browser
-    rounded_box(ax, 0.35, 0.72, 0.30, 0.08, 'BROWSER',
-                'http://your-server:8084', color=FLOW_COLOR, fontsize=14)
+    # ── Browser ──
+    box(ax, 0.30, 0.77, 0.40, 0.07, 'BROWSER',
+        'http://your-server:8084', color=FLOW, fs=13, sub_fs=9)
 
-    # Frontend
-    rounded_box(ax, 0.06, 0.52, 0.28, 0.12, 'FRONTEND',
-                ':8084  |  nginx + React', color=PRIMARY)
-    for i, tech in enumerate(['React 19', 'shadcn/ui', 'Vite', 'Dark/Light']):
-        ax.text(0.20, 0.505 - i*0.022, '> ' + tech, fontsize=8,
+    # ── Frontend ──
+    box(ax, 0.04, 0.54, 0.26, 0.16, 'FRONTEND',
+        ':8084  |  nginx + React', color=PRIMARY, fs=13)
+    techs = ['React 19', 'shadcn/ui', 'Vite', 'Dark / Light']
+    for i, t in enumerate(techs):
+        ax.text(0.17, 0.63 - i*0.025, '> ' + t, fontsize=8,
                 color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # Backend
-    rounded_box(ax, 0.40, 0.42, 0.30, 0.22, 'BACKEND', color=ACCENT)
-    ax.text(0.55, 0.615, ':8092  |  Node.js + Express', fontsize=9,
-            color=TEXT_DIM, ha='center', va='center', fontfamily='monospace')
-    components = [
+    # ── Backend ──
+    box(ax, 0.36, 0.40, 0.30, 0.30, '', color=ACCENT, fs=14)
+    ax.text(0.51, 0.685, 'BACKEND', fontsize=14, fontweight='bold',
+            color=TEXT, ha='center', fontfamily='monospace')
+    ax.text(0.51, 0.66, ':8092 | Node.js + Express', fontsize=9,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
+    comps = [
         ('CLI Bridge', 'Reads app templates'),
-        ('Docker SDK', 'Container management'),
+        ('Docker SDK', 'Container mgmt'),
         ('JWT + API Keys', 'Authentication'),
         ('SSE Stream', 'Real-time deploy logs'),
     ]
-    for i, (comp, desc) in enumerate(components):
-        y_pos = 0.575 - i*0.035
-        ax.text(0.55, y_pos, '> ' + comp, fontsize=9,
-                color=TEXT, ha='center', fontfamily='monospace', fontweight='bold')
-        ax.text(0.55, y_pos - 0.015, desc, fontsize=7,
+    for i, (c, d) in enumerate(comps):
+        yp = 0.615 - i * 0.05
+        ax.text(0.51, yp, '> ' + c, fontsize=9, fontweight='bold',
+                color=TEXT, ha='center', fontfamily='monospace')
+        ax.text(0.51, yp - 0.018, d, fontsize=7,
                 color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # Docker Socket
-    rounded_box(ax, 0.42, 0.28, 0.26, 0.07, 'DOCKER SOCKET',
-                '/var/run/docker.sock', color=DANGER, fill_alpha=0.12)
+    # ── Docker Socket ──
+    box(ax, 0.38, 0.28, 0.26, 0.07, 'DOCKER SOCKET',
+        '/var/run/docker.sock', color=RED, alpha=0.12, fs=10, sub_fs=8)
 
-    # App Templates
-    rounded_box(ax, 0.06, 0.28, 0.28, 0.12, 'APP TEMPLATES',
-                'apps/  |  100+ YAML files', color=PURPLE)
-    categories = ['ai/', 'media-servers/', 'downloads/', 'self-hosted/',
-                  'monitoring/', 'virtual-desktops/', 'backup/', 'system/']
-    for i, cat in enumerate(categories):
+    # ── App Templates ──
+    box(ax, 0.04, 0.28, 0.26, 0.16, 'APP TEMPLATES',
+        '100+ YAML files', color=PURPLE, fs=12, sub_fs=9)
+    cats = ['ai/', 'media-servers/', 'downloads/', 'self-hosted/',
+            'monitoring/', 'virtual-desktops/', 'backup/', 'system/']
+    for i, c in enumerate(cats):
         col = i % 2; row = i // 2
-        ax.text(0.10 + col*0.14, 0.365 - row*0.02, '  ' + cat, fontsize=7,
-                color=PURPLE, ha='left', fontfamily='monospace', alpha=0.8)
+        ax.text(0.07 + col * 0.13, 0.385 - row * 0.022, c, fontsize=7,
+                color=PURPLE, ha='left', fontfamily='monospace', alpha=0.7)
 
-    # Deployed Containers
-    rounded_box(ax, 0.74, 0.42, 0.22, 0.22, 'DEPLOYED',
-                'Your running apps', color=SUCCESS, fill_alpha=0.12)
-    apps = ['[*] Plex', '[*] Radarr', '[*] Sonarr', '[*] Ollama',
-            '[*] Nextcloud', '[*] Grafana', '[*] qBittorrent', '    ...100+ more']
-    for i, app in enumerate(apps):
-        ax.text(0.85, 0.595 - i*0.025, app, fontsize=8,
+    # ── Deployed Containers ──
+    box(ax, 0.72, 0.40, 0.24, 0.30, '', color=GREEN, alpha=0.12, fs=13)
+    ax.text(0.84, 0.685, 'DEPLOYED', fontsize=13, fontweight='bold',
+            color=TEXT, ha='center', fontfamily='monospace')
+    ax.text(0.84, 0.66, 'Your running apps', fontsize=9,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
+    apps = ['Plex', 'Radarr', 'Sonarr', 'Ollama', 'Nextcloud',
+            'Grafana', 'qBittorrent', '...100+ more']
+    for i, a in enumerate(apps):
+        ax.text(0.84, 0.625 - i * 0.028, '[*] ' + a, fontsize=8,
                 color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # Data Storage
-    rounded_box(ax, 0.06, 0.08, 0.28, 0.12, 'DATA STORAGE', color='#8b949e',
-                fill_alpha=0.1)
-    ax.text(0.20, 0.16, '/opt/appdata/', fontsize=9,
-            color=TEXT, ha='center', fontfamily='monospace', fontweight='bold')
-    ax.text(0.20, 0.14, 'plex/  radarr/  sonarr/', fontsize=8,
+    # ── Data Storage ──
+    box(ax, 0.04, 0.06, 0.26, 0.14, 'DATA STORAGE', color='#8b949e', alpha=0.1, fs=11)
+    ax.text(0.17, 0.155, '/opt/appdata/', fontsize=9, fontweight='bold',
+            color=TEXT, ha='center', fontfamily='monospace')
+    ax.text(0.17, 0.13, 'plex/  radarr/  sonarr/', fontsize=8,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
-    ax.text(0.20, 0.115, 'homelabarr-data  (Docker vol)', fontsize=8,
+    ax.text(0.17, 0.105, 'homelabarr-data (Docker vol)', fontsize=7,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # CI/CD
-    rounded_box(ax, 0.40, 0.08, 0.26, 0.12, 'CI/CD PIPELINE', color=ORANGE,
-                fill_alpha=0.12)
-    ax.text(0.53, 0.16, 'GitHub Actions -> GHCR', fontsize=9,
-            color=TEXT, ha='center', fontfamily='monospace', fontweight='bold')
-    ax.text(0.53, 0.14, 'dev -> staging -> main', fontsize=8,
+    # ── CI/CD ──
+    box(ax, 0.38, 0.06, 0.26, 0.14, 'CI / CD', color=ORANGE, alpha=0.12, fs=12)
+    ax.text(0.51, 0.155, 'GitHub Actions -> GHCR', fontsize=9, fontweight='bold',
+            color=TEXT, ha='center', fontfamily='monospace')
+    ax.text(0.51, 0.13, 'dev -> staging -> main', fontsize=8,
             color=ORANGE, ha='center', fontfamily='monospace')
-    ax.text(0.53, 0.115, 'Watchtower auto-updates', fontsize=8,
+    ax.text(0.51, 0.105, 'Watchtower auto-updates', fontsize=7,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # Traefik
-    rounded_box(ax, 0.74, 0.08, 0.22, 0.12, 'TRAEFIK',
-                'Optional reverse proxy', color=FLOW_COLOR, fill_alpha=0.1)
-    ax.text(0.85, 0.15, 'SSL | Routing | Auth', fontsize=9,
-            color=FLOW_COLOR, ha='center', fontfamily='monospace')
-    ax.text(0.85, 0.115, 'app.yourdomain.com', fontsize=8,
+    # ── Traefik ──
+    box(ax, 0.72, 0.06, 0.24, 0.14, 'TRAEFIK',
+        'Optional reverse proxy', color=FLOW, alpha=0.1, fs=12, sub_fs=8)
+    ax.text(0.84, 0.14, 'SSL | Routing | Auth', fontsize=9,
+            color=FLOW, ha='center', fontfamily='monospace')
+    ax.text(0.84, 0.105, 'app.yourdomain.com', fontsize=8,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # Arrows
-    draw_arrow(ax, (0.42, 0.72), (0.28, 0.64), color=FLOW_COLOR, width=2.5)
-    ax.text(0.32, 0.69, 'HTTP', fontsize=8, color=FLOW_COLOR,
-            fontfamily='monospace', rotation=25)
-    draw_arrow(ax, (0.34, 0.58), (0.40, 0.58), color=PRIMARY, width=2.5)
-    ax.text(0.37, 0.595, 'proxy', fontsize=7, color=PRIMARY, fontfamily='monospace')
-    draw_arrow(ax, (0.55, 0.42), (0.55, 0.35), color=DANGER, width=2)
-    draw_arrow(ax, (0.40, 0.50), (0.34, 0.40), color=PURPLE, width=2,
-               connectionstyle="arc3,rad=0.15")
-    ax.text(0.35, 0.46, 'reads', fontsize=7, color=PURPLE, fontfamily='monospace')
-    draw_arrow(ax, (0.68, 0.32), (0.74, 0.50), color=SUCCESS, width=2,
-               connectionstyle="arc3,rad=-0.2")
-    ax.text(0.73, 0.38, 'manages', fontsize=7, color=SUCCESS, fontfamily='monospace')
-    draw_arrow(ax, (0.74, 0.50), (0.34, 0.17), color='#8b949e', width=1.5,
-               connectionstyle="arc3,rad=0.3")
-    draw_arrow(ax, (0.85, 0.42), (0.85, 0.20), color=FLOW_COLOR, width=1.5)
+    # ── Arrows ──
+    arrow(ax, (0.40, 0.77), (0.26, 0.70), color=FLOW, w=2.5)
+    ax.text(0.30, 0.745, 'HTTP', fontsize=8, color=FLOW, fontfamily='monospace',
+            rotation=22)
+    arrow(ax, (0.30, 0.62), (0.36, 0.60), color=PRIMARY, w=2.5)
+    ax.text(0.325, 0.625, 'proxy', fontsize=7, color=PRIMARY, fontfamily='monospace')
+    arrow(ax, (0.51, 0.40), (0.51, 0.35), color=RED, w=2)
+    arrow(ax, (0.36, 0.52), (0.30, 0.44), color=PURPLE, w=2,
+          cs="arc3,rad=0.1")
+    ax.text(0.31, 0.49, 'reads', fontsize=7, color=PURPLE, fontfamily='monospace')
+    arrow(ax, (0.64, 0.32), (0.72, 0.50), color=GREEN, w=2,
+          cs="arc3,rad=-0.2")
+    ax.text(0.70, 0.38, 'manages', fontsize=7, color=GREEN, fontfamily='monospace')
+    arrow(ax, (0.72, 0.48), (0.30, 0.17), color='#8b949e', w=1.5,
+          cs="arc3,rad=0.25")
+    arrow(ax, (0.84, 0.40), (0.84, 0.20), color=FLOW, w=1.5)
 
-    watermark(ax)
+    wm(ax)
     plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'system-architecture.png'),
-                dpi=180, facecolor=BG, bbox_inches='tight', pad_inches=0.3)
+    plt.savefig(f'{OUT}/system-architecture.png', dpi=150, facecolor=BG,
+                bbox_inches='tight', pad_inches=0.3)
     plt.close()
-    print("[+] system-architecture.png")
+    print('[+] system-architecture.png')
 
 
 # ═══════════════════════════════════════════════════════════════
-# DIAGRAM 2: Deployment Flow
+# 2. DEPLOYMENT FLOW
 # ═══════════════════════════════════════════════════════════════
-def generate_deployment_flow():
-    fig, ax = plt.subplots(1, 1, figsize=(16, 9))
-    fig.patch.set_facecolor(BG)
-    ax.set_facecolor(BG)
-    ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis('off')
+def gen_deploy():
+    fig, ax = new_fig(20, 10)
 
-    ax.text(0.5, 0.95, 'DEPLOYMENT FLOW  --  WHAT HAPPENS WHEN YOU CLICK DEPLOY',
-            fontsize=18, fontweight='bold', color=PRIMARY, ha='center',
-            fontfamily='monospace')
+    ax.text(0.5, 0.96, 'DEPLOYMENT FLOW', fontsize=19,
+            fontweight='bold', color=PRIMARY, ha='center', fontfamily='monospace')
+    ax.text(0.5, 0.93, 'What happens when you click Deploy', fontsize=10,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
 
     steps = [
-        {'x': 0.05, 'num': '1', 'label': 'CLICK', 'sub': 'Pick an app\nChoose a mode',
-         'color': FLOW_COLOR},
-        {'x': 0.20, 'num': '2', 'label': 'LOAD', 'sub': 'Backend reads\nYAML template',
-         'color': PURPLE},
-        {'x': 0.35, 'num': '3', 'label': 'TRANSFORM', 'sub': 'Apply mode\nInject config',
-         'color': ACCENT},
-        {'x': 0.50, 'num': '4', 'label': 'COMPOSE', 'sub': 'docker compose\nup -d',
-         'color': SUCCESS},
-        {'x': 0.65, 'num': '5', 'label': 'STREAM', 'sub': 'SSE events\nReal-time logs',
-         'color': ORANGE},
-        {'x': 0.80, 'num': '6', 'label': 'RUNNING', 'sub': 'App is live\nAccess it now',
-         'color': PRIMARY},
+        {'x': 0.02, 'n': '1', 'l': 'CLICK', 's': 'Pick an app\nChoose a mode', 'c': FLOW},
+        {'x': 0.18, 'n': '2', 'l': 'LOAD', 's': 'Backend reads\nYAML template', 'c': PURPLE},
+        {'x': 0.34, 'n': '3', 'l': 'TRANSFORM', 's': 'Apply mode\nInject config', 'c': ACCENT},
+        {'x': 0.50, 'n': '4', 'l': 'COMPOSE', 's': 'docker compose\nup -d', 'c': GREEN},
+        {'x': 0.66, 'n': '5', 'l': 'STREAM', 's': 'SSE events\nReal-time logs', 'c': ORANGE},
+        {'x': 0.82, 'n': '6', 'l': 'RUNNING', 's': 'App is live\nAccess it now', 'c': PRIMARY},
     ]
 
-    step_y = 0.72; step_w = 0.13; step_h = 0.15
+    sy, sw, sh = 0.74, 0.14, 0.14
 
-    for i, step in enumerate(steps):
-        box = FancyBboxPatch((step['x'], step_y), step_w, step_h,
-                             boxstyle="round,pad=0.015",
-                             facecolor=step['color'], alpha=0.15,
-                             edgecolor=step['color'], linewidth=2.5)
-        ax.add_patch(box)
-
-        # Number circle
-        circle = plt.Circle((step['x'] + step_w/2, step_y + step_h - 0.025),
-                            0.018, facecolor=step['color'], alpha=0.3,
-                            edgecolor=step['color'], linewidth=1.5)
-        ax.add_patch(circle)
-        ax.text(step['x'] + step_w/2, step_y + step_h - 0.025, step['num'],
-                fontsize=11, fontweight='bold', color=TEXT, ha='center',
-                va='center', fontfamily='monospace')
-
-        ax.text(step['x'] + step_w/2, step_y + step_h/2 + 0.005,
-                step['label'], fontsize=12, fontweight='bold',
-                color=TEXT, ha='center', va='center', fontfamily='monospace')
-        ax.text(step['x'] + step_w/2, step_y + 0.025,
-                step['sub'], fontsize=8, color=TEXT_DIM,
-                ha='center', va='center', fontfamily='monospace', linespacing=1.4)
-
+    for i, s in enumerate(steps):
+        box(ax, s['x'], sy, sw, sh, s['l'], color=s['c'], fs=12, alpha=0.15, lw=2.5)
+        # number badge
+        circ = plt.Circle((s['x'] + sw/2, sy + sh - 0.02), 0.016,
+                          fc=s['c'], alpha=0.35, ec=s['c'], lw=1.5)
+        ax.add_patch(circ)
+        ax.text(s['x'] + sw/2, sy + sh - 0.02, s['n'], fontsize=10,
+                fontweight='bold', color=TEXT, ha='center', va='center',
+                fontfamily='monospace')
+        # subtitle
+        ax.text(s['x'] + sw/2, sy + 0.03, s['s'], fontsize=8,
+                color=TEXT_DIM, ha='center', va='center',
+                fontfamily='monospace', linespacing=1.5)
         if i < len(steps) - 1:
-            draw_arrow(ax, (step['x'] + step_w + 0.005, step_y + step_h/2),
-                       (steps[i+1]['x'] - 0.005, step_y + step_h/2),
-                       color=step['color'], width=2.5)
+            arrow(ax, (s['x'] + sw + 0.005, sy + sh/2),
+                  (steps[i+1]['x'] - 0.005, sy + sh/2), color=s['c'], w=2.5)
 
-    # Mode cards
-    mode_y = 0.12; mode_h = 0.42
-    section_label(ax, 0.05, mode_y + mode_h + 0.03,
-                  'DEPLOYMENT MODES  --  WHAT CHANGES IN STEP 3', color=TEXT, fontsize=11)
+    # ── Mode cards ──
+    my, mh, mw = 0.06, 0.54, 0.30
+    ax.text(0.05, my + mh + 0.03,
+            'DEPLOYMENT MODES  --  What changes in step 3',
+            fontsize=11, fontweight='bold', color=TEXT, fontfamily='monospace')
 
     modes = [
-        {'x': 0.05, 'name': 'STANDARD', 'color': SUCCESS,
-         'desc': 'Direct port access',
-         'transforms': ['[-] Strip Traefik labels', '[-] Remove ext networks',
-                        '[~] Set network = bridge', '[+] Map host port directly'],
-         'result': 'http://server:PORT'},
-        {'x': 0.36, 'name': 'TRAEFIK', 'color': FLOW_COLOR,
-         'desc': 'Reverse proxy + SSL',
-         'transforms': ['[+] Keep Traefik labels', '[+] Join proxy network',
-                        '[+] Auto SSL via LE', '[+] Route by hostname'],
-         'result': 'https://app.domain.com'},
-        {'x': 0.67, 'name': 'TRAEFIK + AUTHELIA', 'color': ACCENT,
+        {'x': 0.02, 'name': 'STANDARD', 'c': GREEN, 'desc': 'Direct port access',
+         'tx': ['[-] Strip Traefik labels',
+                '[-] Remove ext networks',
+                '[~] Set network = bridge',
+                '[+] Map host port'],
+         'res': 'http://server:PORT'},
+        {'x': 0.35, 'name': 'TRAEFIK', 'c': FLOW, 'desc': 'Reverse proxy + SSL',
+         'tx': ['[+] Keep Traefik labels',
+                '[+] Join proxy network',
+                '[+] Auto SSL via LE',
+                '[+] Route by hostname'],
+         'res': 'https://app.domain.com'},
+        {'x': 0.68, 'name': 'TRAEFIK + AUTHELIA', 'c': ACCENT,
          'desc': 'Proxy + Auth + MFA',
-         'transforms': ['[+] Keep Traefik labels', '[+] Join proxy network',
-                        '[+] Auto SSL via LE', '[+] Add auth middleware'],
-         'result': 'https://app.domain.com [locked]'},
+         'tx': ['[+] Keep Traefik labels',
+                '[+] Join proxy network',
+                '[+] Auto SSL via LE',
+                '[+] Add auth middleware'],
+         'res': 'https://app.domain.com [locked]'},
     ]
 
-    for mode in modes:
-        card = FancyBboxPatch((mode['x'], mode_y), 0.28, mode_h,
-                              boxstyle="round,pad=0.015",
-                              facecolor=CARD_BG, alpha=0.8,
-                              edgecolor=mode['color'], linewidth=2)
-        ax.add_patch(card)
-        ax.text(mode['x'] + 0.14, mode_y + mode_h - 0.04, mode['name'],
-                fontsize=14, fontweight='bold', color=mode['color'],
-                ha='center', fontfamily='monospace')
-        ax.text(mode['x'] + 0.14, mode_y + mode_h - 0.075, mode['desc'],
-                fontsize=9, color=TEXT_DIM, ha='center', fontfamily='monospace')
-        for i, t in enumerate(mode['transforms']):
-            ax.text(mode['x'] + 0.03, mode_y + mode_h - 0.13 - i*0.06, t,
+    for m in modes:
+        # card bg
+        p = FancyBboxPatch((m['x'], my), mw, mh, boxstyle="round,pad=0.015",
+                           fc=CARD_BG, alpha=0.8, ec=m['c'], lw=2.5)
+        ax.add_patch(p)
+        # title
+        ax.text(m['x'] + mw/2, my + mh - 0.04, m['name'], fontsize=13,
+                fontweight='bold', color=m['c'], ha='center', fontfamily='monospace')
+        ax.text(m['x'] + mw/2, my + mh - 0.075, m['desc'], fontsize=9,
+                color=TEXT_DIM, ha='center', fontfamily='monospace')
+        # transforms
+        for i, t in enumerate(m['tx']):
+            ax.text(m['x'] + 0.025, my + mh - 0.13 - i * 0.07, t,
                     fontsize=9, color=TEXT, fontfamily='monospace')
-        ax.plot([mode['x'] + 0.03, mode['x'] + 0.25],
-                [mode_y + 0.09, mode_y + 0.09], color=CARD_BORDER, linewidth=1)
-        ax.text(mode['x'] + 0.14, mode_y + 0.05, mode['result'],
-                fontsize=10, fontweight='bold', color=mode['color'],
-                ha='center', fontfamily='monospace')
-        ax.text(mode['x'] + 0.14, mode_y + 0.025, 'Result',
-                fontsize=8, color=TEXT_DIM, ha='center', fontfamily='monospace')
+        # divider + result
+        ax.plot([m['x'] + 0.025, m['x'] + mw - 0.025],
+                [my + 0.10, my + 0.10], color=CARD_BORDER, lw=1)
+        ax.text(m['x'] + mw/2, my + 0.06, m['res'], fontsize=10,
+                fontweight='bold', color=m['c'], ha='center', fontfamily='monospace')
+        ax.text(m['x'] + mw/2, my + 0.03, 'Result', fontsize=8,
+                color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    watermark(ax)
+    wm(ax)
     plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'deployment-flow.png'),
-                dpi=180, facecolor=BG, bbox_inches='tight', pad_inches=0.3)
+    plt.savefig(f'{OUT}/deployment-flow.png', dpi=150, facecolor=BG,
+                bbox_inches='tight', pad_inches=0.3)
     plt.close()
-    print("[+] deployment-flow.png")
+    print('[+] deployment-flow.png')
 
 
 # ═══════════════════════════════════════════════════════════════
-# DIAGRAM 3: Network Topology
+# 3. NETWORK TOPOLOGY
 # ═══════════════════════════════════════════════════════════════
-def generate_network_topology():
-    fig, ax = plt.subplots(1, 1, figsize=(16, 10))
-    fig.patch.set_facecolor(BG)
-    ax.set_facecolor(BG)
-    ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis('off')
+def gen_network():
+    fig, ax = new_fig(18, 12)
 
-    ax.text(0.5, 0.96, 'NETWORK TOPOLOGY  --  THREE WAYS TO ACCESS YOUR APPS',
-            fontsize=18, fontweight='bold', color=PRIMARY, ha='center',
-            fontfamily='monospace')
-
-    # ── Mode 1: Standard ──
-    section_label(ax, 0.05, 0.88, 'MODE 1  ==  STANDARD (Local Network)',
-                  color=SUCCESS, fontsize=12)
-
-    rounded_box(ax, 0.05, 0.73, 0.15, 0.08, 'YOU',
-                'Browser on LAN', color=SUCCESS, fontsize=11, fill_alpha=0.1)
-    draw_arrow(ax, (0.20, 0.77), (0.33, 0.77), color=SUCCESS, width=3)
-    ax.text(0.265, 0.79, 'http://192.168.1.x:PORT', fontsize=8,
-            color=SUCCESS, ha='center', fontfamily='monospace')
-    rounded_box(ax, 0.33, 0.73, 0.15, 0.08, 'SERVER',
-                'Direct port access', color=SUCCESS, fontsize=11, fill_alpha=0.1)
-    draw_arrow(ax, (0.48, 0.77), (0.55, 0.77), color=SUCCESS, width=2)
-
-    apps_standard = ['Plex :32400', 'Radarr :7878', 'Sonarr :8989', 'Portainer :9000']
-    for i, app in enumerate(apps_standard):
-        y = 0.82 - i*0.035
-        rounded_box(ax, 0.55, y, 0.18, 0.03, app, color=SUCCESS,
-                    fontsize=8, fill_alpha=0.08, border_width=1)
-
-    ax.text(0.82, 0.78, '+ Simple, no setup', fontsize=9, color=SUCCESS,
-            fontfamily='monospace')
-    ax.text(0.82, 0.755, '+ LAN only', fontsize=9, color=SUCCESS,
-            fontfamily='monospace')
-    ax.text(0.82, 0.73, '- No SSL', fontsize=9, color=TEXT_DIM,
-            fontfamily='monospace')
-
-    ax.plot([0.05, 0.95], [0.68, 0.68], color=CARD_BORDER, linewidth=1,
-            linestyle=':', alpha=0.5)
-
-    # ── Mode 2: Traefik ──
-    section_label(ax, 0.05, 0.64, 'MODE 2  ==  TRAEFIK (Domain + SSL)',
-                  color=FLOW_COLOR, fontsize=12)
-
-    nodes_traefik = [
-        {'x': 0.05, 'y': 0.46, 'w': 0.12, 'h': 0.10, 'label': 'INTERNET',
-         'sub': 'plex.your.com'},
-        {'x': 0.22, 'y': 0.46, 'w': 0.14, 'h': 0.10, 'label': 'CLOUDFLARE',
-         'sub': 'DNS + CDN'},
-        {'x': 0.42, 'y': 0.46, 'w': 0.14, 'h': 0.10, 'label': 'TRAEFIK',
-         'sub': 'SSL + Routing'},
-        {'x': 0.62, 'y': 0.46, 'w': 0.14, 'h': 0.10, 'label': 'CONTAINER',
-         'sub': 'proxy network'},
-    ]
-    for node in nodes_traefik:
-        rounded_box(ax, node['x'], node['y'], node['w'], node['h'],
-                    node['label'], node['sub'], color=FLOW_COLOR,
-                    fontsize=10, fill_alpha=0.12)
-
-    draw_arrow(ax, (0.17, 0.51), (0.22, 0.51), color=FLOW_COLOR, width=2.5)
-    draw_arrow(ax, (0.36, 0.51), (0.42, 0.51), color=FLOW_COLOR, width=2.5)
-    draw_arrow(ax, (0.56, 0.51), (0.62, 0.51), color=FLOW_COLOR, width=2.5)
-
-    # SSL badge
-    ssl_box = FancyBboxPatch((0.44, 0.57), 0.10, 0.03, boxstyle="round,pad=0.005",
-                             facecolor=SUCCESS, alpha=0.2, edgecolor=SUCCESS, linewidth=1)
-    ax.add_patch(ssl_box)
-    ax.text(0.49, 0.585, 'AUTO SSL', fontsize=8, color=SUCCESS,
-            ha='center', fontfamily='monospace', fontweight='bold')
-
-    ax.text(0.82, 0.54, '+ Custom domains', fontsize=9, color=FLOW_COLOR,
-            fontfamily='monospace')
-    ax.text(0.82, 0.515, '+ Free SSL certs', fontsize=9, color=FLOW_COLOR,
-            fontfamily='monospace')
-    ax.text(0.82, 0.49, '+ Access from anywhere', fontsize=9, color=FLOW_COLOR,
-            fontfamily='monospace')
-    ax.text(0.82, 0.465, '- Needs domain ($10/yr)', fontsize=9, color=TEXT_DIM,
-            fontfamily='monospace')
-
-    ax.plot([0.05, 0.95], [0.41, 0.41], color=CARD_BORDER, linewidth=1,
-            linestyle=':', alpha=0.5)
-
-    # ── Mode 3: Traefik + Authelia ──
-    section_label(ax, 0.05, 0.37, 'MODE 3  ==  TRAEFIK + AUTHELIA (Domain + SSL + Auth)',
-                  color=ACCENT, fontsize=12)
-
-    nodes_auth = [
-        {'x': 0.05, 'y': 0.19, 'w': 0.12, 'h': 0.10, 'label': 'INTERNET',
-         'sub': 'radarr.your.com', 'color': ACCENT},
-        {'x': 0.22, 'y': 0.19, 'w': 0.14, 'h': 0.10, 'label': 'CLOUDFLARE',
-         'sub': 'DNS + CDN', 'color': ACCENT},
-        {'x': 0.42, 'y': 0.19, 'w': 0.14, 'h': 0.10, 'label': 'TRAEFIK',
-         'sub': 'SSL + Routing', 'color': ACCENT},
-        {'x': 0.62, 'y': 0.19, 'w': 0.14, 'h': 0.10, 'label': 'AUTHELIA',
-         'sub': 'Login + MFA', 'color': DANGER},
-        {'x': 0.82, 'y': 0.19, 'w': 0.14, 'h': 0.10, 'label': 'CONTAINER',
-         'sub': 'Protected', 'color': ACCENT},
-    ]
-    for node in nodes_auth:
-        rounded_box(ax, node['x'], node['y'], node['w'], node['h'],
-                    node['label'], node['sub'], color=node.get('color', ACCENT),
-                    fontsize=10, fill_alpha=0.12)
-
-    draw_arrow(ax, (0.17, 0.24), (0.22, 0.24), color=ACCENT, width=2.5)
-    draw_arrow(ax, (0.36, 0.24), (0.42, 0.24), color=ACCENT, width=2.5)
-    draw_arrow(ax, (0.56, 0.24), (0.62, 0.24), color=ACCENT, width=2.5)
-    draw_arrow(ax, (0.76, 0.24), (0.82, 0.24), color=ACCENT, width=2.5)
-
-    auth_box = FancyBboxPatch((0.63, 0.30), 0.12, 0.03, boxstyle="round,pad=0.005",
-                              facecolor=DANGER, alpha=0.2, edgecolor=DANGER, linewidth=1)
-    ax.add_patch(auth_box)
-    ax.text(0.69, 0.315, 'SSO + 2FA', fontsize=8, color=DANGER,
-            ha='center', fontfamily='monospace', fontweight='bold')
-
-    ax.text(0.05, 0.13, '+ Everything in Mode 2, plus:', fontsize=9,
-            color=ACCENT, fontfamily='monospace')
-    ax.text(0.05, 0.105, '+ Single sign-on across all apps', fontsize=9,
-            color=ACCENT, fontfamily='monospace')
-    ax.text(0.05, 0.08, '+ Optional two-factor authentication', fontsize=9,
-            color=ACCENT, fontfamily='monospace')
-    ax.text(0.05, 0.055, '+ Per-user access control', fontsize=9,
-            color=ACCENT, fontfamily='monospace')
-
-    watermark(ax)
-    plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'network-topology.png'),
-                dpi=180, facecolor=BG, bbox_inches='tight', pad_inches=0.3)
-    plt.close()
-    print("[+] network-topology.png")
-
-
-# ═══════════════════════════════════════════════════════════════
-# DIAGRAM 4: Request Lifecycle
-# ═══════════════════════════════════════════════════════════════
-def generate_request_lifecycle():
-    fig, ax = plt.subplots(1, 1, figsize=(16, 8))
-    fig.patch.set_facecolor(BG)
-    ax.set_facecolor(BG)
-    ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.axis('off')
-
-    ax.text(0.5, 0.95, 'API REQUEST LIFECYCLE', fontsize=18,
+    ax.text(0.5, 0.97, 'NETWORK TOPOLOGY', fontsize=19,
             fontweight='bold', color=PRIMARY, ha='center', fontfamily='monospace')
-    ax.text(0.5, 0.91, 'Every request through the stack', fontsize=11,
+    ax.text(0.5, 0.945, 'Three ways to access your apps', fontsize=10,
             color=TEXT_DIM, ha='center', fontfamily='monospace')
 
-    # Read path
-    section_label(ax, 0.05, 0.83, 'READ PATH  (GET /applications)',
-                  color=SUCCESS, fontsize=11)
+    # ── MODE 1 ──
+    ax.text(0.04, 0.90, 'MODE 1  ==  STANDARD  (Local Network)',
+            fontsize=12, fontweight='bold', color=GREEN, fontfamily='monospace')
 
-    read_steps = [
-        ('Browser', 'GET /api/applications', FLOW_COLOR, 0.75),
-        ('nginx', 'Strip /api prefix -> proxy to :8092', PRIMARY, 0.63),
-        ('Express', 'Route -> auth middleware (optional)', ACCENT, 0.51),
-        ('CLI Bridge', 'Return cached app catalog', PURPLE, 0.39),
-        ('Response', '200 OK + JSON (123 apps)', SUCCESS, 0.27),
+    box(ax, 0.04, 0.77, 0.17, 0.09, 'YOU', 'Browser on LAN',
+        color=GREEN, alpha=0.1, fs=12, sub_fs=8)
+    arrow(ax, (0.21, 0.815), (0.28, 0.815), color=GREEN, w=3)
+    ax.text(0.245, 0.84, 'http://192.168.x:PORT', fontsize=7,
+            color=GREEN, ha='center', fontfamily='monospace')
+    box(ax, 0.28, 0.77, 0.17, 0.09, 'SERVER', 'Direct port',
+        color=GREEN, alpha=0.1, fs=12, sub_fs=8)
+    arrow(ax, (0.45, 0.815), (0.52, 0.815), color=GREEN, w=2)
+
+    for i, a in enumerate(['Plex :32400', 'Radarr :7878',
+                           'Sonarr :8989', 'Portainer :9000']):
+        box(ax, 0.52, 0.85 - i*0.04, 0.20, 0.032, a,
+            color=GREEN, alpha=0.06, lw=1, fs=8)
+
+    ax.text(0.80, 0.84, '+ Simple, zero setup', fontsize=9,
+            color=GREEN, fontfamily='monospace')
+    ax.text(0.80, 0.815, '+ Works immediately', fontsize=9,
+            color=GREEN, fontfamily='monospace')
+    ax.text(0.80, 0.79, '- LAN only, no SSL', fontsize=9,
+            color=TEXT_DIM, fontfamily='monospace')
+
+    # divider
+    ax.plot([0.04, 0.96], [0.72, 0.72], color=CARD_BORDER, lw=1,
+            ls=':', alpha=0.4)
+
+    # ── MODE 2 ──
+    ax.text(0.04, 0.68, 'MODE 2  ==  TRAEFIK  (Domain + SSL)',
+            fontsize=12, fontweight='bold', color=FLOW, fontfamily='monospace')
+
+    m2nodes = [
+        (0.04, 'INTERNET', 'plex.your.com'),
+        (0.24, 'CLOUDFLARE', 'DNS + CDN'),
+        (0.44, 'TRAEFIK', 'SSL + Routing'),
+        (0.64, 'CONTAINER', 'proxy network'),
     ]
+    for x, l, s in m2nodes:
+        box(ax, x, 0.50, 0.17, 0.12, l, s, color=FLOW, alpha=0.12, fs=11, sub_fs=8)
+    for i in range(3):
+        x1 = m2nodes[i][0] + 0.17
+        x2 = m2nodes[i+1][0]
+        arrow(ax, (x1 + 0.01, 0.56), (x2 - 0.01, 0.56), color=FLOW, w=2.5)
 
-    for i, (label, desc, color, y) in enumerate(read_steps):
-        box = FancyBboxPatch((0.05, y), 0.40, 0.09, boxstyle="round,pad=0.012",
-                             facecolor=color, alpha=0.12,
-                             edgecolor=color, linewidth=2)
-        ax.add_patch(box)
-        ax.text(0.08, y + 0.058, label, fontsize=11, fontweight='bold',
+    # SSL badge
+    p = FancyBboxPatch((0.46, 0.63), 0.13, 0.03, boxstyle="round,pad=0.005",
+                       fc=GREEN, alpha=0.2, ec=GREEN, lw=1)
+    ax.add_patch(p)
+    ax.text(0.525, 0.645, 'AUTO SSL (free)', fontsize=8, fontweight='bold',
+            color=GREEN, ha='center', fontfamily='monospace')
+
+    ax.text(0.85, 0.59, '+ Custom domains', fontsize=9,
+            color=FLOW, fontfamily='monospace')
+    ax.text(0.85, 0.565, '+ Free SSL certs', fontsize=9,
+            color=FLOW, fontfamily='monospace')
+    ax.text(0.85, 0.54, '+ Remote access', fontsize=9,
+            color=FLOW, fontfamily='monospace')
+    ax.text(0.85, 0.515, '- Needs domain', fontsize=9,
+            color=TEXT_DIM, fontfamily='monospace')
+
+    # divider
+    ax.plot([0.04, 0.96], [0.45, 0.45], color=CARD_BORDER, lw=1,
+            ls=':', alpha=0.4)
+
+    # ── MODE 3 ──
+    ax.text(0.04, 0.41, 'MODE 3  ==  TRAEFIK + AUTHELIA  (Domain + SSL + Auth)',
+            fontsize=12, fontweight='bold', color=ACCENT, fontfamily='monospace')
+
+    m3nodes = [
+        (0.04, 'INTERNET', 'radarr.your.com', ACCENT),
+        (0.21, 'CLOUDFLARE', 'DNS + CDN', ACCENT),
+        (0.38, 'TRAEFIK', 'SSL + Routing', ACCENT),
+        (0.55, 'AUTHELIA', 'Login + MFA', RED),
+        (0.72, 'CONTAINER', 'Protected', ACCENT),
+    ]
+    for x, l, s, c in m3nodes:
+        box(ax, x, 0.22, 0.15, 0.12, l, s, color=c, alpha=0.12, fs=10, sub_fs=8)
+    for i in range(4):
+        x1 = m3nodes[i][0] + 0.15
+        x2 = m3nodes[i+1][0]
+        arrow(ax, (x1 + 0.005, 0.28), (x2 - 0.005, 0.28), color=ACCENT, w=2.5)
+
+    # Auth badge
+    p = FancyBboxPatch((0.56, 0.35), 0.13, 0.03, boxstyle="round,pad=0.005",
+                       fc=RED, alpha=0.2, ec=RED, lw=1)
+    ax.add_patch(p)
+    ax.text(0.625, 0.365, 'SSO + 2FA', fontsize=8, fontweight='bold',
+            color=RED, ha='center', fontfamily='monospace')
+
+    ax.text(0.04, 0.16, '+ Everything in Mode 2, plus:', fontsize=9,
+            color=ACCENT, fontfamily='monospace')
+    ax.text(0.04, 0.13, '+ Single sign-on across all apps', fontsize=9,
+            color=ACCENT, fontfamily='monospace')
+    ax.text(0.04, 0.10, '+ Optional two-factor auth', fontsize=9,
+            color=ACCENT, fontfamily='monospace')
+    ax.text(0.04, 0.07, '+ Per-user access control', fontsize=9,
+            color=ACCENT, fontfamily='monospace')
+
+    wm(ax)
+    plt.tight_layout()
+    plt.savefig(f'{OUT}/network-topology.png', dpi=150, facecolor=BG,
+                bbox_inches='tight', pad_inches=0.3)
+    plt.close()
+    print('[+] network-topology.png')
+
+
+# ═══════════════════════════════════════════════════════════════
+# 4. REQUEST LIFECYCLE
+# ═══════════════════════════════════════════════════════════════
+def gen_request():
+    fig, ax = new_fig(18, 10)
+
+    ax.text(0.5, 0.96, 'API REQUEST LIFECYCLE', fontsize=19,
+            fontweight='bold', color=PRIMARY, ha='center', fontfamily='monospace')
+    ax.text(0.5, 0.935, 'Every request through the stack', fontsize=10,
+            color=TEXT_DIM, ha='center', fontfamily='monospace')
+
+    # ── Read path ──
+    ax.text(0.05, 0.88, 'READ PATH  (GET /applications)',
+            fontsize=11, fontweight='bold', color=GREEN, fontfamily='monospace')
+
+    rsteps = [
+        ('Browser', 'GET /api/applications', FLOW, 0.77),
+        ('nginx', 'Strip /api -> proxy to :8092', PRIMARY, 0.64),
+        ('Express', 'Route -> auth (optional)', ACCENT, 0.51),
+        ('CLI Bridge', 'Return cached catalog', PURPLE, 0.38),
+        ('Response', '200 OK + JSON (123 apps)', GREEN, 0.25),
+    ]
+    for i, (l, d, c, y) in enumerate(rsteps):
+        box(ax, 0.04, y, 0.42, 0.10, '', color=c, alpha=0.12, lw=2)
+        ax.text(0.07, y + 0.065, l, fontsize=11, fontweight='bold',
                 color=TEXT, fontfamily='monospace')
-        ax.text(0.08, y + 0.025, desc, fontsize=8, color=TEXT_DIM,
+        ax.text(0.07, y + 0.03, d, fontsize=8, color=TEXT_DIM,
                 fontfamily='monospace')
-        if i < len(read_steps) - 1:
-            draw_arrow(ax, (0.25, y), (0.25, y - 0.03), color=color, width=2)
+        if i < len(rsteps) - 1:
+            arrow(ax, (0.25, y), (0.25, y - 0.03), color=c, w=2)
 
-    # Deploy path
-    section_label(ax, 0.55, 0.83, 'DEPLOY PATH  (POST /deploy)',
-                  color=ORANGE, fontsize=11)
+    # ── Deploy path ──
+    ax.text(0.55, 0.88, 'DEPLOY PATH  (POST /deploy)',
+            fontsize=11, fontweight='bold', color=ORANGE, fontfamily='monospace')
 
-    write_steps = [
-        ('Browser', 'POST /api/deploy { appId, mode }', FLOW_COLOR, 0.75),
-        ('Express', 'Auth check -> validate payload', ACCENT, 0.63),
-        ('CLI Bridge', 'Load YAML -> transform -> inject env', PURPLE, 0.51),
-        ('Docker SDK', 'docker compose up -d  (via socket)', DANGER, 0.39),
-        ('SSE Stream', 'Real-time events -> browser', ORANGE, 0.27),
+    wsteps = [
+        ('Browser', 'POST /api/deploy {appId, mode}', FLOW, 0.77),
+        ('Express', 'Auth check -> validate', ACCENT, 0.64),
+        ('CLI Bridge', 'Load YAML -> transform', PURPLE, 0.51),
+        ('Docker SDK', 'docker compose up -d', RED, 0.38),
+        ('SSE Stream', 'Real-time events -> browser', ORANGE, 0.25),
     ]
-
-    for i, (label, desc, color, y) in enumerate(write_steps):
-        box = FancyBboxPatch((0.55, y), 0.40, 0.09, boxstyle="round,pad=0.012",
-                             facecolor=color, alpha=0.12,
-                             edgecolor=color, linewidth=2)
-        ax.add_patch(box)
-        ax.text(0.58, y + 0.058, label, fontsize=11, fontweight='bold',
+    for i, (l, d, c, y) in enumerate(wsteps):
+        box(ax, 0.54, y, 0.42, 0.10, '', color=c, alpha=0.12, lw=2)
+        ax.text(0.57, y + 0.065, l, fontsize=11, fontweight='bold',
                 color=TEXT, fontfamily='monospace')
-        ax.text(0.58, y + 0.025, desc, fontsize=8, color=TEXT_DIM,
+        ax.text(0.57, y + 0.03, d, fontsize=8, color=TEXT_DIM,
                 fontfamily='monospace')
-        if i < len(write_steps) - 1:
-            draw_arrow(ax, (0.75, y), (0.75, y - 0.03), color=color, width=2)
+        if i < len(wsteps) - 1:
+            arrow(ax, (0.75, y), (0.75, y - 0.03), color=c, w=2)
 
-    # Auth methods
-    ax.plot([0.05, 0.95], [0.22, 0.22], color=CARD_BORDER, linewidth=1,
-            linestyle=':', alpha=0.5)
-    section_label(ax, 0.05, 0.18, 'AUTHENTICATION METHODS', color=TEXT, fontsize=11)
+    # ── Auth methods ──
+    ax.plot([0.04, 0.96], [0.20, 0.20], color=CARD_BORDER, lw=1, ls=':', alpha=0.4)
+    ax.text(0.04, 0.165, 'AUTHENTICATION METHODS',
+            fontsize=11, fontweight='bold', color=TEXT, fontfamily='monospace')
 
-    auth_methods = [
-        ('JWT Token', 'POST /auth/login -> Bearer eyJhb...', ACCENT, 0.05),
-        ('API Key', 'Bearer hlr_a1b2c3... (permanent)', PURPLE, 0.35),
-        ('No Auth', 'When AUTH_ENABLED=false', TEXT_DIM, 0.65),
+    auths = [
+        ('JWT Token', 'POST /auth/login -> Bearer eyJ...', ACCENT, 0.04),
+        ('API Key', 'Bearer hlr_a1b2c3... (permanent)', PURPLE, 0.36),
+        ('No Auth', 'AUTH_ENABLED=false', TEXT_DIM, 0.68),
     ]
-    for label, desc, color, x in auth_methods:
-        box = FancyBboxPatch((x, 0.06), 0.27, 0.08, boxstyle="round,pad=0.01",
-                             facecolor=color, alpha=0.1,
-                             edgecolor=color, linewidth=1.5)
-        ax.add_patch(box)
-        ax.text(x + 0.135, 0.115, label, fontsize=10, fontweight='bold',
+    for l, d, c, x in auths:
+        box(ax, x, 0.04, 0.28, 0.10, '', color=c, alpha=0.1, lw=1.5)
+        ax.text(x + 0.14, 0.11, l, fontsize=10, fontweight='bold',
                 color=TEXT, ha='center', fontfamily='monospace')
-        ax.text(x + 0.135, 0.085, desc, fontsize=7, color=TEXT_DIM,
+        ax.text(x + 0.14, 0.07, d, fontsize=7, color=TEXT_DIM,
                 ha='center', fontfamily='monospace')
 
-    watermark(ax)
+    wm(ax)
     plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'request-lifecycle.png'),
-                dpi=180, facecolor=BG, bbox_inches='tight', pad_inches=0.3)
+    plt.savefig(f'{OUT}/request-lifecycle.png', dpi=150, facecolor=BG,
+                bbox_inches='tight', pad_inches=0.3)
     plt.close()
-    print("[+] request-lifecycle.png")
+    print('[+] request-lifecycle.png')
 
 
 if __name__ == '__main__':
-    generate_system_architecture()
-    generate_deployment_flow()
-    generate_network_topology()
-    generate_request_lifecycle()
-    print("\nAll diagrams generated!")
+    gen_system()
+    gen_deploy()
+    gen_network()
+    gen_request()
+    print('\nAll diagrams generated!')
