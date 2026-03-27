@@ -9,33 +9,7 @@
 
 HomelabARR is two containers working together:
 
-```
-┌────────────────────────────────────────────────────┐
-│                 Your Server                         │
-│                                                     │
-│  ┌─────────────────┐    ┌────────────────────────┐  │
-│  │ Frontend (:8084) │    │ Backend (:8092)         │  │
-│  │ nginx + React    │───▶│ Node.js + Express       │  │
-│  │ The pretty UI    │    │ The brains              │  │
-│  └─────────────────┘    │  ├─ CLI Bridge (reads   │  │
-│                          │  │   app templates)      │  │
-│                          │  ├─ Docker SDK (manages  │  │
-│                          │  │   containers)         │  │
-│                          │  ├─ JWT Auth             │  │
-│                          │  └─ SSE Streaming        │  │
-│                          └──────────┬───────────────┘  │
-│                                     │                   │
-│                          ┌──────────▼───────────────┐  │
-│                          │ Docker Socket             │  │
-│                          │ /var/run/docker.sock      │  │
-│                          └──────────────────────────┘  │
-│                                                         │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │ App Templates (apps/)                             │  │
-│  │ 100+ Docker Compose files, one per app           │  │
-│  └──────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-```
+![System Architecture](../img/diagrams/system-architecture.png)
 
 **Frontend** = what you see in your browser. It's a React app served by nginx.
 
@@ -46,6 +20,8 @@ HomelabARR is two containers working together:
 ---
 
 ## How Deployment Works
+
+![Deployment Flow](../img/diagrams/deployment-flow.png)
 
 When you click Deploy, here's what happens step by step:
 
@@ -62,23 +38,13 @@ When you click Deploy, here's what happens step by step:
 
 ## Network Modes Explained
 
-**Standard:** Your app binds to a port. You access it at `http://server:PORT`. Simple.
+![Network Topology](../img/diagrams/network-topology.png)
 
-```
-You → http://server:8096 → Jellyfin
-```
+**Standard:** Your app binds to a port. You access it at `http://server:PORT`. Simple. No setup, works immediately.
 
-**Traefik:** Your app joins the `proxy` network. Traefik reads Docker labels and routes traffic by hostname, with automatic SSL.
+**Traefik:** Your app joins the `proxy` network. Traefik reads Docker labels and routes traffic by hostname, with automatic SSL. You get URLs like `https://jellyfin.yourdomain.com`.
 
-```
-You → https://jellyfin.yourdomain.com → Traefik → Jellyfin
-```
-
-**Traefik + Authelia:** Same as above, but Authelia sits between Traefik and your app, requiring login.
-
-```
-You → https://jellyfin.yourdomain.com → Traefik → Authelia login → Jellyfin
-```
+**Traefik + Authelia:** Same as above, but Authelia sits between Traefik and your app, requiring login with optional two-factor authentication.
 
 ---
 

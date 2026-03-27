@@ -5,6 +5,8 @@ HomelabARR has a REST API you can use to deploy apps, manage containers, and do 
 **Base URL:** `http://your-server:8092`
 (or through the frontend proxy: `http://your-server:8084/api/`)
 
+![API Request Lifecycle](../img/diagrams/request-lifecycle.png)
+
 ---
 
 ## Authentication
