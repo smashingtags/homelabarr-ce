@@ -173,3 +173,7 @@ echo 'lxc.apparmor.profile: unconfined' >> /etc/pve/lxc/<VMID>.conf
 ```
 
 Then restart the LXC container from the Proxmox UI or CLI (`pct restart <VMID>`).
+
+---
+
+[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

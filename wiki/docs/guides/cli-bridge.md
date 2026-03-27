@@ -124,3 +124,7 @@ volumes:
 ```
 
 This path points to the root of the cloned repository containing the `apps/` directory.
+
+---
+
+[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

@@ -71,7 +71,10 @@ Open **http://your-server:8084** and log in with `admin` / `admin`.
 
 ## Links
 
+- [HomelabARR](https://homelabarr.com) — Product home
 - [GitHub](https://github.com/smashingtags/homelabarr-ce)
 - [Discord](https://discord.gg/Pc7mXX786x)
 - [Demo](https://ce-demo.homelabarr.com) (login: admin/admin)
 - [Professional Edition](pe/overview.md)
+- [Imogen Labs](https://imogenlabs.ai) — Built by Imogen Labs
+- [Michael Ashley](https://mjashley.com) — Creator

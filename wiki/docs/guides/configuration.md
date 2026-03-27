@@ -116,3 +116,7 @@ docker network create proxy
 ```
 
 See [Traefik & Domain Setup](traefik-setup.md) for full reverse proxy configuration.
+
+---
+
+[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

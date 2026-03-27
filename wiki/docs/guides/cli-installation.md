@@ -59,3 +59,7 @@ docker compose -f homelabarr.yml up -d
 ```
 
 The dashboard will detect containers deployed by the CLI and show them in the **Deployed Apps** tab.
+
+---
+
+[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

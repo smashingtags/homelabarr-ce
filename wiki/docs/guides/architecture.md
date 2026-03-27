@@ -134,3 +134,7 @@ homelabarr-data/       # Docker volume for backend state (users, sessions)
 - **GitHub Actions** — automated builds on push to main
 - **Watchtower** — optional auto-updates for running containers
 - **3-tier flow** — `dev` → `staging` (1-week soak) → `main` (production)
+
+---
+
+[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

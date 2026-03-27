@@ -168,6 +168,11 @@ The app appears in the **My Apps** category after a dashboard refresh.
 
 ## Getting Help
 
+- **Website**: [homelabarr.com](https://homelabarr.com)
 - **Discord**: [discord.gg/Pc7mXX786x](https://discord.gg/Pc7mXX786x)
 - **GitHub Issues**: [Report a bug](https://github.com/smashingtags/homelabarr-ce/issues)
 - **GitHub Discussions**: [Ask a question](https://github.com/smashingtags/homelabarr-ce/discussions)
+
+---
+
+HomelabARR is built by [Imogen Labs](https://imogenlabs.ai) · Created by [Michael Ashley](https://mjashley.com)
