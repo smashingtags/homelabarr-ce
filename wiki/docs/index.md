@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="img/homelabarr-octopus-v2b.jpg" alt="HomelabARR" width="600">
+</p>
+
 # HomelabARR CE
 
 **Free, open-source Docker container management for homelabs.**
