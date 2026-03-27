@@ -66,29 +66,15 @@ docker compose -f homelabarr.yml up -d
 
 ---
 
-## Method 2: CLI Installation
-
-For users who prefer a terminal-based setup with an interactive menu:
+## Method 2: One-Line CLI Install
 
 ```bash
-# Download and run the installer
-sudo wget -qO /usr/local/bin/homelabarr-cli \
-  https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh
-sudo chmod +x /usr/local/bin/homelabarr-cli
-
-# Run the interactive installer
-homelabarr-cli -i
+curl -fsSL https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh | sudo bash
 ```
 
-The CLI installer will:
+Clones the repo, configures Docker, and launches an interactive menu to deploy apps.
 
-1. Clone the HomelabARR CE repository
-2. Set up environment variables
-3. Configure Docker networks
-4. Present an interactive menu to deploy applications
-
-!!! tip "CLI vs Web Dashboard"
-    The CLI and web dashboard are complementary. The CLI installs the underlying Docker Compose templates; the web dashboard provides a GUI for the same catalog. You can use both.
+→ [CLI details](cli-installation.md)
 
 ---
 
