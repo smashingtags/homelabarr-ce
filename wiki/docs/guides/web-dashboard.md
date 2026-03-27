@@ -168,5 +168,3 @@ The dashboard supports light and dark mode:
 All screenshots in this wiki show dark mode. Light mode uses the same layout with inverted colors.
 
 ---
-
-[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

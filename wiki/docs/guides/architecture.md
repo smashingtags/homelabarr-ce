@@ -136,5 +136,3 @@ homelabarr-data/       # Docker volume for backend state (users, sessions)
 - **3-tier flow** — `dev` → `staging` (1-week soak) → `main` (production)
 
 ---
-
-[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

@@ -448,5 +448,3 @@ Your support helps us:
 *Together we're building the best self-hosted media server solution.*
 
 ---
-
-[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

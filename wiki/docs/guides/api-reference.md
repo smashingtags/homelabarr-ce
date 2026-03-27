@@ -243,5 +243,3 @@ All errors follow this structure:
 Status codes: `400` bad request, `401` not authenticated, `403` forbidden, `404` not found, `500` server error, `503` Docker unavailable.
 
 ---
-
-[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

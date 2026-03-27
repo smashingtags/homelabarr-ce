@@ -124,5 +124,3 @@ See the [Authelia documentation](https://www.authelia.com/integration/proxies/tr
 HomelabARR includes a **CF Companion** app in the catalog that automatically creates Cloudflare DNS records when you deploy new containers with Traefik labels. Deploy it from the **System & Utilities** category to eliminate manual DNS management.
 
 ---
-
-[homelabarr.com](https://homelabarr.com) · [Imogen Labs](https://imogenlabs.ai) · [Michael Ashley](https://mjashley.com)

@@ -63,12 +63,21 @@ plugins:
 # Customization
 extra:
   social:
+    - icon: fontawesome/solid/globe
+      link: https://homelabarr.com
+      name: HomelabARR
     - icon: fontawesome/brands/github
       link: https://github.com/smashingtags/homelabarr-ce
       name: GitHub
     - icon: fontawesome/brands/discord
       link: https://discord.gg/Pc7mXX786x
       name: Discord
+    - icon: fontawesome/solid/building
+      link: https://imogenlabs.ai
+      name: Imogen Labs
+    - icon: fontawesome/solid/user
+      link: https://mjashley.com
+      name: Michael Ashley
 
 markdown_extensions:
   - admonition

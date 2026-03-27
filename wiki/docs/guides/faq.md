@@ -175,4 +175,3 @@ The app appears in the **My Apps** category after a dashboard refresh.
 
 ---
 
-HomelabARR is built by [Imogen Labs](https://imogenlabs.ai) · Created by [Michael Ashley](https://mjashley.com)
