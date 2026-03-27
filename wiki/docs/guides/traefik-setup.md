@@ -1,44 +1,74 @@
 # Traefik & Domain Setup
 
-This guide covers setting up Traefik reverse proxy with automatic SSL, so you can access your apps via `https://app.yourdomain.com` instead of `http://server-ip:port`.
+This guide is for when you're ready to level up from `http://server-ip:PORT` to `https://plex.yourdomain.com` with free SSL certificates.
+
+!!! info "You don't need this to get started"
+    Traefik is optional. If you just want to deploy apps and access them by IP and port number, skip this entirely. Come back when you're ready for custom domains.
 
 ---
 
-## Prerequisites
+## What You Need
 
-- A registered domain name
-- DNS managed by Cloudflare (or another supported provider)
-- A public IP address (or Cloudflare tunnel)
-- Docker and Docker Compose installed
+- **A domain name** — you can buy one from Cloudflare, Namecheap, Google Domains, etc. (around $10/year)
+- **Cloudflare account** — free, manages your DNS (other providers work too, but Cloudflare is easiest)
+- **Your server's public IP** — or use a Cloudflare tunnel if your ISP blocks ports
 
 ---
 
-## Overview
+## How It Works
+
+Here's the flow in plain English:
 
 ```
-Internet → Cloudflare DNS → Your Server:443 → Traefik → App Container
+Someone types plex.yourdomain.com
+→ Cloudflare looks up the DNS record and points to your server
+→ Traefik (running on your server) catches the request
+→ Traefik routes it to the right container
+→ Free SSL certificate is handled automatically
 ```
 
-Traefik:
-
-- Automatically discovers Docker containers via labels
-- Requests and renews SSL certificates from Let's Encrypt
-- Routes traffic based on hostname rules
-- Integrates with Authelia for authentication
+You set it up once, and every new app you deploy with Traefik mode gets its own URL automatically.
 
 ---
 
 ## Step 1: Create the Docker Network
 
+Traefik and your apps need to be on the same network so they can talk to each other:
+
 ```bash
 docker network create proxy
 ```
 
-All Traefik-routed containers join this network.
+One command, done. This only needs to happen once.
 
-## Step 2: Set Up Traefik
+## Step 2: Set Up Cloudflare DNS
 
-Create a directory for Traefik configuration:
+1. Log in to [Cloudflare](https://dash.cloudflare.com)
+2. Add your domain (or select it if it's already there)
+3. Create an **API token**: Go to My Profile → API Tokens → Create Token → Use the "Edit zone DNS" template
+4. Save this token — you'll need it in the next step
+
+For DNS records, you have two options:
+
+**Option A: Wildcard (recommended)** — one record covers everything:
+
+| Type | Name | Content | Proxy |
+|------|------|---------|-------|
+| A | `*` | Your server's public IP | ✅ Proxied |
+
+**Option B: Individual records** — one per app:
+
+| Type | Name | Content | Proxy |
+|------|------|---------|-------|
+| A | `plex` | Your server's public IP | ✅ Proxied |
+| A | `radarr` | Your server's public IP | ✅ Proxied |
+| A | `sonarr` | Your server's public IP | ✅ Proxied |
+
+The wildcard is easier — you won't have to add a new DNS record every time you deploy an app.
+
+## Step 3: Install Traefik
+
+Create a folder for Traefik's config:
 
 ```bash
 mkdir -p /opt/appdata/traefik
@@ -46,7 +76,7 @@ touch /opt/appdata/traefik/acme.json
 chmod 600 /opt/appdata/traefik/acme.json
 ```
 
-Create `docker-compose.yml` for Traefik:
+Create a file called `traefik-compose.yml`:
 
 ```yaml
 services:
@@ -66,7 +96,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /opt/appdata/traefik/acme.json:/acme.json
     command:
-      - --api.dashboard=true
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
@@ -78,49 +107,60 @@ services:
       - --certificatesresolvers.letsencrypt.acme.storage=/acme.json
     networks:
       - proxy
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.traefik.rule=Host(`traefik.yourdomain.com`)
-      - traefik.http.routers.traefik.tls.certresolver=letsencrypt
-      - traefik.http.services.traefik.loadbalancer.server.port=8080
 
 networks:
   proxy:
     external: true
 ```
 
+!!! warning "Replace the placeholders"
+    Change `your@email.com` to your real email and `your-cloudflare-api-token` to the API token you created in Step 2.
+
+Start Traefik:
+
 ```bash
-docker compose up -d
+docker compose -f traefik-compose.yml up -d
 ```
-
-## Step 3: Configure DNS
-
-In your Cloudflare dashboard, create DNS records for each app:
-
-| Type | Name | Content | Proxy |
-|------|------|---------|-------|
-| A | `traefik` | Your server's public IP | ✅ Proxied |
-| A | `plex` | Your server's public IP | ✅ Proxied |
-| A | `radarr` | Your server's public IP | ✅ Proxied |
-
-Or use a wildcard: `*.yourdomain.com → Your IP`
 
 ## Step 4: Deploy Apps with Traefik Mode
 
-In the HomelabARR dashboard, select **Traefik** as the deployment mode. The app's Docker labels handle the rest — Traefik discovers the container, requests a certificate, and starts routing traffic.
+Now the fun part. In the HomelabARR dashboard:
+
+1. Click **Deploy** on any app
+2. Choose **Traefik** as the deployment mode
+3. Set your domain name in the config (e.g., `yourdomain.com`)
+4. Click Deploy
+
+Traefik automatically:
+- Detects the new container
+- Requests an SSL certificate from Let's Encrypt
+- Starts routing `https://appname.yourdomain.com` to it
+
+No manual config. No certificate juggling. It just works.
 
 ---
 
-## Adding Authelia (Optional)
+## Adding Authelia (Extra Security)
 
-Authelia adds a login page with optional multi-factor authentication in front of your apps.
+Authelia puts a login page in front of your apps. Instead of anyone being able to access `https://radarr.yourdomain.com`, they'll have to log in first. You can even add two-factor authentication.
 
-See the [Authelia documentation](https://www.authelia.com/integration/proxies/traefik/) for setup instructions. Once running, deploy apps with **Traefik + Authelia** mode — templates that include `chain-authelia` middleware labels will automatically require authentication.
+This is optional, but great for apps you expose to the internet.
+
+Check out the [Authelia docs](https://www.authelia.com/integration/proxies/traefik/) for setup. Once it's running, deploy apps with **Traefik + Authelia** mode and they're automatically protected.
+
+---
+
+## CF Companion (Auto DNS)
+
+Tired of manually adding DNS records in Cloudflare every time you deploy an app? HomelabARR includes **CF Companion** in the app catalog. Deploy it from **System & Utilities** and it will automatically create Cloudflare DNS records whenever a new container with Traefik labels starts up.
+
+Set it and forget it.
 
 ---
 
-## Cloudflare Companion
+## Don't have a public IP?
 
-HomelabARR includes a **CF Companion** app in the catalog that automatically creates Cloudflare DNS records when you deploy new containers with Traefik labels. Deploy it from the **System & Utilities** category to eliminate manual DNS management.
+If your ISP blocks incoming connections (or you use CGNAT), you have options:
 
----
+- **Cloudflare Tunnel** — HomelabARR includes `Cloudflared` in the catalog. Deploy it and it creates a secure tunnel to Cloudflare without opening any ports.
+- **Tailscale / WireGuard** — access your server over a VPN from anywhere.

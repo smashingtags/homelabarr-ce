@@ -1,63 +1,51 @@
 # CLI Installation
 
-For users who prefer a terminal-based setup, HomelabARR CE includes an interactive CLI installer.
+Prefer the terminal over a web browser? The CLI installer sets everything up interactively.
 
 ---
 
-## Install
+## One-Line Install
 
 ```bash
-# Download the installer
-sudo wget -qO /usr/local/bin/homelabarr-cli \
-  https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh
-sudo chmod +x /usr/local/bin/homelabarr-cli
-
-# Run the interactive installer
-homelabarr-cli -i
+curl -fsSL https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh | sudo bash
 ```
 
-The installer will:
+That's it. The script will:
 
-1. Check for Docker and Docker Compose
-2. Clone the HomelabARR CE repository to `/opt/homelabarr`
-3. Set up environment variables (timezone, UID/GID, appdata path)
+1. Check that Docker is installed (and tell you if it's not)
+2. Download the HomelabARR repo to `/opt/homelabarr`
+3. Walk you through setting up your timezone, user ID, and data paths
 4. Configure Docker networks
-5. Present an interactive menu for deploying applications
+5. Give you an interactive menu to start deploying apps
 
 ---
 
 ## CLI vs Web Dashboard
 
-The CLI and web dashboard are complementary approaches to the same template library:
+They're two ways to do the same thing — use whichever you prefer, or both:
 
-| Feature | CLI | Web Dashboard |
-|---------|-----|---------------|
-| App catalog | Terminal menu | Visual grid with icons |
-| Deploy apps | `docker compose up -d` | One-click with progress UI |
-| Container management | `docker ps`, `docker stop` | Dashboard controls |
-| Port conflicts | Manual checking | Port Manager tool |
-| Configuration | Edit `.env` files | Modal with form fields |
-| Best for | Headless servers, SSH-only access | Visual management, new users |
+| | CLI | Web Dashboard |
+|--|-----|---------------|
+| **Browse apps** | Text menu | Visual catalog with icons |
+| **Deploy** | Terminal commands | One-click with progress bar |
+| **Manage containers** | `docker ps`, `docker stop` | Buttons in the UI |
+| **Best for** | SSH-only servers, scripting, power users | Visual management, beginners |
 
-Both methods use the same Docker Compose templates from the `apps/` directory.
+Both use the exact same app templates from the `apps/` folder. An app deployed from the CLI shows up in the web dashboard, and vice versa.
 
 ---
 
-## Post-Install
+## Adding the Web Dashboard After CLI Install
 
-After CLI installation, you can optionally start the web dashboard:
+Already installed via CLI and want the dashboard too?
 
 ```bash
 cd /opt/homelabarr
 
-# Set required variables
 export JWT_SECRET=$(openssl rand -hex 32)
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
 
-# Start the dashboard
 docker compose -f homelabarr.yml up -d
 ```
 
-The dashboard will detect containers deployed by the CLI and show them in the **Deployed Apps** tab.
-
----
+Open `http://YOUR-SERVER-IP:8084` and any containers you deployed via CLI will appear in the **Deployed Apps** tab.

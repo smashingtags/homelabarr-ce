@@ -1,245 +1,189 @@
 # API Reference
 
-The HomelabARR CE backend exposes a REST API on port 8092.
+HomelabARR has a REST API you can use to deploy apps, manage containers, and do everything the dashboard does — but from scripts, cron jobs, or other tools.
 
-**Access methods:**
-
-- Via the frontend proxy: `http://your-server:8084/api/<endpoint>` (nginx strips `/api` prefix)
-- Direct: `http://your-server:8092/<endpoint>`
-
-All endpoints return JSON unless noted. Protected endpoints require a JWT token or API key in the `Authorization` header:
-
-```
-Authorization: Bearer <jwt-token-or-hlr_api-key>
-```
+**Base URL:** `http://your-server:8092`
+(or through the frontend proxy: `http://your-server:8084/api/`)
 
 ---
 
 ## Authentication
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/auth/login` | None | Log in and receive a JWT token |
-| `POST` | `/auth/logout` | Required | Invalidate the current session |
-| `GET` | `/auth/me` | Required | Get the authenticated user's profile |
-| `POST` | `/auth/change-password` | Required | Change your password |
-| `GET` | `/auth/sessions` | Required | List your active sessions |
-| `DELETE` | `/auth/sessions/:sessionId` | Required | Revoke a specific session |
-| `POST` | `/auth/users` | Admin | Create a new user account |
-| `GET` | `/auth/users` | Admin | List all users |
-
-### POST /auth/login
-
-```json
-// Request
-{ "username": "admin", "password": "admin" }
-
-// Response
-{
-  "success": true,
-  "token": "eyJhbGciOiJIUzI1NiIs...",
-  "user": {
-    "id": "admin",
-    "username": "admin",
-    "role": "admin"
-  }
-}
-```
-
----
-
-## API Keys
-
-API keys provide persistent authentication for scripts, mobile apps, and automation. Keys are prefixed with `hlr_` and don't expire unless revoked.
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/auth/api-keys` | Required | Generate a new API key |
-| `GET` | `/auth/api-keys` | Required | List your API keys |
-| `DELETE` | `/auth/api-keys/:keyId` | Required | Revoke an API key |
-
-### POST /auth/api-keys
-
-```json
-// Request
-{ "name": "my-script" }
-
-// Response
-{
-  "success": true,
-  "key": "hlr_a1b2c3d4e5f6...",
-  "id": "key_abc123",
-  "name": "my-script"
-}
-```
-
-!!! warning "Save the key"
-    The full API key is only shown once at creation. Store it securely.
-
-### Using an API Key
+Most endpoints require a login token or API key. Get one by logging in:
 
 ```bash
-curl -H "Authorization: Bearer hlr_a1b2c3d4e5f6..." \
-  http://your-server:8092/applications
+# Log in and get a token
+curl -X POST http://your-server:8092/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin", "password": "admin"}'
 ```
 
----
-
-## Applications
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/applications` | None | List all apps from the catalog |
-| `POST` | `/applications/:appId/stop` | Conditional | Stop an application's containers |
-| `DELETE` | `/applications/:appId` | Conditional | Remove an application |
-| `GET` | `/applications/:appId/logs` | Conditional | Get application logs |
-
-!!! note "Conditional auth"
-    When `AUTH_ENABLED=true` (default), these endpoints require a valid token. When auth is disabled, they accept unauthenticated requests.
-
-### GET /applications
-
-Returns the full app catalog organized by category:
-
-```json
-{
-  "success": true,
-  "applications": {
-    "media-servers": [...],
-    "downloads": [...],
-    "ai": [...],
-    "monitoring": [...],
-    "self-hosted": [...]
-  },
-  "totalApps": 123,
-  "categories": [
-    "ai", "backup", "downloads", "media-management",
-    "media-servers", "monitoring", "self-hosted",
-    "system", "transcoding", "virtual-desktops"
-  ]
-}
-```
-
----
-
-## Deployment
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/deploy` | Conditional | Deploy an application |
-| `GET` | `/deployment-modes` | None | List available deployment modes |
-| `GET` | `/deployments/active` | Conditional | List in-progress deployments |
-| `GET` | `/deployments/:deploymentId/status` | Conditional | Get status of a specific deployment |
-
-### POST /deploy
-
-```json
-// Request
-{
-  "appId": "media-servers-plex",
-  "config": {
-    "TZ": "America/New_York",
-    "ID": "1000",
-    "DOMAIN": "plex.example.com",
-    "APPFOLDER": "/opt/appdata"
-  },
-  "mode": { "type": "traefik" }
-}
-
-// Response
-{
-  "success": true,
-  "deploymentId": "550e8400-e29b-41d4-a716-446655440000",
-  "streamEndpoint": "/stream/progress",
-  "statusEndpoint": "/deployments/550e8400-.../status"
-}
-```
-
-`mode.type` accepts: `standard`, `traefik`, or `authelia`.
-
-### GET /deployment-modes
-
-```json
-{
-  "success": true,
-  "modes": [
-    { "type": "standard", "name": "Standard", "description": "Basic Docker deployment without reverse proxy" },
-    { "type": "traefik", "name": "Traefik", "description": "Deployment with Traefik reverse proxy and SSL" },
-    { "type": "authelia", "name": "Traefik + Authelia", "description": "Full deployment with authentication" }
-  ]
-}
-```
-
----
-
-## Progress Streaming (SSE)
-
-| Method | Path | Auth | Response | Description |
-|--------|------|------|----------|-------------|
-| `GET` | `/stream/progress` | None | `text/event-stream` | SSE connection for deployment events |
-| `POST` | `/stream/deployments/:id/subscribe` | Conditional | JSON | Subscribe to a specific deployment |
-
-!!! warning "Not JSON"
-    `/stream/progress` returns `text/event-stream`. Use `EventSource` or a streaming HTTP client.
-
----
-
-## Containers
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/containers` | Conditional | List all Docker containers |
-| `GET` | `/containers/:id/stats` | None | Live stats for a container |
-| `GET` | `/containers/:id/logs` | None | Container logs |
-| `POST` | `/containers/:id/start` | Conditional | Start a stopped container |
-| `POST` | `/containers/:id/stop` | Conditional | Stop a running container |
-| `POST` | `/containers/:id/restart` | Conditional | Restart a container |
-| `DELETE` | `/containers/:id` | Conditional | Remove a container |
-
-Add `?stats=true` to `GET /containers` for CPU and memory usage.
-
----
-
-## Ports
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/ports/check` | None | List all host ports in use by Docker |
-| `GET` | `/ports/available` | None | Find next available port |
-
-### GET /ports/available
+You'll get back a JWT token. Use it in all your other requests:
 
 ```bash
-# Find next available port starting from 8000
-curl http://your-server:8092/ports/available?start=8000&end=9000
+curl -H "Authorization: Bearer YOUR_TOKEN_HERE" http://your-server:8092/applications
+```
 
-# Response
-{ "success": true, "availablePort": 8085 }
+### API Keys (Easier for Scripts)
+
+Tokens expire. If you want something permanent for scripts or automation, use an API key instead:
+
+```bash
+# Create an API key
+curl -X POST http://your-server:8092/auth/api-keys \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "my-script"}'
+```
+
+You'll get back a key starting with `hlr_`. Use it the same way as a token:
+
+```bash
+curl -H "Authorization: Bearer hlr_your_key_here" http://your-server:8092/applications
+```
+
+!!! warning "Save your API key"
+    The full key is only shown once when you create it. If you lose it, delete it and make a new one.
+
+---
+
+## Browse the App Catalog
+
+```bash
+# Get all available apps
+curl http://your-server:8092/applications
+```
+
+Returns all 100+ apps organized by category, with total count.
+
+---
+
+## Deploy an App
+
+```bash
+curl -X POST http://your-server:8092/deploy \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "appId": "media-servers-plex",
+    "config": {
+      "TZ": "America/New_York",
+      "ID": "1000",
+      "APPFOLDER": "/opt/appdata"
+    },
+    "mode": { "type": "standard" }
+  }'
+```
+
+**Mode options:** `standard`, `traefik`, or `authelia`
+
+The response includes a `deploymentId` and a streaming endpoint so you can watch the progress.
+
+---
+
+## Manage Containers
+
+```bash
+# List all containers
+curl -H "Authorization: Bearer YOUR_TOKEN" http://your-server:8092/containers
+
+# With CPU/memory stats
+curl -H "Authorization: Bearer YOUR_TOKEN" "http://your-server:8092/containers?stats=true"
+
+# Start a container
+curl -X POST -H "Authorization: Bearer YOUR_TOKEN" http://your-server:8092/containers/CONTAINER_ID/start
+
+# Stop a container
+curl -X POST -H "Authorization: Bearer YOUR_TOKEN" http://your-server:8092/containers/CONTAINER_ID/stop
+
+# Restart a container
+curl -X POST -H "Authorization: Bearer YOUR_TOKEN" http://your-server:8092/containers/CONTAINER_ID/restart
+
+# Remove a container
+curl -X DELETE -H "Authorization: Bearer YOUR_TOKEN" http://your-server:8092/containers/CONTAINER_ID
+
+# View container logs
+curl http://your-server:8092/containers/CONTAINER_ID/logs
 ```
 
 ---
 
-## Health
+## Check Ports
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/health` | None | Health check with Docker, platform, and config status |
+```bash
+# See all ports in use
+curl http://your-server:8092/ports/check
 
-Returns `200` when healthy, `503` when degraded.
+# Find the next available port
+curl "http://your-server:8092/ports/available?start=8000&end=9000"
+```
 
 ---
 
-## Error Format
+## Health Check
 
-All errors follow this structure:
+```bash
+curl http://your-server:8092/health
+```
+
+Returns `200` if everything's good, `503` if Docker isn't accessible.
+
+---
+
+## User Management (Admin Only)
+
+```bash
+# Create a new user
+curl -X POST http://your-server:8092/auth/users \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "viewer", "password": "a-good-password", "role": "user"}'
+
+# List all users
+curl -H "Authorization: Bearer YOUR_TOKEN" http://your-server:8092/auth/users
+```
+
+---
+
+## Full Endpoint List
+
+| Method | Endpoint | Auth | What it does |
+|--------|----------|------|-------------|
+| `POST` | `/auth/login` | No | Log in |
+| `POST` | `/auth/logout` | Yes | Log out |
+| `GET` | `/auth/me` | Yes | Get your profile |
+| `POST` | `/auth/change-password` | Yes | Change password |
+| `POST` | `/auth/users` | Admin | Create user |
+| `GET` | `/auth/users` | Admin | List users |
+| `POST` | `/auth/api-keys` | Yes | Create API key |
+| `GET` | `/auth/api-keys` | Yes | List your API keys |
+| `DELETE` | `/auth/api-keys/:id` | Yes | Delete an API key |
+| `GET` | `/applications` | No* | App catalog |
+| `POST` | `/deploy` | Yes* | Deploy an app |
+| `GET` | `/containers` | Yes* | List containers |
+| `POST` | `/containers/:id/start` | Yes* | Start container |
+| `POST` | `/containers/:id/stop` | Yes* | Stop container |
+| `POST` | `/containers/:id/restart` | Yes* | Restart container |
+| `DELETE` | `/containers/:id` | Yes* | Remove container |
+| `GET` | `/containers/:id/logs` | No | Container logs |
+| `GET` | `/ports/check` | No | Ports in use |
+| `GET` | `/ports/available` | No | Find open port |
+| `GET` | `/health` | No | Health check |
+| `GET` | `/stream/progress` | No | Deployment events (SSE) |
+
+*\* When `AUTH_ENABLED=true` (the default). If you disable auth, these become open.*
+
+---
+
+## Errors
+
+When something goes wrong, you'll get a clear message:
 
 ```json
 {
-  "error": "Description of what went wrong",
-  "details": "Additional context"
+  "error": "What went wrong",
+  "details": "More info about why"
 }
 ```
 
-Status codes: `400` bad request, `401` not authenticated, `403` forbidden, `404` not found, `500` server error, `503` Docker unavailable.
-
----
+Common status codes: `400` (bad request), `401` (not logged in), `403` (not allowed), `404` (not found), `500` (server error).

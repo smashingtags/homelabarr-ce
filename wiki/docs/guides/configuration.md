@@ -1,120 +1,120 @@
 # Configuration
 
-HomelabARR CE is configured through environment variables, either set directly or in a `.env` file alongside your compose file.
+HomelabARR uses environment variables to control how it runs. You set them before starting the containers, and they tell the app things like "what port to use" and "where to store data."
 
 ---
 
-## Required Variables
+## The Two You Actually Need
 
-These must be set for a working deployment:
+These are required. Without them, things break:
 
-| Variable | Example | Description |
+| Variable | What it does | How to set it |
+|----------|-------------|---------------|
+| `JWT_SECRET` | A random secret key that keeps your login secure | `export JWT_SECRET=$(openssl rand -hex 32)` |
+| `DOCKER_GID` | Tells the container which group can talk to Docker | `export DOCKER_GID=$(getent group docker \| cut -d: -f3)` |
+
+That's it. Everything else has sensible defaults.
+
+---
+
+## Common Settings
+
+These are optional but useful:
+
+| Variable | Default | What it does |
 |----------|---------|-------------|
-| `JWT_SECRET` | `$(openssl rand -hex 32)` | Secret key for JWT token signing. **Must be unique.** |
-| `DOCKER_GID` | `999` | Your host's Docker group ID. Find it: `getent group docker \| cut -d: -f3` |
+| `CORS_ORIGIN` | — | The URL you use to open the dashboard (e.g., `http://192.168.1.100:8084`). Set this if you get CORS errors after logging in. |
+| `FRONTEND_PORT` | `8084` | The port for the web dashboard |
+| `BACKEND_PORT` | `8092` | The port for the API server |
+| `TZ` | `UTC` | Your timezone (e.g., `America/New_York`, `Europe/London`) |
+| `APPFOLDER` | `/opt/appdata` | Where deployed apps store their data |
+| `AUTH_ENABLED` | `true` | Turn off if you don't want a login screen (not recommended) |
 
 ---
 
-## Common Variables
+## App Settings
 
-| Variable | Default | Description |
+When you deploy an app, these variables get injected into its Docker Compose template:
+
+| Variable | Default | What it does |
 |----------|---------|-------------|
-| `CORS_ORIGIN` | `https://your-domain.com` | URL you use to access the dashboard. Must match exactly. |
-| `FRONTEND_PORT` | `8084` | Host port for the web dashboard |
-| `BACKEND_PORT` | `8092` | Host port for the API server |
-| `AUTH_ENABLED` | `true` | Enable/disable authentication |
-| `JWT_EXPIRES_IN` | `24h` | JWT token expiration time |
-| `DEFAULT_ADMIN_PASSWORD` | `admin` | Initial admin password (change after first login) |
-| `CLI_BRIDGE_HOST_PATH` | `/opt/homelabarr` | Path to HomelabARR repo on host (for CLI Bridge) |
+| `ID` | `1000` | The user/group ID the container runs as |
+| `TZ` | `UTC` | Timezone for the app |
+| `APPFOLDER` | `/opt/appdata` | Where the app stores its config and data |
+| `DOMAIN` | `localhost` | Your domain name (only matters if you use Traefik) |
+| `DOCKERNETWORK` | `bridge` or `proxy` | Which Docker network to use (set automatically based on deploy mode) |
+
+You don't usually need to change these — the deploy modal lets you customize them per app.
 
 ---
 
-## App Deployment Variables
+## Using a .env File (Recommended)
 
-These are injected into every app template at deploy time:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ID` | `1000` | UID/GID for container processes |
-| `TZ` | `UTC` | Timezone (e.g., `America/New_York`) |
-| `UMASK` | `002` | File permission mask |
-| `RESTARTAPP` | `unless-stopped` | Container restart policy |
-| `DOCKERNETWORK` | `proxy` or `bridge` | Network based on deployment mode |
-| `DOMAIN` | `localhost` | Base domain for Traefik routing |
-| `APPFOLDER` | `/opt/appdata` | Root path for persistent app data |
-| `SECURITYOPS` | `no-new-privileges` | Docker security option |
-
----
-
-## Using a .env File
-
-Create a `.env` file next to your `homelabarr.yml`:
+Instead of typing `export` commands every time, save your settings in a file called `.env` next to your `homelabarr.yml`:
 
 ```bash
 # Required
-JWT_SECRET=your-very-long-random-secret-here
+JWT_SECRET=paste-a-long-random-string-here
 DOCKER_GID=999
 
 # Recommended
 CORS_ORIGIN=http://192.168.1.100:8084
 TZ=America/New_York
-
-# Optional
-FRONTEND_PORT=8084
-BACKEND_PORT=8092
-CLI_BRIDGE_HOST_PATH=/opt/homelabarr
 ```
 
-Then start with:
+!!! tip "How to get your DOCKER_GID"
+    Run `getent group docker | cut -d: -f3` on your server. It'll print a number like `999` or `998`. Use that number.
+
+Then start HomelabARR like this:
 
 ```bash
 docker compose -f homelabarr.yml --env-file .env up -d
 ```
 
----
-
-## Docker Socket Access
-
-The backend container needs access to Docker to manage containers. The default `homelabarr.yml` mounts `/var/run/docker.sock`.
-
-!!! warning "Security note"
-    Docker socket access gives the backend full control over Docker on your host. In production, consider using a Docker socket proxy like [Tecnativa/docker-socket-proxy](https://github.com/Tecnativa/docker-socket-proxy) to limit API access.
-
-If the Docker socket is unavailable, the backend starts in degraded mode — the app catalog still works, but container management and deployments are disabled.
+The `.env` file is the cleanest way to manage your settings. It survives reboots and you only set things up once.
 
 ---
 
-## Data Persistence
+## Where Does My Data Go?
 
-Application data is stored in the `homelabarr-data` Docker volume by default. App configurations (JWT keys, user database) persist across container restarts.
+Two places:
 
-Deployed apps store their data under `${APPFOLDER}` (default: `/opt/appdata/`):
+**App data** goes in `/opt/appdata/` (or wherever `APPFOLDER` points):
 
 ```
 /opt/appdata/
-├── plex/          # Plex configuration
-├── radarr/        # Radarr configuration
-├── sonarr/        # Sonarr configuration
-├── qbittorrent/   # Download client data
+├── plex/           # Plex libraries and settings
+├── radarr/         # Radarr config and database
+├── sonarr/         # Sonarr config and database
+├── qbittorrent/    # Download client settings
 └── ...
 ```
 
+Each app gets its own folder. This is what you want to back up.
+
+**HomelabARR's own data** (user accounts, sessions) lives in a Docker volume called `homelabarr-data`. This persists across container restarts automatically.
+
 ---
 
-## Network Configuration
+## Docker Socket
 
-### Standard Mode
+The backend needs to talk to Docker to deploy and manage containers. The default `homelabarr.yml` handles this by mounting `/var/run/docker.sock` into the container.
 
-Containers use Docker's default bridge network with direct port mappings.
+If the Docker socket isn't available (maybe you're testing without Docker), the backend still starts — you can browse the app catalog, but deploying and managing containers won't work.
 
-### Traefik Mode
+!!! info "Security note"
+    Docker socket access gives the backend control over Docker on your server. For most homelabs, this is fine. If you want to limit what it can do, look into [Docker socket proxy](https://github.com/Tecnativa/docker-socket-proxy).
 
-Containers join the `proxy` network. Ensure it exists:
+---
+
+## Network Setup
+
+**Standard mode** (the default): containers use Docker's built-in bridge network. Each app gets a port number and you access it directly.
+
+**Traefik mode**: containers join a network called `proxy` so Traefik can route traffic to them. If you're using Traefik, create this network first:
 
 ```bash
 docker network create proxy
 ```
 
-See [Traefik & Domain Setup](traefik-setup.md) for full reverse proxy configuration.
-
----
+See the [Traefik & Domain Setup](traefik-setup.md) guide for the full walkthrough.

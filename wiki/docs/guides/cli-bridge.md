@@ -1,55 +1,56 @@
 # CLI Bridge
 
-The CLI Bridge connects the web dashboard to the Docker Compose template library. It reads YAML templates from the `apps/` directory and serves them as a browsable, deployable catalog.
+The CLI Bridge is how the dashboard knows about all those apps. It reads Docker Compose files from the `apps/` folder and turns them into the browsable, deployable catalog you see in the UI.
+
+You don't need to understand this to use HomelabARR — but if you want to add your own apps or know how things work under the hood, keep reading.
 
 ---
 
 ## How It Works
 
-On startup, the backend:
+When the backend starts, it:
 
-1. Scans the `apps/` directory for YAML templates
-2. Parses each template (image, ports, environment variables, volumes, labels)
-3. Serves the catalog via the `/applications` API
-4. At deploy time: loads the template, applies user config, runs `docker compose up -d`
+1. Scans every subfolder in `apps/` for YAML files
+2. Reads each file to figure out the app's name, image, ports, and features
+3. Makes them available in the dashboard catalog
+4. When you click Deploy, it takes the YAML template, fills in your settings, and runs `docker compose up -d`
 
 ---
 
-## Directory Structure
+## App Folder Structure
+
+Here's how apps are organized on disk:
 
 ```
 apps/
-├── ai/                    # AI & Machine Learning (Ollama, ComfyUI, etc.)
-├── backup/                # Backup & Storage (Duplicati, Restic, Rsnapshot)
-├── downloads/             # Downloads & Automation (qBittorrent, SABnzbd, etc.)
-├── legacy/                # Deprecated apps (not shown in dashboard)
-├── media-management/      # Media Management (Radarr, Sonarr, etc.)
-├── media-servers/         # Media Servers (Plex, Jellyfin, Emby)
-├── monitoring/            # Monitoring & Analytics (Netdata, Grafana, etc.)
-├── myapps/                # Your custom templates
-├── self-hosted/           # Self-hosted apps (Nextcloud, Bitwarden, etc.)
-├── system/                # System & Utilities (Portainer, Dozzle, etc.)
-├── transcoding/           # Transcoding (Tdarr, Handbrake, etc.)
-└── virtual-desktops/      # Virtual Desktops (Kasm-powered browsers, apps)
+├── ai/                  # Ollama, ComfyUI, Stable Diffusion, etc.
+├── backup/              # Duplicati, Restic, Rsnapshot
+├── downloads/           # qBittorrent, SABnzbd, NZBGet, Prowlarr
+├── media-management/    # Radarr, Sonarr, Lidarr, Bazarr
+├── media-servers/       # Plex, Jellyfin, Emby
+├── monitoring/          # Netdata, Grafana, Speedtest
+├── myapps/              # Your custom templates go here
+├── self-hosted/         # Nextcloud, Bitwarden, Pi-hole, n8n
+├── system/              # Portainer, Dozzle, Uptime Kuma
+├── transcoding/         # Tdarr, Handbrake, MakeMKV
+└── virtual-desktops/    # Chrome, Firefox, Steam (Kasm-powered)
 ```
 
-Only these directories are scanned. The `legacy/` directory is excluded from the catalog. Other directories are ignored.
+The folder name = the category in the dashboard. Drop a YAML file in the right folder and it shows up automatically.
 
 ---
 
 ## Template Format
 
-Each YAML file is a standard Docker Compose file. The CLI Bridge parses the first service to extract metadata:
+Each app is a standard Docker Compose file with placeholder variables. Here's what a typical one looks like:
 
 ```yaml
 version: "3"
 services:
   radarr:
-    image: ${RADARRIMAGE}
+    image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
-    restart: ${RESTARTAPP}
-    networks:
-      - ${DOCKERNETWORK}
+    restart: unless-stopped
     ports:
       - 7878:7878
     environment:
@@ -64,65 +65,37 @@ services:
       - traefik.http.services.radarr.loadbalancer.server.port=7878
 ```
 
-The bridge extracts:
+The `${VARIABLE}` placeholders get filled in when you deploy — things like your timezone, data folder, and domain name.
 
-- **id**: `media-management-radarr` (category + filename)
-- **image**: value of the `image` field
-- **ports**: from the `ports` array
-- **requiresTraefik**: `true` if labels contain `traefik.enable=true`
-- **requiresAuthelia**: `true` if labels reference `authelia` or `chain-authelia`
+### Available Variables
 
----
-
-## Deployment Modes
-
-### Standard / Local Mode
-
-The bridge rewrites the template before deploying:
-
-1. Removes external networks
-2. Strips Traefik labels
-3. Removes security_opt referencing unavailable configs
-4. Sets `DOCKERNETWORK=bridge`
-
-The rewritten file is saved temporarily, deployed, then deleted.
-
-### Traefik Mode
-
-Deploys the template as-is with `DOCKERNETWORK=proxy`. Traefik labels handle routing and SSL.
-
-### Authelia Mode
-
-Same as Traefik, plus ensures Authelia middleware is active. Templates with `chain-authelia` labels get automatic SSO protection.
+| Variable | Default | What it does |
+|----------|---------|-------------|
+| `${TZ}` | `UTC` | Timezone |
+| `${ID}` | `1000` | User/group ID for file permissions |
+| `${APPFOLDER}` | `/opt/appdata` | Where app data gets stored |
+| `${DOMAIN}` | `localhost` | Your domain for Traefik routing |
+| `${DOCKERNETWORK}` | `bridge` | Docker network (set automatically by deploy mode) |
 
 ---
 
-## Adding Custom Templates
+## What Happens During Deployment
 
-Drop a YAML file in `apps/myapps/` and it appears in the **My Apps** category:
+Depends on which mode you pick:
 
-1. Create `apps/myapps/my-app.yml`
-2. Follow standard Docker Compose format
-3. Use placeholder variables (`${APPFOLDER}`, `${TZ}`, `${ID}`, etc.)
-4. Add Traefik labels if you want reverse proxy support
-5. Restart the server or refresh the dashboard
+**Standard mode:** The bridge strips out Traefik labels and external networks, sets the network to `bridge`, and deploys. The app gets a direct port.
+
+**Traefik mode:** Deploys the template as-is with the `proxy` network. Traefik picks it up via Docker labels and starts routing.
+
+**Traefik + Authelia mode:** Same as Traefik, plus ensures Authelia middleware is active for authentication.
+
+---
+
+## Adding Your Own Apps
+
+1. Create a YAML file in `apps/myapps/` (e.g., `apps/myapps/my-cool-app.yml`)
+2. Use the template format above — standard Docker Compose with `${VARIABLE}` placeholders
+3. Refresh the dashboard — your app appears in the **My Apps** tab
 
 !!! tip "Test in Standard mode first"
-    Deploy your template in Standard mode before adding Traefik labels. Confirm the container runs correctly before introducing proxy complexity.
-
----
-
-## CLI Bridge Host Path
-
-In Docker deployments, the bridge needs to know where the HomelabARR repo lives on the host:
-
-```yaml
-environment:
-  - CLI_BRIDGE_HOST_PATH=/opt/homelabarr
-volumes:
-  - /opt/homelabarr:/homelabarr:rw
-```
-
-This path points to the root of the cloned repository containing the `apps/` directory.
-
----
+    Get your custom app working in Standard mode before adding Traefik labels. Easier to debug that way.

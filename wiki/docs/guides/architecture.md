@@ -1,138 +1,137 @@
 # Architecture
 
-HomelabARR CE is a two-container application: an nginx frontend serving a React SPA, and a Node.js backend that manages Docker containers via the Docker socket.
+!!! info "You don't need to read this"
+    This page is for developers and curious people. If you just want to use HomelabARR, the [Quick Start](quick-start.md) and [Web Dashboard](web-dashboard.md) guides have everything you need.
 
 ---
 
-## System Overview
+## The Big Picture
+
+HomelabARR is two containers working together:
 
 ```
-┌─────────────────────────────────────────────────┐
-│                  Docker Host                     │
-│                                                  │
-│  ┌──────────────────┐  ┌──────────────────────┐  │
-│  │  Frontend (8084)  │  │  Backend (8092)       │  │
-│  │  nginx + React    │──│  Node.js + Express    │  │
-│  │  SPA (shadcn/ui)  │  │  CLI Bridge           │  │
-│  └──────────────────┘  │  Docker SDK            │  │
-│                         │  JWT Auth              │  │
-│                         │  SSE Streaming         │  │
-│                         └──────────┬─────────────┘  │
-│                                    │                 │
-│                         ┌──────────▼─────────────┐  │
-│                         │  Docker Socket          │  │
-│                         │  /var/run/docker.sock   │  │
-│                         └────────────────────────┘  │
-│                                                      │
-│  ┌──────────────────────────────────────────────┐   │
-│  │  App Templates (apps/)                        │   │
-│  │  100+ Docker Compose YAML files              │   │
-│  └──────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────┐
+│                 Your Server                         │
+│                                                     │
+│  ┌─────────────────┐    ┌────────────────────────┐  │
+│  │ Frontend (:8084) │    │ Backend (:8092)         │  │
+│  │ nginx + React    │───▶│ Node.js + Express       │  │
+│  │ The pretty UI    │    │ The brains              │  │
+│  └─────────────────┘    │  ├─ CLI Bridge (reads   │  │
+│                          │  │   app templates)      │  │
+│                          │  ├─ Docker SDK (manages  │  │
+│                          │  │   containers)         │  │
+│                          │  ├─ JWT Auth             │  │
+│                          │  └─ SSE Streaming        │  │
+│                          └──────────┬───────────────┘  │
+│                                     │                   │
+│                          ┌──────────▼───────────────┐  │
+│                          │ Docker Socket             │  │
+│                          │ /var/run/docker.sock      │  │
+│                          └──────────────────────────┘  │
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │ App Templates (apps/)                             │  │
+│  │ 100+ Docker Compose files, one per app           │  │
+│  └──────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
 ```
+
+**Frontend** = what you see in your browser. It's a React app served by nginx.
+
+**Backend** = what does the work. It reads app templates, talks to Docker, handles login, and streams deployment progress to the frontend.
+
+**App templates** = standard Docker Compose YAML files in the `apps/` folder. The backend reads them; you deploy them with one click.
 
 ---
 
-## Components
+## How Deployment Works
 
-### Frontend
+When you click Deploy, here's what happens step by step:
 
-- **React 19** with **shadcn/ui** components
-- **Vite** build toolchain
-- Dark/light mode
-- Responsive layout (mobile-friendly)
-- Served by nginx in production (GHCR image: `homelabarr-frontend`)
-
-### Backend
-
-- **Node.js** with **Express**
-- **CLI Bridge** — reads and parses Docker Compose templates from `apps/`
-- **Docker SDK** — manages containers via the Docker socket
-- **JWT authentication** with session management
-- **API key auth** (`hlr_` prefix) for programmatic access
-- **SSE streaming** for real-time deployment progress
-- Production image: `homelabarr-backend` (GHCR)
-
-### App Templates
-
-- 100+ Docker Compose YAML files organized by category
-- Standard Docker Compose format with variable placeholders
-- The CLI Bridge parses templates and injects user configuration at deploy time
+1. You pick an app and a mode (Standard, Traefik, or Traefik + Authelia)
+2. Frontend sends a request to the backend: "deploy Plex in standard mode"
+3. Backend loads the Plex YAML template from `apps/media-servers/plex.yml`
+4. If Standard mode: strips out Traefik labels and external networks
+5. Fills in your settings (timezone, data path, user ID, etc.)
+6. Runs `docker compose up -d`
+7. Streams the Docker output back to your browser in real time
+8. Done — your app is running
 
 ---
 
-## Network Modes
+## Network Modes Explained
 
-### Standard (Local)
-
-```
-User → http://server:PORT → Container
-```
-
-Containers bind directly to host ports. Simple, no dependencies.
-
-### Traefik
+**Standard:** Your app binds to a port. You access it at `http://server:PORT`. Simple.
 
 ```
-User → https://app.domain.com → Traefik → Container
+You → http://server:8096 → Jellyfin
 ```
 
-Containers join the `proxy` network. Traefik reads Docker labels for routing, handles SSL via Let's Encrypt.
-
-### Traefik + Authelia
+**Traefik:** Your app joins the `proxy` network. Traefik reads Docker labels and routes traffic by hostname, with automatic SSL.
 
 ```
-User → https://app.domain.com → Traefik → Authelia → Container
+You → https://jellyfin.yourdomain.com → Traefik → Jellyfin
 ```
 
-Adds an authentication layer with SSO and optional MFA before reaching the app.
-
----
-
-## Data Flow
-
-### Deployment
+**Traefik + Authelia:** Same as above, but Authelia sits between Traefik and your app, requiring login.
 
 ```
-1. User clicks Deploy in dashboard
-2. Frontend → POST /deploy { appId, config, mode }
-3. Backend loads YAML template from apps/<category>/<app>.yml
-4. Applies deployment mode transformations (strip labels, rewrite networks)
-5. Injects environment variables
-6. Runs: docker compose up -d
-7. Streams stdout/stderr to client via SSE
-8. Returns deployment result
-```
-
-### Container Management
-
-```
-1. Frontend → POST /containers/:id/start (or stop/restart)
-2. Backend → Docker SDK → docker start/stop/restart
-3. Returns result
+You → https://jellyfin.yourdomain.com → Traefik → Authelia login → Jellyfin
 ```
 
 ---
 
-## Storage
+## Where Data Lives
 
 ```
-/opt/appdata/          # Application data (persistent)
+/opt/appdata/           # Your apps' data (configs, databases, media indexes)
 ├── plex/
 ├── radarr/
 ├── sonarr/
 └── ...
 
-homelabarr-data/       # Docker volume for backend state (users, sessions)
+homelabarr-data/        # Docker volume — HomelabARR's own settings (users, sessions)
 ```
 
----
-
-## CI/CD
-
-- **GitHub Container Registry** — pre-built images for frontend and backend
-- **GitHub Actions** — automated builds on push to main
-- **Watchtower** — optional auto-updates for running containers
-- **3-tier flow** — `dev` → `staging` (1-week soak) → `main` (production)
+Back up `/opt/appdata/` and you've backed up everything important.
 
 ---
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| Frontend | React 19, shadcn/ui, Vite |
+| Backend | Node.js, Express |
+| Container management | Docker SDK (via socket) |
+| Authentication | JWT tokens, `hlr_` API keys |
+| Deployment streaming | Server-Sent Events (SSE) |
+| Container images | [LinuxServer.io](https://linuxserver.io) and official images |
+| CI/CD | GitHub Actions → GitHub Container Registry |
+| Hosting | Your server, your hardware, your rules |
+
+---
+
+## App Template Images
+
+The majority of our app templates use [LinuxServer.io](https://linuxserver.io) container images (`lscr.io/linuxserver/*`). These are well-maintained, regularly updated, and follow a consistent pattern with `PUID`/`PGID` environment variables for file permissions.
+
+We're a proud sponsor of LinuxServer.io. If you appreciate what they do, [consider supporting them too](https://www.linuxserver.io/donate).
+
+---
+
+## CI/CD Pipeline
+
+Code goes through a 3-step process:
+
+```
+dev branch → staging branch (1-week soak test) → main branch (production)
+```
+
+When code is pushed to `main`, GitHub Actions automatically:
+1. Builds new Docker images for frontend and backend
+2. Pushes them to GitHub Container Registry
+3. Deploys the wiki to GitHub Pages
+
+If you're running HomelabARR with Watchtower, it auto-updates when new images are published.
