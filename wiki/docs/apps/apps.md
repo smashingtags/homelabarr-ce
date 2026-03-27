@@ -2,7 +2,7 @@
 
 ![Image of HomelabARR CE](/img/container_images/docker-homelabarr-ce.png)
 
-HomelabARR CE supports 100+ self-hosted applications across multiple categories. Applications can be deployed in two modes:
+HomelabARR CE supports 123+ self-hosted applications across multiple categories. Applications can be deployed in two modes:
 
 ## Deployment Modes
 

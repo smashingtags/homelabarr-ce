@@ -47,8 +47,8 @@ theme:
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: grey
-      accent: blue
+      primary: indigo
+      accent: teal
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
@@ -56,8 +56,8 @@ theme:
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: black
-      accent: blue
+      primary: indigo
+      accent: teal
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
@@ -86,7 +86,7 @@ theme:
     text: Roboto
     code: Roboto Mono
   favicon: img/favicon.png
-  logo: img/homelabarr-header.png
+  logo: img/homelabarr-banner.jpg
 
 # Plugins
 plugins:
@@ -190,7 +190,7 @@ nav:
 
   - Applications:
       - Applications: apps/apps.md
-      - Addons:
+      - Add-ons:
           - Autoscan: apps/addons/autoscan.md
           - A-Train: apps/addons/a-train.md
           - Cloud: apps/addons/cloud.md
@@ -213,10 +213,10 @@ nav:
           - Duplicati: apps/backup/duplicati.md
           - Restic: apps/backup/restic.md
           - Rsnapshot: apps/backup/rsnapshot.md
-      - Coding:
+      - Development:
           - Cloud9: apps/coding/cloud9.md
           - Code-Server: apps/coding/code-server.md
-      - Downloadclients:
+      - Downloads:
           - Davos: apps/downloadclients/davos.md
           - Deluge: apps/downloadclients/deluge.md
           - FileZilla: apps/downloadclients/filezilla.md
@@ -228,12 +228,12 @@ nav:
           - RuTorrent: apps/downloadclients/rutorrent.md
           - SabNZBD: apps/downloadclients/sabnzbd.md
           - Youtubedl-Material: apps/downloadclients/youtubedl-material.md
-      - Encoder:
+      - Transcoding:
           - HandBrake: apps/encoder/handbrake.md
           - Tdarr: apps/encoder/tdarr.md
-      - KASM Workspace:
+      - Virtual Desktops:
           - Kasmdesktop: apps/kasmworkspace/kasmdesktop.md
-      - MediaManager:
+      - Media Management:
           - Bazarr: apps/mediamanager/bazarr.md
           - Calibre-WEB: apps/mediamanager/calibre-web.md
           - Embystats: apps/mediamanager/embystats.md
@@ -247,16 +247,16 @@ nav:
           - Tautulli: apps/mediamanager/tautulli.md
           - Traktarr: apps/mediamanager/traktarr.md
           - Xteve: apps/mediamanager/xteve.md
-      - MediaServer:
+      - Media Servers:
           - Emby: apps/mediaserver/emby.md
           - Jellyfin: apps/mediaserver/jellyfin.md
           - MStream: apps/mediaserver/mstream.md
           - Plex: apps/mediaserver/plex.md
-      - Request:
+      - Requests:
           - Conreq: apps/request/conreq.md
           #- Overseerr: apps/request/overseerr.md  # file missing
           - Petio: apps/request/petio.md
-      - Selfhosted:
+      - Self-hosted:
           - Alltube: apps/selfhosted/alltube.md
           - Bitwarden: apps/selfhosted/bitwarden.md
           - Bliss: apps/selfhosted/bliss.md
@@ -281,7 +281,7 @@ nav:
           - Whoogle: apps/selfhosted/whoogle.md
           - Wireguard: apps/selfhosted/wireguard.md
           - XBVR: apps/selfhosted/xbvr.md
-      - Share:
+      - File Sharing:
           - Filerun: apps/selfhosted/share/filerun.md
           - Nextcloud: apps/selfhosted/share/nextcloud.md
           - Projectsend: apps/selfhosted/share/projectsend.md

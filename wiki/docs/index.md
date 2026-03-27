@@ -2,7 +2,7 @@
 
 <p align="center">
     <a href="https://github.com/smashingtags/homelabarr-ce">
-      <img src="https://raw.githubusercontent.com/smashingtags/homelabarr-assets/main/homelabber-wiki/homelabarr-header.png" alt="HomelabARR" width="600">
+      <img src="img/homelabarr-banner.jpg" alt="HomelabARR" width="600">
     </a>
 </p>
 
@@ -28,7 +28,7 @@
     </br>
 </p>
 
-_Docker container management for homelabs. 157+ apps, one-click deploy. Optional Traefik reverse proxy with Authelia 2FA._
+_Docker container management for homelabs. 123+ apps across 11 categories, one-click deploy. Optional Traefik reverse proxy with Authelia 2FA._
 
 ---
 
@@ -132,7 +132,7 @@ Kindly report any issues/broken-parts/bugs on [github](https://github.com/smashi
 ## Code and Permissions
 
 ```sh
-Copyright 2021 @homelabarr
+Copyright 2021-2026 @homelabarr
 Code owner @homelabarr
 Dev Code @homelabarr
 Co-Dev -APPS- @CONTRIBUTORS-LIST

@@ -35,32 +35,32 @@ environment:
 ```
 /opt/homelabarr/
   apps/
-    addons/
+    self-hosted/
       organizr.yml
       heimdall.yml
-    ai-tools/
+    ai/
       ollama.yml
     backup/
       duplicati.yml
-    coding/
+    development/
       code-server.yml
-    downloadclients/
+    downloads/
       qbittorrent.yml
       sabnzbd.yml
       deluge.yml
       nzbget.yml
-    encoder/
+    transcoding/
       tdarr.yml
-    kasmworkspace/
+    virtual-desktops/
       kasm.yml
-    mediamanager/
+    media-management/
       radarr.yml
       sonarr.yml
       prowlarr.yml
       bazarr.yml
       lidarr.yml
       readarr.yml
-    mediaserver/
+    media-servers/
       plex.yml
       jellyfin.yml
       emby.yml
@@ -70,9 +70,9 @@ environment:
       # Your custom application templates
     request/
       overseerr.yml
-    selfhosted/
+    self-hosted/
       ...
-    share/
+    file-sharing/
       ...
     system/
       portainer.yml
@@ -84,7 +84,7 @@ environment:
     ...
 ```
 
-Only these category directories are scanned: `addons`, `ai-tools`, `backup`, `coding`, `downloadclients`, `encoder`, `kasmworkspace`, `mediamanager`, `mediaserver`, `monitoring`, `myapps`, `request`, `selfhosted`, `share`, `system`. Other directories are ignored to prevent duplicates.
+Only these category directories are scanned: `ai`, `backup`, `downloads`, `media-management`, `media-servers`, `monitoring`, `myapps`, `self-hosted`, `system`, `transcoding`, `virtual-desktops`. Other directories are ignored to prevent duplicates.
 
 ## Template Format
 
@@ -128,7 +128,7 @@ networks:
 
 The bridge extracts:
 
-- **id**: `mediamanager-radarr` (category + filename)
+- **id**: `media-management-radarr` (category + filename)
 - **image**: value of `image` field
 - **ports**: parsed from the `ports` array
 - **environment**: parsed from the `environment` array
