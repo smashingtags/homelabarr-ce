@@ -111,6 +111,7 @@ nav:
   - Getting Started:
       - Quick Start: guides/quick-start.md
       - Web Dashboard: guides/web-dashboard.md
+      - Mobile App: guides/mobile-app.md
       - Configuration: guides/configuration.md
   - Guides:
       - Traefik & Domain Setup: guides/traefik-setup.md
