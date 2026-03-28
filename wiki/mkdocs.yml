@@ -120,11 +120,11 @@ nav:
       - Architecture: guides/architecture.md
       - CLI Bridge: guides/cli-bridge.md
       - Contributing: guides/contributing.md
-  - Professional Edition:
-      - Overview: pe/overview.md
   - Community:
       - Migration Guide: guides/migration.md
       - Project History: guides/history.md
       - FAQ & Troubleshooting: guides/faq.md
       - Discord: https://discord.gg/Pc7mXX786x
       - GitHub Discussions: https://github.com/smashingtags/homelabarr-ce/discussions
+  - Professional Edition:
+      - Overview: pe/overview.md
