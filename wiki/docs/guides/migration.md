@@ -1,704 +1,306 @@
-
 # Migration Guide
 
-This guide covers migrating to HomelabARR CE from other Docker management platforms.
+Moving to HomelabARR CE from another platform? This guide walks you through it step by step. Your app data (Plex database, Sonarr configs, everything in `/opt/appdata/`) carries over — we use the same paths.
+
+!!! tip "The golden rule"
+    **Your data is safe.** HomelabARR CE stores everything in `/opt/appdata/` — the same place most Docker media server platforms use. We don't touch your existing configs. We just give you a better way to manage them.
 
 ---
 
-## Migrating from Similar Docker Platforms
+## Before You Start
 
-If your existing setup uses `/opt/appdata/` for container data and a `proxy` Docker network with Traefik, the migration is straightforward — HomelabARR CE uses the same structure.
+Figure out which platform you're coming from, because the migration steps are slightly different:
 
-!!! tip "Same appdata? You're 90% done."
-    If your containers store data in `/opt/appdata/`, HomelabARR CE picks it up automatically. Your Plex databases, Sonarr configs, Radarr settings — all preserved.
+| Coming from | Difficulty | Why |
+|---|---|---|
+| **Saltbox** | Easy | Same paths, modern Traefik, just move configs |
+| **Cloudbox** | Easy | Same paths, but Traefik v1 → v3 upgrade needed |
+| **PGBlitz / PlexGuide** | Medium | Older setup, may need network + Traefik changes |
+| **Dockserver** | Easy | Nearly identical structure, closest relative |
+| **Custom Docker Compose** | Easy | If you use `/opt/appdata/`, you're already 90% there |
 
-### Step 1: Backup Everything
+!!! warning "Back up first. Always."
+    Before you change anything, back up. If something breaks and you don't have a backup, that's on you — not us.
 
-Before making any changes:
+    ```bash
+    # Back up ALL your app data (this may take a while)
+    sudo tar czf /opt/homelabarr-backup-$(date +%Y%m%d).tar.gz /opt/appdata/
 
-```bash
-# Backup your current .env file
-cp /opt/appdata/compose/.env /opt/appdata/compose/.env.backup
+    # Save a list of what's running right now
+    docker ps --format "{{.Names}}" > ~/my-running-containers.txt
 
-# Backup your appdata (compress, this may take a while)
-sudo tar czf /opt/homelabarr-backup-$(date +%Y%m%d).tar.gz /opt/appdata/
+    # Back up your .env if you have one
+    cp /opt/appdata/compose/.env ~/env-backup.txt 2>/dev/null
+    ```
 
-# Note your running containers
-docker ps --format "{{.Names}}" > /opt/running-containers.txt
-```
+---
 
-### Step 2: Stop Existing Containers
+## Step 1: Install HomelabARR CE
 
-```bash
-# Stop all running containers (your data in /opt/appdata is safe)
-docker stop $(docker ps -q)
-```
-
-!!! warning "Don't remove containers yet"
-    Stopping is enough. Don't `docker rm` anything until you've verified CE works.
-
-### Step 3: Migrate Environment Variables
-
-HomelabARR CE includes a migration tool that converts your existing `.env`:
+Don't stop your old containers yet. Install CE alongside them first so you can verify it works.
 
 ```bash
-git clone https://github.com/smashingtags/homelabarr-ce.git
-cd homelabarr-ce
-sudo ln -sf "$(pwd)" /opt/homelabarr
+# Get the code
+git clone https://github.com/smashingtags/homelabarr-ce.git /opt/homelabarr
+cd /opt/homelabarr
 
-# Run the environment migrator
-bash apps/.subactions/envmigrate.sh
-```
-
-!!! warning "Back up your .env first"
-    The migrator rewrites your `.env` from a template. It preserves the standard variables listed below, but **any custom variables you added manually will be dropped**. Back up your original `.env` before running.
-
-This reads `/opt/appdata/compose/.env` and rewrites it with CE-compatible defaults while preserving these standard values:
-
-- Cloudflare credentials (email, API key, Zone ID)
-- Domain configuration
-- Plex claim tokens
-- VPN settings (Gluetun/WireGuard)
-- Container image preferences
-- Port configurations
-- API keys (IMDB, TVDB, TMDB)
-
-If you have custom environment variables not in this list, copy them from your backup after running the migrator.
-
-### Step 4: Install HomelabARR CE
-
-You have two options:
-
-**Option A: Web GUI (Docker Compose)**
-
-```bash
-curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
+# Set required environment variables
 export JWT_SECRET=$(openssl rand -base64 32)
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
 export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
+
+# Start the CE dashboard
 docker compose -f homelabarr.yml up -d
 ```
 
-Open `http://your-server-ip:8084` — you'll see the CE dashboard with 100+ apps ready to deploy. Your existing `/opt/appdata` data is already there.
+Open `http://your-server-ip:8084` in your browser. You should see the dashboard with 100+ apps.
 
-!!! tip "Put CE behind Traefik too"
-    If you already have Traefik running, add a route for the CE dashboard so it's accessible at `https://homelabarr.yourdomain.com` with Authelia protection. Create a file at `/opt/appdata/traefik/rules/homelabarr-ce.yml`:
-    ```yaml
-    http:
-      routers:
-        homelabarr-ce:
-          rule: "Host(`homelabarr.yourdomain.com`)"
-          entryPoints:
-            - https
-          middlewares:
-            - chain-authelia@file
-          tls:
-            certResolver: dns-cloudflare
-          service: homelabarr-ce
-      services:
-        homelabarr-ce:
-          loadBalancer:
-            servers:
-              - url: "http://homelabarr-ce-frontend:8080"
-    ```
-    Add a CNAME record in Cloudflare for `homelabarr` pointing to your domain. The CE frontend container must be on the `proxy` network.
+!!! tip "Just checking"
+    At this point, your OLD containers are still running. CE is running alongside them. Nothing has changed yet. You're just making sure CE starts up properly before touching anything.
 
-**Option B: CLI Menu**
+---
 
-```bash
-chmod +x install.sh
-find . -name "*.sh" -exec chmod +x {} \;
-sudo ./install.sh
-```
+## Step 2: Migrate Apps (One at a Time)
 
-The interactive menu lets you:
+This is the important part. **Do NOT stop everything at once.** Migrate one app, verify it works, then move to the next.
 
-- **Option 1:** Set up Traefik + Authelia (if not already running)
-- **Option 2:** Install/Remove/Backup/Restore apps via the terminal menu
+**Suggested order** (least risky first):
 
-### Step 5: Redeploy Your Apps (One at a Time)
+1. Monitoring apps (Tautulli, Dozzle, Uptime Kuma)
+2. Download clients (NZBGet, qBittorrent, SABnzbd)
+3. Media managers (Sonarr, Radarr, Lidarr, Prowlarr)
+4. Media servers (Plex, Jellyfin — save these for last, they have the biggest configs)
 
-Your app **data** is already in `/opt/appdata`. You need to stop each old container and redeploy it through CE. Do this **one app at a time** — not all at once.
-
-!!! warning "Why one at a time?"
-    If you stop everything and something goes wrong during redeployment, you've lost all your services. Doing it one at a time means you can roll back a single container if needed.
-
-For each app (e.g., Sonarr):
+**For each app:**
 
 ```bash
 # 1. Stop and remove the OLD container
 docker stop sonarr && docker rm sonarr
 
-# 2. Redeploy through CE
-#    Via Web GUI: Browse catalog → find Sonarr → Deploy (Standard mode)
-#    Via CLI: Option 2 → Install Apps → mediamanager → sonarr
+# 2. Open the CE dashboard → find Sonarr → click Deploy
+#    Pick your deployment mode:
+#    - Standard = no reverse proxy, access via IP:port
+#    - Traefik = SSL + custom domain (sonarr.yourdomain.com)
+#    - Traefik + Authelia = SSL + custom domain + login protection
 
-# 3. Verify it starts and loads your existing config
+# 3. Check that it started and loaded your config
 docker logs sonarr --tail 20
 ```
 
-The new container will mount `/opt/appdata/sonarr` (your existing config) and `/mnt` (your media) using Docker's native bind mounts — no plugins needed.
+The new container mounts `/opt/appdata/sonarr` automatically — your series, settings, history, everything is already there.
 
-!!! info "What changed under the hood"
-    Your old containers used a `local-persist` Docker volume plugin to map `/mnt`. HomelabARR CE uses Docker's built-in `local` driver with bind mounts instead. Same result, zero plugin dependencies. Your data and paths are unchanged.
+!!! warning "Why one at a time?"
+    If you stop everything and something goes wrong, you've lost ALL your services. One at a time means you can roll back a single app if needed.
 
-**Suggested order:**
+**After each app, verify:**
 
-1. Non-critical apps first (Tautulli, Heimdall, Dozzle)
-2. Download clients (NZBGet, qBittorrent, SABnzbd)
-3. Media managers (Sonarr, Radarr, Lidarr, Prowlarr)
-4. Media servers (Jellyfin, Plex — these have the biggest configs)
+- **Sonarr/Radarr:** Open the web UI → check that your series/movies are listed
+- **qBittorrent:** Check that torrents are still there and paths are correct
+- **Plex/Jellyfin:** Check libraries → play something → confirm watch history survived
+- **NZBGet/SABnzbd:** Check download queue and completed folder path
 
-After each app, verify:
+---
 
-- **Sonarr/Radarr:** Series/movies listed in Mass Editor
-- **qBittorrent:** Torrents resume, download path is correct
-- **Jellyfin/Plex:** Libraries intact, playback works
-- **Authelia:** Users and 2FA preserved (`/opt/appdata/authelia/`)
+## Step 3: Handle Network Differences
 
-### Step 6: Clean Up Legacy Components
+Different platforms use different Docker network names. CE uses a network called `proxy`. If your old platform used a different name, you may need to update Traefik.
 
-Once all apps are redeployed through CE:
+| Old Platform | Old Network | CE Network |
+|---|---|---|
+| Saltbox | `saltbox` | `proxy` |
+| Cloudbox | `cloudbox` | `proxy` |
+| PGBlitz | `plexguide` | `proxy` |
+| Dockserver | `proxy` | `proxy` (same!) |
+
+Create the CE network if it doesn't exist:
 
 ```bash
-# Stop the old mount container (it's been failing anyway if you're not using cloud storage)
-docker stop mount && docker rm mount
-
-# Stop restic and vnstat if you no longer need them
-docker stop restic vnstat && docker rm restic vnstat
-
-# Remove the old local-persist volume (data is safe — it just pointed at /mnt)
-docker volume rm compose_unionfs 2>/dev/null
-
-# Remove the local-persist plugin/binary
-sudo rm /usr/bin/docker-volume-local-persist 2>/dev/null
-sudo rm /run/docker/plugins/local-persist.sock 2>/dev/null
-
-# Clean up old images
-docker image prune -a
-
-# Remove your backup if everything works (or keep it!)
-# rm /opt/homelabarr-backup-*.tar.gz
+docker network create proxy 2>/dev/null || true
 ```
 
-!!! warning "Fix Traefik's Docker network setting"
-    Your existing Traefik may be configured to discover containers on the wrong Docker network. CE deploys containers with labels on the `proxy` network. If Traefik is set to `--providers.docker.network=traefik` (common in older setups), it will ignore all CE-deployed container labels.
-
-    Check your Traefik config:
+!!! warning "Traefik network setting"
+    If Traefik is configured to discover containers on the OLD network name, it won't see CE containers. Check:
+    
     ```bash
     docker inspect traefik --format '{{json .Args}}' | grep docker.network
     ```
-
-    If it says `docker.network=traefik`, you need to recreate Traefik with `--providers.docker.network=proxy` instead. This is a one-time fix — after this, every container CE deploys with Traefik mode will be discovered automatically via Docker labels. No manual file-based routes needed.
-
-!!! tip "Keep Authelia"
-    Your existing Authelia works with CE out of the box. Don't redeploy it.
+    
+    If it says `docker.network=saltbox` (or `cloudbox` or `plexguide`), you need to update it to `docker.network=proxy`. This is a one-time fix.
 
 ---
 
-## Migrating from PGBlitz / PTS / PlexGuide
+## Platform-Specific Notes
 
-If you're running PGBlitz, PTS (MHA-Team fork), or the original PlexGuide — your setup is older but the migration is straightforward. Your Plex libraries, Sonarr configs, and all your app data will survive the move.
+### Coming from Saltbox
 
-!!! tip "Your data is safe"
-    PGBlitz/PTS stores everything in `/opt/appdata/` — the same path HomelabARR CE uses. Your Plex database, Sonarr series, Radarr movies — all of it carries over untouched.
-
-### What's Different
-
-| | PGBlitz/PTS | HomelabARR CE |
-|---|---|---|
-| **Deployment** | Ansible playbooks | Docker Compose or Web GUI |
-| **Docker network** | `plexguide` | `proxy` |
-| **Traefik** | v1 (frontend/backend rules) | v2/v3 (routers/services) |
-| **Media storage** | Cloud (Google Drive + rclone + mergerfs) | Local NAS (recommended) or cloud |
-| **App data** | `/opt/appdata/` | `/opt/appdata/` (same) |
-| **Volume driver** | None (Ansible direct mounts) | Docker native bind mounts |
-| **Maintenance** | Abandoned (last updated 2021) | Actively maintained |
-
-### Step-by-Step Migration
-
-#### 1. Backup your configs
+Saltbox stores configs at `/opt/<app>/` (without the `appdata` folder). CE expects `/opt/appdata/<app>/`. Move them:
 
 ```bash
-# Backup your rclone config (you may need this later)
-cp ~/.config/rclone/rclone.conf ~/rclone.conf.backup
+sudo mkdir -p /opt/appdata
 
-# Backup all app data
-sudo tar czf ~/pgblitz-appdata-backup-$(date +%Y%m%d).tar.gz /opt/appdata/
+for app in sonarr radarr lidarr readarr prowlarr bazarr plex jellyfin tautulli nzbget sabnzbd qbittorrent; do
+  if [ -d "/opt/$app" ]; then
+    sudo mv /opt/$app /opt/appdata/$app
+    echo "Moved $app"
+  fi
+done
+
+sudo chown -R 1000:1000 /opt/appdata
 ```
 
-#### 2. Document your current setup
+!!! tip "Keep your Traefik"
+    Saltbox runs Traefik v3 — same as CE. If yours is working, leave it alone. CE's app templates are compatible.
 
-Before changing anything, note what you're running:
+!!! tip "Keep your Authelia"
+    Same deal. If Authelia is running, don't redeploy it. CE's Traefik + Authelia mode works with your existing setup.
 
-```bash
-# List all running containers
-docker ps --format "{{.Names}}\t{{.Image}}\t{{.Ports}}" > ~/my-containers.txt
-cat ~/my-containers.txt
-```
+---
 
-Save this list — you'll use it to know what to redeploy.
+### Coming from Cloudbox
 
-#### 3. Decide: keep cloud storage or go local?
+Same as Saltbox — move configs from `/opt/<app>/` to `/opt/appdata/<app>/`. But Cloudbox runs **Traefik v1**, which is ancient. CE needs v2 or v3.
 
-**If you're keeping cloud storage (Google Drive + rclone):**
-Your rclone mounts at `/mnt/unionfs` or `/mnt` will continue working. CE's app templates mount `/mnt` the same way. Skip to Step 4.
+**Recommended:** Let CE deploy fresh Traefik:
 
-**If you're moving to local NAS (recommended):**
-See the [Cloud to Local Migration](#migrating-from-cloud-based-setups) section below for how to download your media and set up NAS mounts. Do this BEFORE proceeding.
-
-#### 4. Install HomelabARR CE
-
-```bash
-# One-line install
-sudo wget -qO- https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh | sudo bash
-
-# Or Docker Compose for the web GUI
-curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
-export JWT_SECRET=$(openssl rand -base64 32)
-export DOCKER_GID=$(getent group docker | cut -d: -f3)
-export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
-docker compose -f homelabarr.yml up -d
-```
-
-#### 5. Create the proxy network
-
-PGBlitz uses `plexguide` network. CE uses `proxy`. Create it:
-
-```bash
-docker network create proxy 2>/dev/null || true
-```
-
-#### 6. Redeploy apps one at a time
-
-For each app in your `my-containers.txt` list, stop the old container and redeploy through CE:
-
-```bash
-# Example: migrate Sonarr
-docker stop sonarr && docker rm sonarr
-
-# Redeploy via CE web GUI (http://your-ip:8084) or CLI
-sudo homelabarr-cli -i
-# → Option 2 → Install Apps → mediamanager → sonarr
-```
-
-The new Sonarr container will:
-- Mount your existing `/opt/appdata/sonarr` config (series, settings, history — all preserved)
-- Mount `/mnt` for media access
-- Use Traefik v2/v3 labels (if you set up Traefik)
-- Work with the `proxy` network
-
-!!! warning "Do one app at a time"
-    Don't stop everything at once. Migrate one container, verify it works, then move to the next. Start with something non-critical like Tautulli or NZBGet.
-
-#### 7. Handle Traefik
-
-PGBlitz uses Traefik v1. CE uses Traefik v2/v3. You have two options:
-
-**Option A: Fresh Traefik (recommended)**
-Stop the old Traefik and let CE deploy a new one:
 ```bash
 docker stop traefik && docker rm traefik
-# Via CLI: Option 1 → Traefik + Authelia
+# Then use CE's CLI menu → Option 1 → Traefik + Authelia
 ```
 
-**Option B: Keep existing Traefik**
-If you've customized your Traefik v1 setup and don't want to change it, you can keep it — but CE's app templates use v2 labels which won't work with Traefik v1. You'd need to add v1 labels manually to each container.
+Cloudbox also uses a specific media path structure:
 
-#### 8. Verify Plex
-
-This is the one everyone worries about. After redeploying Plex through CE:
-
-1. Open Plex Web (your existing URL or `http://your-ip:32400/web`)
-2. Check Settings → Libraries — all libraries should be listed
-3. Play something — verify transcoding works
-4. Check Settings → Server → General — your Plex claim token and server name should be intact
-
-Your Plex database, watch history, posters, metadata — everything lives in `/opt/appdata/plex` and was never touched during the migration.
-
-#### 9. Clean up PGBlitz/PTS
-
-Once everything is verified through CE:
-
-```bash
-# Remove old PGBlitz/PTS installation
-sudo rm -rf /opt/plexguide 2>/dev/null
-sudo rm -rf /opt/pgblitz 2>/dev/null
-sudo rm -rf /opt/pts 2>/dev/null
-sudo rm -rf /opt/coreapps 2>/dev/null
-sudo rm -rf /opt/communityapps 2>/dev/null
-
-# Remove old plexguide network (after all containers are on proxy)
-docker network rm plexguide 2>/dev/null
-
-# Remove old cron jobs
-crontab -l | grep -v "plexguide\|pgblitz\|pts" | crontab -
-
-# Clean up old images
-docker image prune -a
-```
-
-!!! tip "Keep your rclone config"
-    Even if you moved to local NAS, keep `~/rclone.conf.backup` — you might need it to download remaining files from Google Drive later.
-
----
-
-## Migrating from Saltbox
-
-[Saltbox](https://github.com/saltyorg/Saltbox) is the actively maintained successor to Cloudbox. It's a solid platform, but it's Ansible-based with no GUI — every change requires editing YAML files and running playbooks. If you want a web dashboard to manage your containers or you're tired of Ansible complexity, CE is a straightforward alternative.
-
-!!! info "Saltbox is still maintained"
-    Unlike Cloudbox and PGBlitz, Saltbox is actively developed. This migration is for users who **want** to switch to a simpler, GUI-based approach — not because Saltbox is abandoned.
-
-### What's Different
-
-| | Saltbox | HomelabARR CE |
-|---|---|---|
-| **Deployment** | Ansible playbooks | Docker Compose or Web GUI |
-| **Configuration** | YAML files + CLI commands | Web GUI or interactive CLI menu |
-| **Docker network** | `saltbox` | `proxy` |
-| **App data path** | `/opt/<app>/` | `/opt/appdata/<app>/` |
-| **Media path** | `/mnt/unionfs/` | `/mnt/` (configurable) |
-| **Traefik** | v3.6 | v2/v3 |
-| **Cloud storage** | rclone + Google Drive (default) | Local NAS (recommended), cloud optional |
-| **GUI** | None — CLI and text editors only | Web dashboard with 100+ apps |
-| **Multiple instances** | Built-in (sonarr, sonarr4k, etc.) | Deploy multiple containers manually |
-
-### Step-by-Step Migration
-
-#### 1. Backup your Saltbox
-
-```bash
-# Use Saltbox's own backup
-cd ~/saltbox && sudo ansible-playbook backup.yml
-
-# Also backup manually
-cp ~/saltbox/accounts.yml ~/accounts.yml.backup
-cp -r /opt/saltbox ~/saltbox-opt-backup
-sudo tar czf ~/saltbox-appdata-$(date +%Y%m%d).tar.gz /opt/
-```
-
-#### 2. Move app data to CE's path
-
-Saltbox stores configs at `/opt/<app>/`. CE expects `/opt/appdata/<app>/`:
-
-```bash
-sudo mkdir -p /opt/appdata
-
-# Move each app's config
-for app in sonarr radarr lidarr readarr prowlarr bazarr plex jellyfin tautulli nzbget sabnzbd qbittorrent overseerr; do
-  if [ -d "/opt/$app" ]; then
-    sudo mv /opt/$app /opt/appdata/$app
-    echo "Moved $app"
-  fi
-done
-
-sudo chown -R 1000:1000 /opt/appdata
-```
-
-!!! warning "Multiple instances"
-    If you run multiple Sonarr/Radarr instances (e.g., `sonarr`, `sonarr4k`), move each one separately. CE treats them as independent containers.
-
-#### 3. Handle media paths
-
-Saltbox uses `/mnt/unionfs/` for combined local + cloud media. If you're keeping this mount structure, create a symlink:
-
-```bash
-# If /mnt/unionfs already exists and has your media
-sudo ln -sf /mnt/unionfs /mnt/media 2>/dev/null || true
-```
-
-If moving to local NAS, see the [Cloud to Local Migration](#migrating-from-cloud-based-setups) section.
-
-#### 4. Create the proxy network
-
-```bash
-docker network create proxy 2>/dev/null || true
-```
-
-#### 5. Install HomelabARR CE
-
-```bash
-# One-line CLI install
-sudo wget -qO- https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh | sudo bash
-sudo homelabarr-cli -i
-
-# Or Docker Compose for web GUI
-curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
-export JWT_SECRET=$(openssl rand -base64 32)
-export DOCKER_GID=$(getent group docker | cut -d: -f3)
-export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
-docker compose -f homelabarr.yml up -d
-```
-
-#### 6. Redeploy apps one at a time
-
-For each app, stop the Saltbox container and redeploy through CE:
-
-```bash
-# Example: migrate Sonarr
-docker stop sonarr && docker rm sonarr
-
-# Redeploy via CE web GUI or CLI
-# Your existing /opt/appdata/sonarr config is picked up automatically
-```
-
-!!! tip "Keep Traefik if it's working"
-    Saltbox uses Traefik v3.6 which is modern and compatible. If your Traefik and Authelia are working, leave them running. CE's app templates use v2/v3 labels that work with your existing Traefik.
-
-#### 7. Update root folders in media apps
-
-After redeploying, check the media root folders in each app. Saltbox maps internal paths differently:
-
-| App | Saltbox internal path | Check in app settings |
-|-----|----------------------|----------------------|
-| Sonarr | `/tv/` | Settings → Media Management → Root Folders |
-| Radarr | `/movies/` | Settings → Media Management → Root Folders |
-| Plex | `/data/TV/`, `/data/Movies/` | Settings → Libraries |
-
-The paths inside the container may differ from Saltbox's mapping. Update them to match CE's volume mounts if needed.
-
-#### 8. Clean up Saltbox (optional)
-
-If you're fully committed to CE:
-
-```bash
-# Remove Saltbox installation
-sudo rm -rf ~/saltbox 2>/dev/null
-sudo rm -rf /opt/saltbox 2>/dev/null
-sudo rm -rf /srv/git/saltbox 2>/dev/null
-
-# Remove Ansible (if nothing else uses it)
-sudo apt remove ansible -y 2>/dev/null
-
-# Remove old network (after all containers are on proxy)
-docker network rm saltbox 2>/dev/null
-
-# Clean up
-docker image prune -a
-```
-
-!!! tip "Keep your rclone config"
-    Saltbox's rclone configuration lives at `~/.config/rclone/rclone.conf`. Keep a backup even if you're moving to local storage.
-
----
-
-## Migrating from Cloudbox
-
-[Cloudbox](https://github.com/Cloudbox/Cloudbox) was one of the most popular Ansible-based media server solutions. The project was **archived in March 2025** and is no longer maintained. If you're still running it, migrating to HomelabARR CE gives you a modern, actively maintained platform with a web GUI.
-
-!!! tip "Your Plex database and app configs carry over"
-    Cloudbox stores app data in `/opt/` (e.g., `/opt/sonarr`, `/opt/plex`). HomelabARR CE uses `/opt/appdata/`. You'll move your configs once and everything works.
-
-### What's Different
-
-| | Cloudbox | HomelabARR CE |
-|---|---|---|
-| **Status** | Archived, unmaintained since 2025 | Actively maintained |
-| **Deployment** | Ansible playbooks | Docker Compose or Web GUI |
-| **Docker network** | `cloudbox` | `proxy` |
-| **App data path** | `/opt/<app>/` | `/opt/appdata/<app>/` |
-| **Media path** | `/mnt/unionfs/Media/` | `/mnt/` (configurable) |
-| **Cloud storage** | rclone + mergerfs (required) | Local NAS (recommended), cloud optional |
-| **Traefik** | v1 | v2/v3 |
-| **Install types** | Cloudbox / Mediabox / Feederbox | One install, choose what to deploy |
-
-### Step-by-Step Migration
-
-#### 1. Backup everything
-
-```bash
-# Backup rclone config
-cp ~/.config/rclone/rclone.conf ~/rclone.conf.backup
-
-# Backup Cloudbox settings
-cp ~/cloudbox/accounts.yml ~/accounts.yml.backup
-
-# Backup all app data
-sudo tar czf ~/cloudbox-backup-$(date +%Y%m%d).tar.gz /opt/
-```
-
-#### 2. Move app data to CE's expected path
-
-Cloudbox stores configs at `/opt/<app>/` (e.g., `/opt/sonarr/`). CE expects `/opt/appdata/<app>/`. Create the new structure and move:
-
-```bash
-sudo mkdir -p /opt/appdata
-
-# Move each app's config
-for app in plex sonarr radarr lidarr tautulli jackett nzbget sabnzbd ombi; do
-  if [ -d "/opt/$app" ]; then
-    sudo mv /opt/$app /opt/appdata/$app
-    echo "Moved $app"
-  fi
-done
-
-sudo chown -R 1000:1000 /opt/appdata
-```
-
-!!! warning "Plex path"
-    Cloudbox stores Plex at `/opt/plex/`. After moving to `/opt/appdata/plex/`, the Plex database, metadata, and libraries are all intact. The container mounts this as `/config` regardless of where it lives on the host.
-
-#### 3. Handle media paths
-
-Cloudbox uses a specific media structure:
 ```
 /mnt/unionfs/Media/Movies/
 /mnt/unionfs/Media/TV/
-/mnt/unionfs/Media/Music/
 ```
 
-CE mounts `/mnt` directly. If your media is at `/mnt/unionfs/Media/`, you have two options:
+If your media is still at `/mnt/unionfs/`, create a symlink so CE can find it:
 
-**Option A: Symlink (quickest)**
 ```bash
-# If your media is still at /mnt/unionfs/Media
 sudo ln -sf /mnt/unionfs/Media /mnt/Media
 ```
 
-**Option B: Move to local NAS (recommended)**
-See the [Cloud to Local Migration](#migrating-from-cloud-based-setups) section below. Point your NAS mount at `/mnt` and organize as you like.
-
-#### 4. Create the proxy network
-
-```bash
-docker network create proxy 2>/dev/null || true
-```
-
-#### 5. Install HomelabARR CE
-
-```bash
-# One-line CLI install
-sudo wget -qO- https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/install-remote.sh | sudo bash
-sudo homelabarr-cli -i
-
-# Or Docker Compose for web GUI
-curl -o homelabarr.yml https://raw.githubusercontent.com/smashingtags/homelabarr-ce/main/homelabarr.yml
-export JWT_SECRET=$(openssl rand -base64 32)
-export DOCKER_GID=$(getent group docker | cut -d: -f3)
-export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
-docker compose -f homelabarr.yml up -d
-```
-
-#### 6. Redeploy apps one at a time
-
-```bash
-# Stop old Cloudbox container
-docker stop sonarr && docker rm sonarr
-
-# Redeploy through CE (web GUI or CLI)
-# The new container mounts /opt/appdata/sonarr:/config — your existing data
-```
-
-After redeploying each media app, update the media root folders:
-
-| App | Cloudbox path | CE path |
-|-----|--------------|---------|
-| Sonarr | `/tv/` → `/mnt/unionfs/Media/TV/` | `/mnt/Media/TV/` (or wherever your media lives) |
-| Radarr | `/movies/` → `/mnt/unionfs/Media/Movies/` | `/mnt/Media/Movies/` |
-| Plex | `/data/Movies/`, `/data/TV/` | Libraries point to `/mnt/Media/` subdirectories |
-
-#### 7. Clean up Cloudbox
-
-```bash
-# Remove Cloudbox installation
-sudo rm -rf ~/cloudbox 2>/dev/null
-sudo rm -rf /opt/cloudbox 2>/dev/null
-
-# Remove old network
-docker network rm cloudbox 2>/dev/null
-
-# Remove old Ansible
-sudo apt remove ansible -y 2>/dev/null
-
-# Clean up old images
-docker image prune -a
-```
+After redeploying each media app (Sonarr, Radarr, Plex), check the root folder / library paths in the app's settings. They may need updating to match the new mount points.
 
 ---
 
-## Migrating from Cloud-Based Setups
+### Coming from PGBlitz / PlexGuide
 
-If you're moving from a cloud-dependent system (Google Drive mounts, rclone cloud storage) to local NAS storage:
+The oldest migration path. PGBlitz uses Ansible (not Docker Compose), Traefik v1, and the `plexguide` Docker network.
 
-### Prerequisites
+1. **App data** is already in `/opt/appdata/` — same as CE. No moves needed.
+2. **Create the proxy network:** `docker network create proxy`
+3. **Install CE** (see Step 1 above)
+4. **Redeploy apps** one at a time through CE
+5. **Deploy fresh Traefik** through CE — don't try to keep Traefik v1
 
-- **NAS System**: UnRAID, TrueNAS, Synology, or local drives
-- **Network Share**: SMB or NFS configured
-- **Storage**: Enough space for your media library
+!!! info "Cloud storage"
+    PGBlitz was built around Google Drive + rclone. If you're still using cloud storage, your rclone mounts at `/mnt` will continue working with CE. If you want to move to local NAS storage, see the [Cloud to Local](#moving-from-cloud-to-local-storage) section below.
 
-### Download Media from Cloud
+---
 
-Before switching, get your media local:
+### Coming from Dockserver
+
+The easiest migration. Dockserver and HomelabARR CE share the same DNA — same `/opt/appdata/` structure, same `proxy` network, same Traefik setup.
+
+1. Install CE alongside Dockserver
+2. Migrate apps one at a time
+3. That's it. Seriously.
+
+Your `.env` variables, Traefik rules, Authelia configs — everything is compatible.
+
+---
+
+## Moving from Cloud to Local Storage
+
+If you're leaving Google Drive / rclone behind for local NAS storage:
+
+### 1. Download your media
 
 ```bash
-# Example: rclone sync from Google Drive to local NAS
+# Sync from Google Drive to your NAS
 rclone sync gdrive:media /mnt/nas/media --progress --transfers 8
 ```
 
-### Set Up Local Storage
+This can take days depending on library size. Start it in a `tmux` or `screen` session.
+
+### 2. Set up NAS mounts
 
 ```bash
-# Create mount points for NAS shares
-sudo mkdir -p /mnt/nas/{media,downloads,appdata}
-
-# Mount via SMB
-sudo mount -t cifs //nas.local/media /mnt/nas/media -o uid=1000,gid=1000,username=user,password=pass
-
-# Or mount via NFS
-sudo mount -t nfs nas.local:/volume1/media /mnt/nas/media
+# SMB mount
+sudo mkdir -p /mnt/nas/media
+sudo mount -t cifs //nas.local/media /mnt/nas/media \
+  -o uid=1000,gid=1000,username=user,password=pass
 ```
 
-Add to `/etc/fstab` for persistence:
+Add to `/etc/fstab` so it survives reboots:
 
 ```
 //nas.local/media  /mnt/nas/media  cifs  uid=1000,gid=1000,username=user,password=pass,_netdev  0  0
 ```
 
-### Update Application Paths
+### 3. Update app paths
 
-After installing CE and redeploying apps, update media paths:
+After mounting your NAS, update the root folders in each media app:
 
-| App | Setting | Old Path | New Path |
-|-----|---------|----------|----------|
-| Plex | Library locations | `/mnt/unionfs/media/movies` | `/mnt/nas/media/movies` |
-| Sonarr | Root folder | `/mnt/unionfs/media/tv` | `/mnt/nas/media/tv` |
-| Radarr | Root folder | `/mnt/unionfs/media/movies` | `/mnt/nas/media/movies` |
-| qBittorrent | Save path | `/mnt/unionfs/downloads` | `/mnt/nas/downloads` |
-| SABnzbd | Complete folder | `/mnt/unionfs/downloads/complete` | `/mnt/nas/downloads/complete` |
+| App | Setting Location | Old Path | New Path |
+|-----|---|---|---|
+| Sonarr | Settings → Media Management → Root Folders | `/mnt/unionfs/media/tv` | `/mnt/nas/media/tv` |
+| Radarr | Settings → Media Management → Root Folders | `/mnt/unionfs/media/movies` | `/mnt/nas/media/movies` |
+| Plex | Settings → Libraries | `/data/TV`, `/data/Movies` | Update to match new mounts |
+| qBittorrent | Options → Downloads → Save Path | `/mnt/unionfs/downloads` | `/mnt/nas/downloads` |
 
-### Benefits of Local Storage
+### Why go local?
 
-- **No API rate limits** — process unlimited files simultaneously
-- **No cloud subscription costs** — your storage, your hardware
-- **Better performance** — local I/O is faster than cloud transfers
-- **Privacy** — data stays on your network
-- **Simpler setup** — no rclone configs, mount scripts, or cloud auth
+- **No API rate limits** — Google limits how fast you can read files
+- **No cloud subscription costs** — your hardware, your storage
+- **Better performance** — local I/O is way faster than cloud transfers
+- **Simpler setup** — no rclone configs, mount scripts, or token refreshes
 
 ---
 
-## Compatibility Reference
+## Step 4: Clean Up
 
-HomelabARR CE is compatible with setups that use:
+Once all your apps are running through CE and verified:
 
-| Component | Expected Path/Value |
-|-----------|-------------------|
-| App data | `/opt/appdata/` |
-| Compose .env | `/opt/appdata/compose/.env` |
+```bash
+# Remove old platform files (pick the one that applies)
+sudo rm -rf ~/cloudbox ~/saltbox /opt/plexguide /opt/pgblitz 2>/dev/null
+
+# Remove old Docker network (after all containers are on proxy)
+docker network rm cloudbox saltbox plexguide 2>/dev/null
+
+# Clean up unused Docker images (frees disk space)
+docker image prune -a
+
+# Remove old cron jobs from previous platforms
+crontab -l | grep -v "plexguide\|pgblitz\|saltbox\|cloudbox" | crontab -
+```
+
+!!! tip "Keep your rclone config"
+    Even if you moved to local storage, keep a backup of `~/.config/rclone/rclone.conf`. You might need it to download remaining files from Google Drive later.
+
+---
+
+## Quick Reference
+
+CE expects these paths and settings:
+
+| What | Expected Value |
+|---|---|
+| App configs | `/opt/appdata/<app>/` |
 | Docker network | `proxy` |
-| Reverse proxy | Traefik v2/v3 |
-| Authentication | Authelia |
-| SSL | Let's Encrypt via Cloudflare DNS challenge |
-| User/Group ID | 1000:1000 |
+| Reverse proxy | Traefik v2 or v3 |
+| Authentication | Authelia (optional) |
+| SSL | Let's Encrypt via Cloudflare DNS |
+| User/Group | 1000:1000 |
 
-If your existing setup matches these conventions, the migration is essentially a drop-in replacement.
+If your existing setup already matches these, migration is basically just "install CE and redeploy through the dashboard."
 
 ---
 
-## Support
+## Need Help?
 
-Having trouble migrating?
-
-- **[Discord](https://discord.gg/Pc7mXX786x)** — Ask in the #support channel
-- **[GitHub Issues](https://github.com/smashingtags/homelabarr-ce/issues)** — Report migration bugs
-- **Email** — michael@mjashley.com
+- **[Discord](https://discord.gg/Pc7mXX786x)** — Ask in #help, someone's usually around
+- **[GitHub Discussions](https://github.com/smashingtags/homelabarr-ce/discussions)** — For longer questions
+- **[FAQ](faq.md)** — Common issues and fixes
