@@ -2,7 +2,7 @@
 
 HomelabARR Mobile puts your dashboard in your pocket. It's a native app for iOS and Android that connects to your HomelabARR CE server — same dashboard, same 100+ apps, but on your phone.
 
-![HomelabARR Mobile](../img/screenshots/dark-dashboard.png)
+![HomelabARR Mobile](../img/screenshots/mobile-app-mockup.png){ width="350" }
 
 ## What It Does
 
