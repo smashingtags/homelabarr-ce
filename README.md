@@ -37,7 +37,7 @@
 
 <p align="center">
     <a href="https://ce-demo.homelabarr.com">
-        <img src="https://img.shields.io/badge/CE_Demo-Live-brightgreen?logo=docker&logoColor=white" alt="CE Demo">
+        <img src="https://img.shields.io/badge/Try_the_Demo-Live-brightgreen?logo=docker&logoColor=white" alt="CE Demo">
     </a>
     <a href="https://homelabarr.com">
         <img src="https://img.shields.io/badge/Website-homelabarr.com-FF8C1A?logo=firefox&logoColor=white" alt="HomelabARR">
@@ -49,11 +49,15 @@
 
 ---
 
-## What is this?
+## What is HomelabARR?
 
-HomelabARR CE is a free, open-source dashboard for deploying Docker containers on your homelab. Pick an app from the catalog, click Deploy, and it's running. No more copy-pasting Docker Compose files.
+You know how setting up self-hosted apps usually means Googling Docker Compose files, copying YAML, editing ports, and hoping it works? HomelabARR skips all of that.
 
-**100+ app templates** across 11 categories — Plex, Sonarr, Radarr, Jellyfin, Ollama, Home Assistant, qBittorrent, and a lot more.
+It's a dashboard. You open it, you see a catalog of 100+ apps, you click **Deploy**, and the app is running. That's it.
+
+Plex, Sonarr, Radarr, Jellyfin, Ollama, Home Assistant, qBittorrent — they're all in there, ready to go.
+
+**Free and open source.** MIT license. No account required. No telemetry.
 
 <p align="center">
     <img src="wiki/docs/img/screenshots/dark-dashboard.png" alt="HomelabARR Dashboard" width="700">
@@ -61,177 +65,167 @@ HomelabARR CE is a free, open-source dashboard for deploying Docker containers o
 
 ---
 
-## Quick Start
+## Try It Right Now
 
-### Clone the repo
+Don't want to install anything yet? [**Open the live demo →**](https://ce-demo.homelabarr.com)
+
+Login: `admin` / `admin`. Browse apps, click around. Nothing you do in the demo touches a real server.
+
+---
+
+## Install It (5 minutes)
+
+You need a Linux machine with Docker installed. That's it.
 
 ```bash
+# 1. Grab the code
 git clone https://github.com/smashingtags/homelabarr-ce.git /opt/homelabarr
 cd /opt/homelabarr
-```
 
-### Option 1: Pre-built Images (fastest)
-
-```bash
+# 2. Set three things (copy-paste these exactly)
 export JWT_SECRET=$(openssl rand -base64 32)
 export DOCKER_GID=$(getent group docker | cut -d: -f3)
 export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
 
+# 3. Start it
 docker compose -f homelabarr.yml up -d
 ```
 
-### Option 2: Build from Source
+Open `http://your-server-ip:8084` in a browser. Log in with `admin` / `admin`. **Change the password right away.**
 
-```bash
-cp .env.example .env    # Edit with your settings
+That's the whole install.
 
-docker build -t homelabarr-frontend:local -f Dockerfile .
-docker build -t homelabarr-backend:local -f Dockerfile.backend .
+> 💡 **Don't have Docker?** Run `curl -fsSL https://get.docker.com | sh` first. Takes about a minute.
 
-# Edit homelabarr.yml — change GHCR images to :local tags
-export JWT_SECRET=$(openssl rand -base64 32)
-export DOCKER_GID=$(getent group docker | cut -d: -f3)
-export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
+> ⚠️ **Running in a Proxmox LXC?** You might need to add `lxc.apparmor.profile: unconfined` to the container config. See the [FAQ](https://wiki.homelabarr.com/guides/faq/) for details.
 
-docker compose -f homelabarr.yml up -d
-```
-
-**Dashboard:** `http://your-server:8084`  
-**Login:** `admin` / `admin` — **change this immediately**
-
-> ⚠️ **Proxmox LXC users:** If containers won't start, add `lxc.apparmor.profile: unconfined` to your LXC config and reboot the container.
-
-Full install guide: [wiki.homelabarr.com/guides/quick-start](https://wiki.homelabarr.com/guides/quick-start/)
+Want to build from source instead? Check the [full install guide](https://wiki.homelabarr.com/guides/quick-start/).
 
 ---
 
-## Requirements
+## What You Get
 
-- Docker + Docker Compose v2
-- Linux (Debian/Ubuntu recommended — also works on Proxmox LXC, Unraid, Synology, Raspberry Pi)
-- 2 CPU cores, 4 GB RAM, 20 GB disk
-- Works on **x86_64 and ARM64** (multi-arch images)
-
----
-
-## Features
-
-- **100+ app templates across 11 categories** — Media, Downloads, Monitoring, AI & ML, Virtual Desktops, and more
-- **One-click deploy** — pick an app, click the button, it's running
-- **Three deployment modes** — Standard (IP:port), Traefik (reverse proxy + SSL), Traefik + Authelia (reverse proxy + 2FA)
-- **Container management** — start, stop, restart, remove, view logs from the dashboard
-- **Port Manager** — see every port in use, catch conflicts before they happen
-- **Custom app templates** — drop a YAML file in `apps/myapps/` and it shows up in the catalog
-- **JWT + API key auth** — secure your dashboard, generate API keys for automation
-- **Dark mode** — it looks good
-- **Mobile app** — iOS and Android (HomelabARR Mobile on App Store / Google Play)
-- **CLI tool** — deploy and manage from the terminal if that's your thing
+- **100+ apps, one click each.** Media servers, download clients, monitoring, AI tools, virtual desktops, backup, and more.
+- **Three ways to deploy.** Just IP:port, or with Traefik reverse proxy for SSL, or Traefik + Authelia for 2FA on top.
+- **Manage running containers.** Start, stop, restart, remove, view logs — all from the dashboard.
+- **Port Manager.** See every port in use across all your containers. Catch conflicts before they happen.
+- **Add your own apps.** Drop a YAML file in `apps/myapps/` and it shows up in the catalog automatically.
+- **Secure by default.** Login required, API keys for automation, rate limiting, security headers.
+- **Dark mode.** Obviously.
+- **Mobile app.** iOS and Android — manage your homelab from the couch.
+- **CLI tool.** If you'd rather type than click, there's a terminal interface too.
 
 ---
 
-## App Categories
+## What Apps Are Included?
 
-| Category | Count | Examples |
-|----------|-------|---------|
-| AI & Machine Learning | 14 | Ollama, Open WebUI, ComfyUI, Stable Diffusion, LocalAI |
-| Media Servers | 5 | Plex, Jellyfin, Emby |
-| Media Management | 16 | Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Recyclarr |
-| Downloads | 14 | qBittorrent, SABnzbd, NZBGet, Deluge, Transmission |
-| Monitoring | 9 | Grafana, Netdata, Uptime Kuma, Tautulli, Prometheus |
-| Self-hosted | 37 | Nextcloud, Vaultwarden, Immich, Home Assistant, n8n, Ghost |
-| System | 13 | Portainer, Dozzle, Watchtower, Traefik, CF Companion |
-| Virtual Desktops | 10 | Kasm Workspaces, Firefox, Chrome, Tor Browser |
-| Transcoding | 5 | Tdarr, Handbrake, MakeMKV |
-| Backup | 3 | Duplicati, Restic |
-| My Apps | — | Your custom templates |
+| Category | # | Some highlights |
+|----------|---|-----------------|
+| 🤖 AI & Machine Learning | 14 | Ollama, Open WebUI, ComfyUI, Stable Diffusion, LocalAI |
+| 🎬 Media Servers | 5 | Plex, Jellyfin, Emby |
+| 📚 Media Management | 16 | Sonarr, Radarr, Lidarr, Bazarr, Prowlarr |
+| ⬇️ Downloads | 14 | qBittorrent, SABnzbd, NZBGet, Deluge, Transmission |
+| 📊 Monitoring | 9 | Grafana, Netdata, Uptime Kuma, Tautulli |
+| 🌐 Self-hosted | 37 | Nextcloud, Vaultwarden, Immich, Home Assistant, n8n |
+| ⚙️ System | 13 | Portainer, Dozzle, Watchtower, Traefik |
+| 🖥️ Virtual Desktops | 10 | Kasm Workspaces, Firefox, Chrome, Tor Browser |
+| 🎞️ Transcoding | 5 | Tdarr, Handbrake, MakeMKV |
+| 💾 Backup | 3 | Duplicati, Restic |
+| 📁 My Apps | — | Whatever you add |
 
-Templates live in `apps/<category>/`. Each one is a Docker Compose YAML with variable placeholders that get filled in when you deploy.
+Every template is just a Docker Compose YAML file in `apps/<category>/`. You can read them, edit them, or write your own.
 
 ---
 
-## Architecture
+## What Does It Look Like Inside?
 
-| Component | Stack | Port |
-|-----------|-------|------|
-| Frontend | React 18 + Vite + TailwindCSS + shadcn/ui | 8084 (nginx) |
-| Backend | Node.js + Express + Dockerode | 8092 |
-| Auth | JWT + bcrypt + API keys (hlr_ prefix) | — |
+Two containers. That's the whole thing.
 
-The frontend is a static React app served by nginx. It proxies `/api` requests to the backend. The backend reads app templates from the `apps/` directory and talks to the Docker socket to manage containers.
+| Piece | What it does | Port |
+|-------|-------------|------|
+| **Frontend** | The dashboard you see in your browser. React app served by nginx. | 8084 |
+| **Backend** | Reads app templates, talks to Docker, handles login. Node.js + Express. | 8092 |
+
+The frontend sends API requests to the backend. The backend talks to the Docker socket to start and stop containers. Simple.
 
 <p align="center">
-    <img src="wiki/docs/img/diagrams/system-architecture.png" alt="System Architecture" width="700">
+    <img src="wiki/docs/img/diagrams/system-architecture.png" alt="How it works" width="700">
 </p>
 
----
-
-## Configuration
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `JWT_SECRET` | ✅ | Secret for signing auth tokens |
-| `DOCKER_GID` | ✅ | Your host's docker group ID (`getent group docker \| cut -d: -f3`) |
-| `CORS_ORIGIN` | ✅ | URL you access the dashboard from (e.g., `http://192.168.1.50:8084`) |
-| `DEFAULT_ADMIN_PASSWORD` | No | Initial admin password (default: `admin`) |
-| `TZ` | No | Timezone (default: `America/New_York`) |
-| `LOG_LEVEL` | No | `info`, `debug`, `error` |
-
-Full config reference: [wiki.homelabarr.com/guides/configuration](https://wiki.homelabarr.com/guides/configuration/)
+Want the deep dive? [Architecture docs →](https://wiki.homelabarr.com/guides/architecture/)
 
 ---
 
-## Development
+## Settings You Might Want to Change
+
+| Setting | Do you need it? | What it does |
+|---------|----------------|-------------|
+| `JWT_SECRET` | **Yes** | Keeps your login secure. The install command generates one for you. |
+| `DOCKER_GID` | **Yes** | Tells the backend which group can talk to Docker. The install command figures this out. |
+| `CORS_ORIGIN` | **Yes** | The URL you open the dashboard at. If login won't work, this is probably wrong. |
+| `DEFAULT_ADMIN_PASSWORD` | Optional | Change the default password (it's `admin` if you don't set this). |
+| `TZ` | Optional | Your timezone. Defaults to `America/New_York`. |
+
+All the config options: [wiki.homelabarr.com/guides/configuration](https://wiki.homelabarr.com/guides/configuration/)
+
+---
+
+## Want to Hack on It?
 
 ```bash
 npm install
-npm run dev       # Vite on :5173 + Express on :8092
-npm run build     # Build frontend
-npm test          # Vitest
+npm run dev       # Runs the dashboard on :5173 and the API on :8092
+npm run build     # Build for production
+npm test          # Run the test suite
 ```
+
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for how to submit changes.
 
 ---
 
 ## Security
 
-| Tool | What it scans | When |
-|------|--------------|------|
-| [CodeQL](https://github.com/smashingtags/homelabarr-ce/security/code-scanning) | JS/TS source — SSRF, injection, XSS | Every push |
-| [Snyk](https://snyk.io/test/github/smashingtags/homelabarr-ce) | npm deps + Docker base images | Continuous |
-| [Dependabot](https://github.com/smashingtags/homelabarr-ce/security/dependabot) | Outdated deps with known CVEs | Automatic PRs |
-| [Docker Scout](https://hub.docker.com/r/smashingtags/homelabarr-frontend) | Container images, SBOMs, attestations | Every push |
+We scan this project with four different tools, automatically, on every push:
+
+| Tool | What it checks |
+|------|---------------|
+| [CodeQL](https://github.com/smashingtags/homelabarr-ce/security/code-scanning) | The actual code — injection bugs, XSS, that kind of thing |
+| [Snyk](https://snyk.io/test/github/smashingtags/homelabarr-ce) | Every npm package and Docker base image for known vulnerabilities |
+| [Dependabot](https://github.com/smashingtags/homelabarr-ce/security/dependabot) | Outdated packages that have security patches available |
+| [Docker Scout](https://hub.docker.com/r/smashingtags/homelabarr-frontend) | The finished container images, plus supply chain attestations |
 
 <p align="center">
     <img src="docs/images/scout-frontend-A.png" alt="Frontend Scout Score A" width="500">
 </p>
-<p align="center"><em>Frontend — Scout Score A</em></p>
+<p align="center"><em>Frontend image — Scout Score A</em></p>
 
-We run non-root containers, Helmet security headers, rate limiting, CORS validation, path sanitization, `crypto.randomBytes` for session IDs, and SLSA provenance + SBOM attestations on every build.
+Containers run as a non-root user. All the usual security headers are on. Rate limiting is on. Session tokens use `crypto.randomBytes`, not `Math.random`.
 
-Report vulnerabilities privately: **michael@mjashley.com** — see [SECURITY.md](SECURITY.md).
-
----
-
-## Professional Edition
-
-Looking for storage management (SnapRAID + MergerFS), cache mover, file sharing, and system monitoring? Check out [HomelabARR PE](https://homelabarr.com#pricing).
+Found a vulnerability? Email **michael@mjashley.com** — see [SECURITY.md](SECURITY.md).
 
 ---
 
-## Contributing
+## Want More? Check Out the Pro Edition
 
-See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+CE handles Docker containers. **PE** (Professional Edition) adds storage management — SnapRAID + MergerFS + cache mover + file sharing + system monitoring.
+
+If you've got a bunch of mismatched hard drives and want to turn them into a storage pool without RAID, that's what PE is for.
+
+[See pricing →](https://homelabarr.com#pricing)
 
 ---
 
 ## Links
 
-- **Website:** [homelabarr.com](https://homelabarr.com)
-- **Wiki:** [wiki.homelabarr.com](https://wiki.homelabarr.com)
-- **Demo:** [ce-demo.homelabarr.com](https://ce-demo.homelabarr.com) (admin / admin)
-- **Discord:** [discord.gg/Pc7mXX786x](https://discord.gg/Pc7mXX786x)
-- **Reddit:** [r/homelabarr](https://www.reddit.com/r/homelabarr/)
-- **Company:** [imogenlabs.ai](https://imogenlabs.ai)
-- **Author:** [mjashley.com](https://mjashley.com)
+| | |
+|---|---|
+| 🌐 **Website** | [homelabarr.com](https://homelabarr.com) |
+| 📖 **Docs** | [wiki.homelabarr.com](https://wiki.homelabarr.com) |
+| 🎮 **Demo** | [ce-demo.homelabarr.com](https://ce-demo.homelabarr.com) — log in with admin / admin |
+| 💬 **Discord** | [discord.gg/Pc7mXX786x](https://discord.gg/Pc7mXX786x) |
+| 📣 **Reddit** | [r/homelabarr](https://www.reddit.com/r/homelabarr/) |
+| 🏢 **Company** | [imogenlabs.ai](https://imogenlabs.ai) |
+| 👤 **Author** | [mjashley.com](https://mjashley.com) |
 
 ---
 
@@ -264,4 +258,4 @@ See [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE) — free to use, modify, and distribute.
+[MIT](LICENSE) — do whatever you want with it.
