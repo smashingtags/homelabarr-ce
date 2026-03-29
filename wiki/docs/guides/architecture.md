@@ -1,7 +1,10 @@
 # Architecture
 
-!!! info "You don't need to read this"
-    This page is for developers and curious people. If you just want to use HomelabARR, the [Quick Start](quick-start.md) and [Web Dashboard](web-dashboard.md) guides have everything you need.
+!!! info "Who this page is for"
+    Developers, contributors, and curious people who want to understand how HomelabARR works under the hood. **If you just want to use HomelabARR, you can skip this entirely** — the [Quick Start](quick-start.md) and [Web Dashboard](web-dashboard.md) guides have everything you need.
+
+    If you're adding custom app templates, [CLI Bridge](cli-bridge.md) is the relevant page.
+    If you want to contribute code, start with [Contributing](contributing.md).
 
 ---
 
@@ -9,42 +12,40 @@
 
 HomelabARR is two containers working together:
 
-![System Architecture](../img/diagrams/system-architecture.png)
+![System Architecture — shows the Browser, Frontend (nginx + React on port 8084), Backend (Node.js + Express on port 8092), CLI Bridge (reads app YAML templates), Docker SDK (talks to the host Docker socket), and the Deployed Apps. Data flows from Browser → Frontend → Backend → Docker → running containers.](../img/diagrams/system-architecture.png)
 
-**Frontend** = what you see in your browser. It's a React app served by nginx.
-
-**Backend** = what does the work. It reads app templates, talks to Docker, handles login, and streams deployment progress to the frontend.
-
-**App templates** = standard Docker Compose YAML files in the `apps/` folder. The backend reads them; you deploy them with one click.
+- **Frontend** (port 8084) — a React app served by nginx. This is what you see in your browser. It proxies all API calls to the backend via nginx.
+- **Backend** (port 8092) — a Node.js/Express server. It reads app templates, talks to Docker, handles authentication (JWT + API keys), and streams deployment output to your browser in real time via SSE.
+- **App templates** — standard Docker Compose YAML files in the `apps/` folder. The backend reads them; you deploy them with one click. See [CLI Bridge](cli-bridge.md) for how they work.
 
 ---
 
 ## How Deployment Works
 
-![Deployment Flow](../img/diagrams/deployment-flow.png)
+![Deployment Flow — six steps: (1) Click Deploy in the browser, (2) Backend loads YAML template, (3) Transform template for chosen mode (Standard strips Traefik labels; Traefik mode keeps them + adds proxy network; Authelia mode adds chain-authelia middleware), (4) docker compose up -d, (5) Backend streams Docker output via SSE, (6) Container is running.](../img/diagrams/deployment-flow.png)
 
-When you click Deploy, here's what happens step by step:
+When you click Deploy, here's what happens:
 
 1. You pick an app and a mode (Standard, Traefik, or Traefik + Authelia)
 2. Frontend sends a request to the backend: "deploy Plex in standard mode"
 3. Backend loads the Plex YAML template from `apps/media-servers/plex.yml`
-4. If Standard mode: strips out Traefik labels and external networks
+4. Backend transforms the template for the chosen mode (see [CLI Bridge](cli-bridge.md) for details)
 5. Fills in your settings (timezone, data path, user ID, etc.)
 6. Runs `docker compose up -d`
-7. Streams the Docker output back to your browser in real time
-8. Done — your app is running
+7. Streams Docker output back to your browser in real time
+8. Container is running
 
 ---
 
-## Network Modes Explained
+## Network Modes
 
-![Network Topology](../img/diagrams/network-topology.png)
+![Network Topology — Standard mode: Browser → App (direct port, bridge network). Traefik mode: Browser → Traefik (443, proxy network) → App. Authelia mode: Browser → Traefik → Authelia (auth check) → App. Docker socket connects the Backend to all running containers.](../img/diagrams/network-topology.png)
 
-**Standard:** Your app binds to a port. You access it at `http://server:PORT`. Simple. No setup, works immediately.
+**Standard:** App binds to a port. You access it at `http://server:PORT`. No setup required, works immediately.
 
-**Traefik:** Your app joins the `proxy` network. Traefik reads Docker labels and routes traffic by hostname, with automatic SSL. You get URLs like `https://jellyfin.yourdomain.com`.
+**Traefik:** App joins the `proxy` network. Traefik reads Docker labels and routes by hostname with automatic SSL. You get URLs like `https://jellyfin.yourdomain.com`.
 
-**Traefik + Authelia:** Same as above, but Authelia sits between Traefik and your app, requiring login with optional two-factor authentication.
+**Traefik + Authelia:** Same as Traefik, but Authelia sits between Traefik and your app — requiring login with optional two-factor authentication before anyone can reach the container.
 
 ---
 
@@ -57,10 +58,10 @@ When you click Deploy, here's what happens step by step:
 ├── sonarr/
 └── ...
 
-homelabarr-data/        # Docker volume — HomelabARR's own settings (users, sessions)
+homelabarr-data/        # Docker volume — HomelabARR settings (users, sessions)
 ```
 
-Back up `/opt/appdata/` and you've backed up everything important.
+Back up `/opt/appdata/` and you've covered everything important.
 
 ---
 
@@ -71,33 +72,28 @@ Back up `/opt/appdata/` and you've backed up everything important.
 | Frontend | React 19, shadcn/ui, Vite |
 | Backend | Node.js, Express |
 | Container management | Docker SDK (via socket) |
-| Authentication | JWT tokens, `hlr_` API keys |
+| Authentication | JWT tokens + `hlr_` API keys |
 | Deployment streaming | Server-Sent Events (SSE) |
-| Container images | [LinuxServer.io](https://linuxserver.io) and official images |
+| Container images | [LinuxServer.io](https://linuxserver.io) + official images |
 | CI/CD | GitHub Actions → GitHub Container Registry |
-| Hosting | Your server, your hardware, your rules |
-
----
-
-## App Template Images
-
-The majority of our app templates use [LinuxServer.io](https://linuxserver.io) container images (`lscr.io/linuxserver/*`). These are well-maintained, regularly updated, and follow a consistent pattern with `PUID`/`PGID` environment variables for file permissions.
-
-We're a proud sponsor of LinuxServer.io. If you appreciate what they do, [consider supporting them too](https://www.linuxserver.io/donate).
 
 ---
 
 ## CI/CD Pipeline
 
-Code goes through a 3-step process:
-
 ```
-dev branch → staging branch (1-week soak test) → main branch (production)
+feature/* → dev branch → staging branch (1-week soak) → main branch
 ```
 
-When code is pushed to `main`, GitHub Actions automatically:
-1. Builds new Docker images for frontend and backend
-2. Pushes them to GitHub Container Registry
+When code merges to `main`, GitHub Actions:
+1. Builds multi-arch Docker images (amd64 + arm64)
+2. Pushes to GitHub Container Registry (`ghcr.io/smashingtags/`)
 3. Deploys the wiki to GitHub Pages
 
-If you're running HomelabARR with Watchtower, it auto-updates when new images are published.
+If you run HomelabARR with Watchtower, it auto-pulls new images when they're published.
+
+---
+
+## Contributing
+
+Want to add an app template, fix a bug, or improve the docs? See [Contributing](contributing.md) for the workflow. The short version: fork the repo, create a `feature/*` branch, deploy to dev to test, then open a PR against `staging`.
