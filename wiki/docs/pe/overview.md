@@ -50,28 +50,59 @@ If you're running a single server with a few drives and mostly care about Docker
 
 ## Architecture
 
-PE ships as a single binary — no Docker required to run PE itself (though it manages Docker for app deployment):
+PE ships as a **single binary** — no Docker required to run PE itself (though it manages Docker for your app deployments):
 
-```
-┌──────────────────────────────────────────┐
-│           HomelabARR PE Binary            │
-│                                          │
-│  ┌─────────────┐  ┌──────────────────┐   │
-│  │  Go Backend  │  │  React Frontend  │   │
-│  │  (Gin API)   │  │  (embedded)      │   │
-│  └──────┬──────┘  └──────────────────┘   │
-│         │                                │
-│  ┌──────┴──────────────────────────────┐ │
-│  │  Storage Engine                     │ │
-│  │  SnapRAID · MergerFS · Cache Mover  │ │
-│  └──────┬──────────────────────────────┘ │
-│         │                                │
-│  ┌──────┴──────┐  ┌──────────────────┐   │
-│  │  Docker SDK  │  │  File Sharing    │   │
-│  │  Container   │  │  Go-native       │   │
-│  │  Management  │  │  SMB + NFS       │   │
-│  └─────────────┘  └──────────────────┘   │
-└──────────────────────────────────────────┘
+```mermaid
+graph TD
+    Browser["🌐 Your Browser"]
+
+    subgraph Binary["HomelabARR PE — Single Binary"]
+        direction TB
+        FE["🎨 React Frontend<br/>(embedded, served by Go)"]
+        API["⚙️ Go Backend<br/>(Gin REST API)"]
+
+        subgraph Storage["Storage Engine"]
+            SR["SnapRAID<br/>parity + protection"]
+            MFS["MergerFS<br/>pooled drive array"]
+            CM["Cache Mover<br/>SSD → HDD overnight"]
+        end
+
+        subgraph Services["Services"]
+            Docker["🐳 Docker SDK<br/>container management<br/>100+ app templates"]
+            FS["📁 File Sharing<br/>SMB + NFS<br/>(Go-native)"]
+        end
+
+        FE --> API
+        API --> Storage
+        API --> Services
+        SR <--> MFS
+        MFS --> CM
+    end
+
+    subgraph Hardware["Your Hardware"]
+        SSD["💾 Cache SSD<br/>(fast writes)"]
+        HDD["🗄️ Data Drives<br/>(mixed sizes OK)"]
+        Parity["🛡️ Parity Drive<br/>(data protection)"]
+    end
+
+    subgraph Network["Local Network"]
+        Containers["📦 Running Containers<br/>(Plex, Sonarr, etc.)"]
+        Shares["🖥️ Network Shares<br/>(Windows, Mac, Linux)"]
+    end
+
+    Browser --> FE
+    CM --> SSD
+    CM --> HDD
+    MFS --> HDD
+    SR --> Parity
+    Docker --> Containers
+    FS --> Shares
+
+    style Binary fill:#1a1a2e,stroke:#6366f1,stroke-width:2px,color:#e2e8f0
+    style Storage fill:#0f172a,stroke:#818cf8,stroke-width:1px,color:#e2e8f0
+    style Services fill:#0f172a,stroke:#818cf8,stroke-width:1px,color:#e2e8f0
+    style Hardware fill:#0f172a,stroke:#475569,stroke-width:1px,color:#e2e8f0
+    style Network fill:#0f172a,stroke:#475569,stroke-width:1px,color:#e2e8f0
 ```
 
 ---
