@@ -22,6 +22,8 @@ HomelabARR is two containers working together:
 
 ## How Deployment Works
 
+![Deployment Flow — six steps: (1) Click Deploy in the browser, (2) Backend loads YAML template, (3) Transform template for chosen mode (Standard strips Traefik labels; Traefik mode keeps them + adds proxy network; Authelia mode adds chain-authelia middleware), (4) docker compose up -d, (5) Backend streams Docker output via SSE, (6) Container is running.](../img/diagrams/deployment-flow.png)
+
 ```mermaid
 sequenceDiagram
     autonumber
