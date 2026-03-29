@@ -23,7 +23,7 @@ This starts the Vite dev server (frontend on `:5173`) and Express backend (`:809
 
 ## Adding App Templates
 
-App templates go in `server/templates/` as YAML files. Look at existing templates for the format. Each template defines a Docker Compose stack for a single application.
+App templates go in `apps/<category>/` as YAML files. Look at existing templates for the format. Each template defines a Docker Compose stack for a single application. Custom or personal templates go in `apps/myapps/`.
 
 ## Reporting Bugs
 

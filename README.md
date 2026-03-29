@@ -49,6 +49,12 @@
 
 ---
 
+## Project Status
+
+> **Community-maintained.** HomelabARR CE is stable and actively used. New features go through the `dev` branch → `staging` → `main`. PRs welcome — see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+
+---
+
 ## What is HomelabARR?
 
 You know how setting up self-hosted apps usually means Googling Docker Compose files, copying YAML, editing ports, and hoping it works? HomelabARR skips all of that.
@@ -75,10 +81,10 @@ Login: `admin` / `admin`. Browse apps, click around. Nothing you do in the demo 
 
 ## Install It (5 minutes)
 
-You need a Linux machine with Docker installed. That's it.
+You need a Linux machine with Docker installed. You don't need to write Compose files, but you do need basic shell access to your server.
 
 ```bash
-# 1. Grab the code
+# 1. Grab the code (cloning to /opt/homelabarr is recommended — it matches the default template path)
 git clone https://github.com/smashingtags/homelabarr-ce.git /opt/homelabarr
 cd /opt/homelabarr
 
@@ -91,9 +97,13 @@ export CORS_ORIGIN=http://$(hostname -I | awk '{print $1}'):8084
 docker compose -f homelabarr.yml up -d
 ```
 
-Open `http://your-server-ip:8084` in a browser. Log in with `admin` / `admin`. **Change the password right away.**
+Open `http://your-server-ip:8084` in a browser. Log in with `admin` / `admin`. **Change the password right away** — or set `DEFAULT_ADMIN_PASSWORD` in your `.env` before first start if this won't be a throwaway local install.
 
 That's the whole install.
+
+> 💾 **For a permanent setup**, move those exports into a `.env` file in the same directory as `homelabarr.yml` instead of re-running them on every reboot. See the [configuration docs](https://wiki.homelabarr.com/guides/configuration/) for the full list of options.
+
+> 📁 **Cloned somewhere other than `/opt/homelabarr`?** Set `CLI_BRIDGE_HOST_PATH` in your `.env` to match your clone path, or the app catalog won't load.
 
 > 💡 **Don't have Docker?** Run `curl -fsSL https://get.docker.com | sh` first. Takes about a minute.
 
@@ -167,6 +177,28 @@ Want the deep dive? [Architecture docs →](https://wiki.homelabarr.com/guides/a
 | `TZ` | Optional | Your timezone. Defaults to `America/New_York`. |
 
 All the config options: [wiki.homelabarr.com/guides/configuration](https://wiki.homelabarr.com/guides/configuration/)
+
+---
+
+## Repo Structure
+
+```
+homelabarr-ce/
+├── src/              # React frontend (Vite + shadcn/ui)
+├── server/           # Node.js + Express backend
+├── apps/             # App templates (one YAML per app, organized by category)
+│   ├── ai/           # AI & machine learning tools
+│   ├── downloads/    # Download clients
+│   ├── media-servers/
+│   ├── self-hosted/
+│   ├── myapps/       # ← your custom templates go here
+│   └── ...
+├── wiki/             # Source for wiki.homelabarr.com (MkDocs)
+├── .github/          # CI workflows, issue/PR templates, security policy
+├── traefik/          # Example Traefik config for reverse proxy setup
+├── homelabarr.yml    # The Docker Compose file you run
+└── nginx.conf        # nginx config baked into the frontend image
+```
 
 ---
 
