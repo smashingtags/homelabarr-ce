@@ -1,6 +1,9 @@
 # Mobile App
 
-HomelabARR Mobile puts your dashboard in your pocket. It's a native app for iOS and Android that connects to your HomelabARR CE server — same dashboard, same 100+ apps, but on your phone.
+HomelabARR Mobile is an optional companion app for iOS and Android. It connects to your existing CE server — same dashboard, same 100+ apps, same login — but native on your phone.
+
+!!! info "The mobile app is optional"
+    It doesn't run any extra backend services. Your CE server keeps running exactly as it does now. The app is just a convenient way to check on things without opening a laptop.
 
 ![HomelabARR Mobile](../img/screenshots/mobile-app-mockup.png){ width="350" }
 
@@ -8,96 +11,78 @@ HomelabARR Mobile puts your dashboard in your pocket. It's a native app for iOS 
 
 - **Browse and deploy** all 100+ container templates from your phone
 - **Monitor** running containers with real-time status
-- **Dark and light mode** that follows your system preference
-- **Works everywhere** — local IP, Tailscale, Cloudflare Tunnel, any URL
-- **Pull-to-refresh**, back navigation, and haptic feedback
-- **Secure** — your server URL and API key stay on your device
-
-!!! tip "It's your CE dashboard, just native"
-    The app connects to whatever CE instance you're already running. Same apps, same configs, same login. It just makes it easier to check on things without opening a laptop.
+- **Works everywhere** — local IP, Tailscale, Cloudflare Tunnel, any URL that reaches your CE server
+- **Secure** — your server URL and API key are stored locally on your device. Deleting the app removes them.
 
 ## Getting It
 
 | Platform | Status | Price |
 |---|---|---|
-| **iOS** (App Store) | Available on TestFlight, App Store submission pending | $4.99 one-time |
+| **iOS** (App Store) | TestFlight beta available | $4.99 one-time |
 | **Android** (Google Play) | APK available, Play Store submission pending | $4.99 one-time |
 | **Build from source** | Always free | [github.com/smashingtags/homelabarr-mobile](https://github.com/smashingtags/homelabarr-mobile) |
 
 !!! info "Why $4.99?"
-    HomelabARR CE is free and always will be. The mobile app is a convenience — compiled, signed, auto-updated through the store. Power users can always build it themselves from the open source repo.
+    HomelabARR CE is free and always will be. The mobile app is a convenience — compiled, signed, auto-updated through the store. Power users can always build it from the open source repo.
 
 ## Setup
 
-When you first open the app, you'll see the setup screen with the HomelabARR octopus logo. Enter two things:
+When you first open the app, enter two things:
 
 ### 1. Your Server URL
 
-This is whatever URL you use to access your CE dashboard in a browser:
+This is whatever URL you use to access CE in a browser:
 
-| Setup | Example URL |
+| Your setup | Example URL |
 |---|---|
 | Local network | `http://192.168.1.100:8084` |
 | Tailscale | `http://100.x.x.x:8084` |
 | Traefik + domain | `https://homelabarr.yourdomain.com` |
 | Cloudflare Tunnel | `https://homelabarr.yourdomain.com` |
 
-!!! warning "Use the right URL"
-    The app needs to reach your CE server. If you're on the same WiFi as your server, use the local IP. If you're away from home, you'll need Tailscale, a Cloudflare Tunnel, or a domain pointed at your server.
+!!! warning "Local IPs only work on the same network"
+    If you're away from home (on cellular or a different WiFi), a local IP like `192.168.1.100` won't work. You'll need Tailscale, a Cloudflare Tunnel, or a public domain pointed at your server for remote access.
 
-### 2. Your API Key (Optional)
+### 2. Your API Key
 
-If your CE instance has API key authentication enabled, enter your key. You can generate one from the CE dashboard:
+Generate one from the CE dashboard: click your username → **API Keys** → **Generate New Key**. Copy the `hlr_` key and paste it into the app.
 
-1. Open your CE dashboard in a browser
-2. Click your username → **API Keys**
-3. Click **Generate New Key**
-4. Copy the `hlr_` key and paste it into the app
-
-If you're using the default admin/admin setup without API keys, you can skip this field.
+!!! warning "Revoke unused keys"
+    API keys give full access to your CE instance. If you stop using a device, revoke its key from the dashboard — Settings → API Keys → Delete.
 
 ### 3. Tap Connect
 
-The app validates your server URL, checks the connection, and loads your dashboard. That's it.
+The app validates the URL, checks the connection, and loads your dashboard.
 
-## Using the App
-
-Once connected, it's your full CE dashboard:
-
-- **Swipe between categories** — Media & Entertainment, Downloads, AI & Machine Learning, all 11 tabs
-- **Tap Deploy** on any app to open the deployment modal
-- **Pull down to refresh** the app list
-- **Tap the back button** to navigate within the dashboard
-- **Toggle dark/light mode** — follows your phone's system setting
+---
 
 ## Troubleshooting
 
 ### "Connection failed"
-- Make sure your CE server is running (`docker ps` should show the frontend and backend containers)
-- Check that the URL is reachable from your phone — try it in your phone's browser first
-- If you're on cellular, you need Tailscale or a public URL — local IPs won't work outside your home network
+
+- Is your CE server running? Check: `docker ps | grep homelabarr`
+- Can your phone reach the URL? Try it in your phone's browser first
+- On cellular or away from home? You need Tailscale or a public URL — local IPs only work on the same network
 
 ### Dashboard loads but shows "Failed to load applications"
-- Your backend container might not be running. Check: `docker ps | grep backend`
-- If using API keys, make sure the key you entered is valid
 
-### App is slow
-- The app loads your full dashboard over the network. If your server is remote (not local), performance depends on your connection speed
-- Pull-to-refresh forces a full reload
+- Your CE backend container might not be running: `docker ps | grep backend`
+- If you're using an API key, check that it's valid in the dashboard
+
+---
 
 ## Technical Details
 
 - **Built with:** React Native + Expo
-- **WebView:** Connects to your CE frontend (same as your browser)
-- **Storage:** Server URL and API key stored locally on device via AsyncStorage
+- **Storage:** Server URL and API key stored on-device via AsyncStorage — not sent anywhere
 - **Platforms:** iOS 15+ and Android 10+
 - **Source:** [github.com/smashingtags/homelabarr-mobile](https://github.com/smashingtags/homelabarr-mobile)
 
 ## Try the Demo
 
-Don't have a CE server yet? Connect to the demo:
+Don't have a CE server yet? Connect to the live demo:
 
 - **URL:** `https://ce-demo.homelabarr.com`
 - **Login:** `admin` / `admin`
 
-This is a live CE instance with 100+ apps you can browse (deploys disabled on demo).
+Browse all 100+ apps (deploys are disabled on the demo server).

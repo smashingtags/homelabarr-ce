@@ -19,11 +19,11 @@ Figure out which platform you're coming from, because the migration steps are sl
 | **Dockserver** | Easy | Nearly identical structure, closest relative |
 | **Custom Docker Compose** | Easy | If you use `/opt/appdata/`, you're already 90% there |
 
-!!! warning "Back up first. Always."
-    Before you change anything, back up. If something breaks and you don't have a backup, that's on you — not us.
+!!! danger "Back up before you touch anything. Non-negotiable."
+    Migration goes wrong sometimes. A backup means you can recover. No backup means lost config, lost watch history, possibly worse.
 
     ```bash
-    # Back up ALL your app data (this may take a while)
+    # Back up ALL your app data — this may take 10-30+ minutes depending on library size
     sudo tar czf /opt/homelabarr-backup-$(date +%Y%m%d).tar.gz /opt/appdata/
 
     # Save a list of what's running right now
@@ -31,6 +31,11 @@ Figure out which platform you're coming from, because the migration steps are sl
 
     # Back up your .env if you have one
     cp /opt/appdata/compose/.env ~/env-backup.txt 2>/dev/null
+    ```
+
+    Verify the backup completed before continuing:
+    ```bash
+    ls -lh /opt/homelabarr-backup-*.tar.gz
     ```
 
 ---
@@ -66,10 +71,13 @@ This is the important part. **Do NOT stop everything at once.** Migrate one app,
 
 **Suggested order** (least risky first):
 
-1. Monitoring apps (Tautulli, Dozzle, Uptime Kuma)
-2. Download clients (NZBGet, qBittorrent, SABnzbd)
-3. Media managers (Sonarr, Radarr, Lidarr, Prowlarr)
-4. Media servers (Plex, Jellyfin — save these for last, they have the biggest configs)
+1. Monitoring apps (Tautulli, Dozzle, Uptime Kuma) — ~2 min each
+2. Download clients (NZBGet, qBittorrent, SABnzbd) — ~3 min each
+3. Media managers (Sonarr, Radarr, Lidarr, Prowlarr) — ~3-5 min each
+4. Media servers (Plex, Jellyfin — save these for last) — 10-30+ min if your library is large
+
+!!! tip "Plex libraries can take a while"
+    Plex re-scans its library on startup. If you have thousands of movies and TV episodes, expect the first startup after migration to take 15-30 minutes before everything shows up correctly.
 
 **For each app:**
 
