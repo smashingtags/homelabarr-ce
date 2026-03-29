@@ -442,7 +442,7 @@ def gen_request():
         ('nginx', 'Strip /api -> proxy to :8092', PRIMARY, 0.64),
         ('Express', 'Route -> auth (optional)', ACCENT, 0.51),
         ('CLI Bridge', 'Return cached catalog', PURPLE, 0.38),
-        ('Response', '200 OK + JSON (123 apps)', GREEN, 0.25),
+        ('Response', '200 OK + JSON (100+ apps)', GREEN, 0.25),
     ]
     for i, (l, d, c, y) in enumerate(rsteps):
         box(ax, 0.04, y, 0.42, 0.10, '', color=c, alpha=0.12, lw=2)
