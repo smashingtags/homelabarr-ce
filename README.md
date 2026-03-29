@@ -51,7 +51,7 @@
 
 ## Project Status
 
-> **Community-maintained.** HomelabARR CE is stable and actively used. New features go through the `dev` branch → `staging` → `main`. PRs welcome — see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+> **Community-maintained.** HomelabARR CE is stable and actively used. New features go through the `dev` branch → `staging` → `main`. PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
@@ -211,7 +211,7 @@ npm run build     # Build for production
 npm test          # Run the test suite
 ```
 
-See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for how to submit changes.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to submit changes.
 
 ---
 

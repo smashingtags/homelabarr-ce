@@ -47,6 +47,6 @@ See `apps/legacy/README.md` for examples of what NOT to add (deprecated/abandone
 
 - **Discord**: [discord.gg/Pc7mXX786x](https://discord.gg/Pc7mXX786x)
 - **Reddit**: [r/homelabarr](https://reddit.com/r/homelabarr)
-- **Ko-fi**: [ko-fi.com/homelabarr](https://ko-fi.com/homelabarr)
+
 
 Built with ♥ by [Imogen Labs AI](https://imogenlabs.ai)
