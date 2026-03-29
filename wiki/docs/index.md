@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="img/homelabarr-octopus-v2b.jpg" alt="HomelabARR" width="600">
+  <img src="img/homelabarr-octopus-v2b-transparent.png" alt="HomelabARR" width="600">
 </p>
 
 # HomelabARR CE
