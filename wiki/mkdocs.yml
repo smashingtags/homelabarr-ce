@@ -51,7 +51,10 @@ theme:
     text: Roboto
     code: Roboto Mono
   favicon: img/favicon.png
-  logo: img/homelabarr-banner.jpg
+  logo: img/homelabarr-octopus-v2b-transparent.png
+
+extra_css:
+  - stylesheets/extra.css
 
 # Plugins
 plugins:
