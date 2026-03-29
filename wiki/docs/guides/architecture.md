@@ -22,9 +22,41 @@ HomelabARR is two containers working together:
 
 ## How Deployment Works
 
-![Deployment Flow — six steps: (1) Click Deploy in the browser, (2) Backend loads YAML template, (3) Transform template for chosen mode (Standard strips Traefik labels; Traefik mode keeps them + adds proxy network; Authelia mode adds chain-authelia middleware), (4) docker compose up -d, (5) Backend streams Docker output via SSE, (6) Container is running.](../img/diagrams/deployment-flow.png)
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as 🌐 Browser
+    participant F as 🎨 Frontend<br/>(nginx · :8084)
+    participant A as ⚙️ Backend<br/>(Node.js · :8092)
+    participant C as 📄 CLI Bridge<br/>(apps/ templates)
+    participant D as 🐳 Docker<br/>(socket)
+    participant R as 📦 Running<br/>Container
 
-When you click Deploy, here's what happens:
+    B->>F: Click Deploy<br/>(app: plex, mode: traefik)
+    F->>A: POST /api/deploy<br/>{ app, mode, env }
+
+    A->>C: Load YAML template<br/>apps/media-servers/plex.yml
+    C-->>A: Raw template
+
+    Note over A: Transform for mode:<br/>• Standard → strip Traefik labels<br/>• Traefik → add proxy network + labels<br/>• Authelia → add chain-authelia middleware
+
+    A->>A: Fill variables<br/>(TZ, PUID, data paths...)
+
+    A->>D: docker compose up -d
+    D->>D: Pull image if needed
+    D-->>A: Stream output lines
+
+    A-->>F: SSE stream<br/>(real-time progress)
+    F-->>B: Live log output<br/>in deploy modal
+
+    D->>R: Container starts
+    R-->>D: Healthy ✓
+    D-->>A: Exit 0
+    A-->>F: SSE: { status: "success" }
+    F-->>B: ✅ Deployed!
+```
+
+When you click Deploy:
 
 1. You pick an app and a mode (Standard, Traefik, or Traefik + Authelia)
 2. Frontend sends a request to the backend: "deploy Plex in standard mode"
