@@ -105,6 +105,22 @@ graph TD
     style Network fill:#0f172a,stroke:#475569,stroke-width:1px,color:#e2e8f0
 ```
 
+??? tip "How to read this diagram"
+    Boxes are components, arrows show what talks to what. Everything inside the purple border ships as a single binary — you run one file, and all of it starts up together.
+
+Here's what each layer does:
+
+1. **Your browser** connects to the PE web dashboard — same idea as CE, just more tabs
+2. **React frontend** is embedded directly in the binary. No separate nginx container needed
+3. **Go backend** is the brain — it handles API requests, auth, and coordinates everything below it
+4. **Storage Engine** is what makes PE different from CE:
+    - **SnapRAID** protects your data with a parity drive — if a drive dies, you recover it
+    - **MergerFS** pools all your drives into one big folder, even if they're different sizes
+    - **Cache Mover** writes fast to your SSD first, then moves files to spinning drives overnight
+5. **Docker SDK** manages your containers — same 100+ app templates as CE
+6. **File Sharing** serves SMB (Windows) and NFS (Linux/Mac) shares natively — no Samba container required
+7. At the bottom: your actual hardware — cache SSD, data drives (mixed sizes are fine), and one parity drive
+
 ---
 
 ## Can I Run CE and PE on the Same Server?
