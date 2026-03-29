@@ -139,83 +139,85 @@ docker network create proxy 2>/dev/null || true
 
 ## Platform-Specific Notes
 
-### Coming from Saltbox
+Click your platform to expand the instructions:
 
-Saltbox stores configs at `/opt/<app>/` (without the `appdata` folder). CE expects `/opt/appdata/<app>/`. Move them:
+??? info "Coming from Saltbox"
+    Saltbox stores configs at `/opt/<app>/` (without the `appdata` folder). CE expects `/opt/appdata/<app>/`. Move them:
 
-```bash
-sudo mkdir -p /opt/appdata
+    ```bash
+    sudo mkdir -p /opt/appdata
 
-for app in sonarr radarr lidarr readarr prowlarr bazarr plex jellyfin tautulli nzbget sabnzbd qbittorrent; do
-  if [ -d "/opt/$app" ]; then
-    sudo mv /opt/$app /opt/appdata/$app
-    echo "Moved $app"
-  fi
-done
+    for app in sonarr radarr lidarr readarr prowlarr bazarr plex jellyfin tautulli nzbget sabnzbd qbittorrent; do
+      if [ -d "/opt/$app" ]; then
+        sudo mv /opt/$app /opt/appdata/$app
+        echo "Moved $app"
+      fi
+    done
 
-sudo chown -R 1000:1000 /opt/appdata
-```
+    sudo chown -R 1000:1000 /opt/appdata
+    ```
 
-!!! tip "Keep your Traefik"
-    Saltbox runs Traefik v3 — same as CE. If yours is working, leave it alone. CE's app templates are compatible.
+    **Keep your Traefik:** Saltbox runs Traefik v3 — same as CE. If yours is working, leave it alone. CE templates are compatible.
 
-!!! tip "Keep your Authelia"
-    Same deal. If Authelia is running, don't redeploy it. CE's Traefik + Authelia mode works with your existing setup.
+    **Keep your Authelia:** If it's running, don't redeploy it. CE's Traefik + Authelia mode works with your existing Authelia setup — it just needs the `chain-authelia` middleware to be defined.
 
----
+??? info "Coming from Cloudbox"
+    Same path move as Saltbox — configs go from `/opt/<app>/` to `/opt/appdata/<app>/`. But Cloudbox runs **Traefik v1**, which is too old for CE templates.
 
-### Coming from Cloudbox
+    **Replace Traefik:**
 
-Same as Saltbox — move configs from `/opt/<app>/` to `/opt/appdata/<app>/`. But Cloudbox runs **Traefik v1**, which is ancient. CE needs v2 or v3.
+    ```bash
+    docker stop traefik && docker rm traefik
+    ```
 
-**Recommended:** Let CE deploy fresh Traefik:
+    Then deploy fresh Traefik through CE's dashboard (System & Utilities → Traefik).
 
-```bash
-docker stop traefik && docker rm traefik
-# Then use CE's CLI menu → Option 1 → Traefik + Authelia
-```
+    Cloudbox uses a specific media path structure:
 
-Cloudbox also uses a specific media path structure:
+    ```
+    /mnt/unionfs/Media/Movies/
+    /mnt/unionfs/Media/TV/
+    ```
 
-```
-/mnt/unionfs/Media/Movies/
-/mnt/unionfs/Media/TV/
-```
+    If your media is still at `/mnt/unionfs/`, create a symlink:
 
-If your media is still at `/mnt/unionfs/`, create a symlink so CE can find it:
+    ```bash
+    sudo ln -sf /mnt/unionfs/Media /mnt/Media
+    ```
 
-```bash
-sudo ln -sf /mnt/unionfs/Media /mnt/Media
-```
+    After redeploying each media app, check the root folder paths in Sonarr/Radarr settings — they may need updating to match the new mount points.
 
-After redeploying each media app (Sonarr, Radarr, Plex), check the root folder / library paths in the app's settings. They may need updating to match the new mount points.
+??? info "Coming from PGBlitz / PlexGuide"
+    The oldest migration path. PGBlitz uses Ansible (not Docker Compose), Traefik v1, and the `plexguide` Docker network.
 
----
+    The good news: **app data is already in `/opt/appdata/`** — same as CE. No file moves needed.
 
-### Coming from PGBlitz / PlexGuide
+    Steps:
 
-The oldest migration path. PGBlitz uses Ansible (not Docker Compose), Traefik v1, and the `plexguide` Docker network.
+    1. Create the CE network: `docker network create proxy`
+    2. Install CE alongside PGBlitz (see Step 1 above)
+    3. Deploy fresh Traefik through CE — don't try to keep Traefik v1
+    4. Migrate apps one at a time
 
-1. **App data** is already in `/opt/appdata/` — same as CE. No moves needed.
-2. **Create the proxy network:** `docker network create proxy`
-3. **Install CE** (see Step 1 above)
-4. **Redeploy apps** one at a time through CE
-5. **Deploy fresh Traefik** through CE — don't try to keep Traefik v1
+    **Cloud storage:** PGBlitz was built around Google Drive + rclone. If you're still using cloud storage, your rclone mounts at `/mnt` will continue working with CE. To move to local NAS storage instead, see [Moving from Cloud to Local](#moving-from-cloud-to-local-storage) below.
 
-!!! info "Cloud storage"
-    PGBlitz was built around Google Drive + rclone. If you're still using cloud storage, your rclone mounts at `/mnt` will continue working with CE. If you want to move to local NAS storage, see the [Cloud to Local](#moving-from-cloud-to-local-storage) section below.
+??? success "Coming from Dockserver"
+    The easiest migration — Dockserver and HomelabARR CE share the same DNA. Same `/opt/appdata/` structure, same `proxy` network, same Traefik setup.
 
----
+    1. Install CE alongside Dockserver
+    2. Migrate apps one at a time through the CE dashboard
+    3. Done
 
-### Coming from Dockserver
+    Your `.env` variables, Traefik rules, and Authelia configs carry over as-is.
 
-The easiest migration. Dockserver and HomelabARR CE share the same DNA — same `/opt/appdata/` structure, same `proxy` network, same Traefik setup.
+??? note "Coming from a custom Docker Compose setup"
+    If you've been managing containers manually and using `/opt/appdata/` for data, you're already 90% there.
 
-1. Install CE alongside Dockserver
-2. Migrate apps one at a time
-3. That's it. Seriously.
+    1. Install CE (see Step 1)
+    2. Redeploy your apps through the CE dashboard — they'll pick up the same configs
+    3. Create the `proxy` network if you're using Traefik: `docker network create proxy`
 
-Your `.env` variables, Traefik rules, Authelia configs — everything is compatible.
+    The main thing to verify: CE templates use `${APPFOLDER}/<app>` as the config volume path, which defaults to `/opt/appdata/<app>`. As long as your existing data is there, it carries over automatically.
 
 ---
 

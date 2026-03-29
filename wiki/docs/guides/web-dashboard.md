@@ -9,7 +9,7 @@ This is your home base. Everything you need to deploy and manage apps lives here
 !!! danger "Change your password immediately"
     The default credentials are well-known. Before deploying any apps, sign in and update your password from the user menu in the top right.
 
-![Dashboard Overview](../img/screenshots/dark-dashboard.png)
+![Dashboard Overview — header bar shows Port Manager, Help, theme toggle, and Sign In on the right; category tabs run left to right below the header; search bar is below the tabs; app cards fill the rest of the page with app name, container image, deployment badges (Traefik/Auth), category label, and a Deploy button.](../img/screenshots/dark-dashboard.png)
 
 ---
 
@@ -22,7 +22,9 @@ The dashboard header has four controls:
 - **Theme toggle** — switch between dark and light mode
 - **Sign In** — log in to unlock deploying and managing containers
 
-Below the header: category tabs to filter apps, a search bar, and the full app catalog.
+Below the header: a row of **category tabs** to filter the catalog, a **search bar** to find apps by name, and the **app cards** — one per app, showing the container image, deployment badges, and a Deploy button.
+
+Below each app card: a **category tag** (e.g., `media-servers`, `ai`) and any capability badges — **Traefik** (supports reverse proxy + SSL) and **Auth** (supports Authelia authentication). Apps without these badges work in Standard mode only.
 
 ---
 

@@ -135,7 +135,44 @@ Traefik automatically detects the new container, requests an SSL certificate fro
 
 Authelia puts a login page in front of your apps. Instead of anyone being able to hit `https://radarr.yourdomain.com`, they have to authenticate first — with optional two-factor authentication.
 
-See the [Authelia docs](https://www.authelia.com/integration/proxies/traefik/) for full setup. Once running, deploy apps with **Traefik + Authelia** mode and they're automatically protected.
+### Quick setup
+
+Add Authelia to your `traefik-compose.yml` as a separate service:
+
+```yaml
+  authelia:
+    image: authelia/authelia:latest
+    container_name: authelia
+    restart: unless-stopped
+    volumes:
+      - /opt/appdata/authelia:/config
+    environment:
+      - TZ=${TZ}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.authelia.rule=Host(`auth.${DOMAIN}`)
+      - traefik.http.routers.authelia.entrypoints=https
+      - traefik.http.routers.authelia.tls.certresolver=dns-cloudflare
+      - traefik.http.middlewares.chain-authelia.forwardauth.address=http://authelia:9091/api/verify?rd=https://auth.${DOMAIN}
+      - traefik.http.middlewares.chain-authelia.forwardauth.trustForwardHeader=true
+      - traefik.http.middlewares.chain-authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email
+    networks:
+      - proxy
+```
+
+The key piece is the `chain-authelia` middleware definition. HomelabARR's **Traefik + Authelia** deploy mode automatically attaches this middleware to any app you deploy — that's what locks it behind the login screen.
+
+Authelia's own configuration (users, MFA method, session settings) lives in `/opt/appdata/authelia/configuration.yml`. See the [Authelia Traefik integration docs](https://www.authelia.com/integration/proxies/traefik/) for the full configuration reference.
+
+### How it hooks into HomelabARR
+
+Once Authelia is running, deploying any app with **Traefik + Authelia** mode automatically adds:
+
+```yaml
+traefik.http.routers.<app>.middlewares: chain-authelia@docker
+```
+
+to the container's labels. No manual config per app — HomelabARR handles it.
 
 ---
 
