@@ -58,6 +58,9 @@ sequenceDiagram
     F-->>B: ✅ Deployed!
 ```
 
+??? tip "How to read this diagram"
+    Each column is a component. Arrows show messages passing between them, top to bottom = time moving forward. The numbered steps match the list below.
+
 When you click Deploy:
 
 1. You pick an app and a mode (Standard, Traefik, or Traefik + Authelia)
