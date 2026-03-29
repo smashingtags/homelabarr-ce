@@ -5,7 +5,8 @@ HomelabARR Mobile is an optional companion app for iOS and Android. It connects 
 !!! info "The mobile app is optional"
     It doesn't run any extra backend services. Your CE server keeps running exactly as it does now. The app is just a convenient way to check on things without opening a laptop.
 
-![HomelabARR Mobile](../img/screenshots/mobile-app-mockup.png){ width="350" }
+![HomelabARR Mobile — setup screen showing octopus logo, server URL and API key fields](../img/screenshots/mobile-app-mockup.png){ width="300", align="left" }
+![HomelabARR Mobile — connected to CE server showing 123 apps, category tabs, and Deploy buttons](../img/screenshots/mobile-connected.png){ width="300" }
 
 ## What It Does
 
