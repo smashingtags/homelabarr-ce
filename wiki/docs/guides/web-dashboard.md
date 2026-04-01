@@ -1,143 +1,158 @@
-# Web Dashboard Guide
+# Web Dashboard
 
-The HomelabARR CE web dashboard gives you a visual interface to browse, deploy, and manage 100+ self-hosted applications without touching the command line.
+This is your home base. Everything you need to deploy and manage apps lives here.
 
-## Accessing the Dashboard
+**How to get there:** Open `http://YOUR-SERVER-IP:8084` in any browser.
 
-Open your browser and navigate to:
+**Default login:** Username `admin`, Password `admin`.
 
-```
-http://<your-server-ip>:8084
-```
+!!! danger "Change your password immediately"
+    The default credentials are well-known. Before deploying any apps, sign in and update your password from the user menu in the top right.
 
-Replace `<your-server-ip>` with the IP or hostname of the machine running HomelabARR CE.
+![Dashboard Overview — header bar shows Port Manager, Help, theme toggle, and Sign In on the right; category tabs run left to right below the header; search bar is below the tabs; app cards fill the rest of the page with app name, container image, deployment badges (Traefik/Auth), category label, and a Deploy button.](../img/screenshots/dark-dashboard.png)
 
-## Logging In
+---
 
-Click **Sign In** in the top right corner. A default admin account is created on first launch.
+## What You're Looking At
 
-| Field    | Value   |
-|----------|---------|
-| Username | `admin` |
-| Password | `admin` |
+The dashboard header has four controls:
 
-=== "Dark Mode"
-    ![Login Modal Dark](../img/screenshots/dark-login-modal.png)
+- **Port Manager** — see which ports are taken on your server and find free ones
+- **Help** — quick links to docs and Discord
+- **Theme toggle** — switch between dark and light mode
+- **Sign In** — log in to unlock deploying and managing containers
 
-=== "Light Mode"
-    ![Login Modal Light](../img/screenshots/light-login-modal.png)
+Below the header: a row of **category tabs** to filter the catalog, a **search bar** to find apps by name, and the **app cards** — one per app, showing the container image, deployment badges, and a Deploy button.
 
-!!! warning "Change the default password immediately"
-    After your first login, go to **User Settings** and change the default password.
+Below each app card: a **category tag** (e.g., `media-servers`, `ai`) and any capability badges — **Traefik** (supports reverse proxy + SSL) and **Auth** (supports Authelia authentication). Apps without these badges work in Standard mode only.
 
-## Browsing the App Catalog
+---
 
-The dashboard organizes applications into category tabs along the top:
+## Browsing Apps
 
-- **Deployed Apps** -- containers currently running on your system
-- **Media** -- media servers (Plex, Jellyfin, Emby)
-- **Downloads** -- download clients (qBittorrent, SABnzbd, Deluge, NZBGet)
-- **Management** -- media managers (Radarr, Sonarr, Prowlarr, Bazarr, Lidarr, Readarr)
-- **Requests** -- request tools (Overseerr)
-- **Monitoring** -- monitoring and stats (Tautulli)
-- **Self-Hosted** -- general self-hosted apps
-- **AI Tools** -- AI/ML applications
-- **System** -- system utilities (Portainer, Pi-hole)
-- **All Apps** -- every app in one view
-- **Leaderboard** -- community deployment stats
+Apps are sorted into 10 categories. Click any tab to filter:
 
-Each app card shows the application name, description, Docker image, and available deployment modes (Traefik, Auth, category tags). Use the **search bar** at the top to filter by name across all categories.
+| Tab | What's in it |
+|-----|-------------|
+| **Media & Entertainment** | Plex, Jellyfin, Emby — your streaming servers |
+| **Downloads & Automation** | qBittorrent, SABnzbd, NZBGet, Prowlarr, Jackett |
+| **Monitoring & Analytics** | Netdata, Grafana, Speedtest, Uptime Kuma |
+| **Virtual Desktops** | Chrome, Firefox, Discord, Steam — full desktops in your browser via Kasm |
+| **Backup & Storage** | Duplicati, Restic, Rsnapshot |
+| **System & Utilities** | Portainer, Dozzle, Watchtower, Gluetun (VPN) |
+| **Self-hosted** | Nextcloud, Bitwarden, Pi-hole, Home Assistant, n8n |
+| **AI & Machine Learning** | Ollama, Open WebUI, ComfyUI, Stable Diffusion, LocalAI |
+| **My Apps** | Your own custom templates (more on this below) |
+| **All Apps** | Everything in one alphabetical list |
 
-=== "Dark Mode"
-    ![Dashboard Dark](../img/screenshots/dark-dashboard.png)
+Two special views:
 
-=== "Light Mode"
-    ![Dashboard Light](../img/screenshots/light-dashboard.png)
+- **Deployed Apps** — shows only the containers currently running on your server
+- **All Apps** — the full catalog, A to Z
+
+Use the **search bar** at the top to find apps by name across all categories.
+
+---
 
 ## Deploying an App
 
-1. **Pick an app.** Click any app card to open the deploy modal.
+1. Find the app you want — browse by category or search
+2. Click the blue **Deploy** button on the app card
+3. Pick a deployment mode:
+    - **Standard** — the simple one. The app gets a port number, you access it at `http://your-server:PORT`. No extra setup needed. **Start here if you're not sure.**
+    - **Traefik** — gives the app its own URL like `https://plex.yourdomain.com` with free SSL. Requires a domain name and Traefik running on your server. ([Traefik setup guide](traefik-setup.md))
+    - **Traefik + Authelia** — same as Traefik but adds a login page in front of the app for extra protection. Good for anything you expose to the internet.
+4. Adjust any settings — timezone, data paths, etc. The defaults usually work fine
+5. Click **Deploy** — watch it install in real time
 
-2. **Configure.** The modal shows fields pulled from the app's YAML template:
-    - **Environment variables** -- pre-filled with defaults (timezone, user ID, app data folder). Edit as needed.
-    - **Ports** -- host-to-container port mappings. The dashboard checks for conflicts automatically.
-    - **Volumes** -- persistent storage paths, defaulting to `/opt/appdata/<app>`.
+![Deploy Modal](../img/screenshots/dark-deploy-modal-auth.png)
 
-3. **Choose a deployment mode:**
+### What happens when you click Deploy
 
-    | Mode | What it does |
-    |------|-------------|
-    | **Local / Standard** | Direct port access on the host, no reverse proxy. Best for testing. |
-    | **Traefik** | Deploys behind Traefik with automatic SSL and domain routing. Production-ready. |
-    | **Traefik + Authelia** | Adds multi-factor authentication on top of Traefik. Maximum security. |
+You'll see a real-time progress feed showing Docker downloading the image and starting the container — not a spinner that leaves you guessing. If something goes wrong, you see the actual error message here.
 
-4. **Deploy.** Click the deploy button. The backend loads the YAML template, injects your configuration, writes a temporary compose file, and runs `docker compose up -d`.
+---
 
-5. **Watch progress.** A real-time progress modal opens, streaming deployment output via Server-Sent Events (SSE). You will see Docker pulling images, creating networks, and starting containers live.
+## Managing Running Apps
 
-!!! tip "Deployment IDs"
-    Each deployment gets a unique ID. You can use this to track status via the API at `/deployments/<id>/status` if the modal closes.
+Click **Deployed Apps** to see everything currently running. For each container:
 
-## Container Management
+| Action | What it does |
+|--------|-------------|
+| **Start** | Start a stopped container |
+| **Stop** | Graceful shutdown |
+| **Restart** | Stop and start again — use this after config changes |
+| **Remove** | Delete the container (your data in `/opt/appdata/` stays safe) |
+| **Logs** | View the container's console output — useful for troubleshooting |
 
-Switch to the **Deployed Apps** tab to see all running containers.
-
-=== "Dark Mode"
-    ![Deployed Apps Dark](../img/screenshots/dark-deploy-modal-auth.png)
-
-=== "Light Mode"
-    ![Deployed Apps Light](../img/screenshots/light-deploy-modal-auth.png)
-
-Each container card shows:
-
-- Container name, image, and current state (running, stopped, exited)
-- Uptime and status text
-- Port mappings
-
-### Actions
-
-| Button    | What it does |
-|-----------|-------------|
-| **Start** | Starts a stopped container |
-| **Stop**  | Gracefully stops a running container |
-| **Restart** | Stops and restarts the container |
-| **Remove** | Removes the container (optionally with volumes) |
-| **Logs**  | Opens a log viewer showing recent container output |
-
-!!! info "Stats on demand"
-    Container CPU, memory, and network stats are available but not loaded by default to keep the dashboard fast. Add `?stats=true` to the containers API call or use the stats button if present.
-
-### Viewing Logs
-
-Click **Logs** on any container to open the log viewer. Logs are fetched in real time from the Docker daemon. By default the last 100 lines are returned. Use this as your first troubleshooting step when a deployment fails or an app misbehaves.
-
-## User Settings
-
-Click your username in the top-right corner to access the user menu:
-
-- **Change Password** -- enter your current password and a new one (minimum 6 characters)
-- **Manage Sessions** -- view active sessions, revoke sessions from other devices
-- **Logout** -- end your current session
-
-Admins can also access user management to create new accounts or view all users.
+---
 
 ## Port Manager
 
-The dashboard includes a built-in port manager accessible from the toolbar. It queries Docker for all ports currently in use and can find the next available port in a given range. Use this before deploying to avoid port conflicts.
+Click **Port Manager** in the header to see every port in use by Docker containers on your server. Shows the port, which container is using it, and helps you avoid conflicts when deploying new apps.
 
-## Tips
+---
 
-!!! tip "Use Local Mode for testing"
-    Local/Standard mode strips Traefik labels and external networks, so apps work immediately on `localhost:<port>` without any proxy setup. Switch to Traefik mode when you are ready for production.
+## Signing In
 
-!!! tip "Check container logs first"
-    If a deploy finishes but the app is not reachable, check the container logs. Common issues: missing environment variables, port conflicts, or permission errors on volume mounts.
+Click **Sign In** in the top right.
 
-!!! tip "Search is your friend"
-    With 100+ apps, use the search bar instead of scrolling through categories. It searches across app names and descriptions.
+![Login Modal](../img/screenshots/dark-login-modal.png)
 
-!!! tip "Theme toggle"
-    Use the theme toggle in the top bar to switch between light and dark mode. The default theme for all deployed apps is dark.
+Default credentials: **admin / admin**
 
-!!! tip "Refresh the catalog"
-    If you add new YAML templates to the `apps/` directory, click the refresh button to reload the catalog without restarting the server.
+!!! danger "Change this before anything else"
+    Click your username in the top right after signing in and set a real password. Anyone on your local network can log in with admin/admin until you do.
+
+### API Keys
+
+For scripts, automation, or the mobile app — JWT tokens expire after a short time. API keys don't.
+
+1. Sign in to the dashboard
+2. Click your username → **API Keys**
+3. Click **Generate New Key**
+4. Copy the `hlr_` key — it's only shown once
+
+!!! warning "Treat API keys like passwords"
+    An API key gives full access to your HomelabARR instance — anything you can do in the dashboard, the key can do via the API. Keep it out of public repositories and revoke unused keys promptly.
+
+Use it in API calls:
+
+```bash
+curl -H "Authorization: Bearer hlr_your_key_here" http://your-server:8092/applications
+```
+
+**When to use JWT vs API key:**
+
+- **JWT token** (from `/auth/login`) — expires, good for short-lived scripts or testing
+- **API key** (`hlr_`) — permanent until revoked, better for long-running scripts, the mobile app, and any automation that runs regularly
+
+---
+
+## Adding Your Own Apps
+
+Got a Docker app that's not in the catalog? Drop it in `apps/myapps/`:
+
+```yaml
+# apps/myapps/my-app.yml
+version: "3"
+services:
+  my-app:
+    image: my-image:latest
+    container_name: my-app
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${APPFOLDER}/my-app:/config
+```
+
+Refresh the dashboard — your app shows up in the **My Apps** tab. You can use the same variables (`${TZ}`, `${APPFOLDER}`, etc.) that built-in apps use. See the [CLI Bridge guide](cli-bridge.md) for the full variable list.
+
+---
+
+## Dark Mode
+
+Click the sun/moon icon in the header to switch between dark and light mode, or it follows your system preference automatically.

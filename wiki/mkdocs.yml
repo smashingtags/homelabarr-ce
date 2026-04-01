@@ -1,21 +1,4 @@
-# Copyright (c) 2016-2021 Martin Donath <martin.donath@squidfunk.com>
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to
-# deal in the Software without restriction, including without limitation the
-# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-# sell copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-# IN THE SOFTWARE.
-
-# Project information
+# HomelabARR CE Wiki
 site_name: HomelabARR Wiki
 use_directory_urls: true
 site_url: "https://wiki.homelabarr.com"
@@ -23,7 +6,7 @@ site_author: HomelabARR CE
 site_description: Documentation for HomelabARR Community Edition — free, open-source Docker container management
 
 # Repository
-repo_name: HomelabARR Wiki
+repo_name: HomelabARR CE
 repo_url: https://github.com/smashingtags/homelabarr-ce
 edit_uri: https://github.com/smashingtags/homelabarr-ce/edit/main/wiki/docs/
 copyright: Copyright &copy; 2026 Imogen Labs
@@ -38,13 +21,12 @@ theme:
     - navigation.sections
     - navigation.expand
     - search.suggest
-    - search.highligh
+    - search.highlight
     - search.share
     - navigation.top
     - toc.integrate
   language: en
   palette:
-    # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: indigo
@@ -52,8 +34,6 @@ theme:
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
-
-    # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: indigo
@@ -61,259 +41,101 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
-
-  # Static files
-  static_templates:
-    - 404.html
-  include_search_page: false
-  search_index_only: true
   icon:
     admonition:
       note: material/note
-      abstract: material/book
-      info: material/information
       tip: material/bullhorn
-      success: material/check
-      question: material/help-circle
       warning: material/alert
-      failure: material/close-circle
-      danger: material/alert-octagon
-      bug: material/bug
-      example: material/beaker
-      quote: material/format-quote-close
-
+      info: material/information
   font:
     text: Roboto
     code: Roboto Mono
   favicon: img/favicon.png
-  logo: img/homelabarr-banner.jpg
+  logo: img/homelabarr-octopus-v2b-transparent.png
+
+extra_css:
+  - stylesheets/extra.css
 
 # Plugins
 plugins:
   - search:
       lang: en
-  # - meta
-  - redirects:
-      redirect_maps:
-        404.html: index.md
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      slide_effect: slide
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
   - minify:
       minify_html: true
 
 # Customization
+extra_javascript:
+  - https://unpkg.com/mermaid@11/dist/mermaid.min.js
+
 extra:
-  analytics:
-    provider: google
-    property: 'G-00QEDJW2TS'
   social:
-    - icon: fontawesome/solid/heart
-      class: md-social__link heart
-      name: Donate
+    - icon: fontawesome/solid/globe
+      link: https://homelabarr.com
+      name: HomelabARR
     - icon: fontawesome/brands/github
-      class: md-social__link
       link: https://github.com/smashingtags/homelabarr-ce
       name: GitHub
-    - icon: fontawesome/brands/docker
-      link: https://github.com/orgs/smashingtags/packages/
     - icon: fontawesome/brands/discord
-      class: md-social__link
       link: https://discord.gg/Pc7mXX786x
       name: Discord
-    - icon: fontawesome/brands/firefox
-      link: https://github.com/smashingtags/homelabarr-ce
+    - icon: fontawesome/solid/building
+      link: https://imogenlabs.ai
+      name: Imogen Labs
+    - icon: fontawesome/solid/user
+      link: https://mjashley.com
+      name: Michael Ashley
 
 markdown_extensions:
   - admonition
-  - abbr
   - attr_list
   - def_list
   - footnotes
-  - meta
   - md_in_html
   - toc:
       permalink: true
-  - pymdownx.arithmatex:
-      generic: true
-  - pymdownx.betterem:
-      smart_enable: all
-  - pymdownx.caret
-  - pymdownx.critic
   - pymdownx.details
-  - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.highlight
   - pymdownx.inlinehilite
-  - pymdownx.keys
-  - pymdownx.magiclink:
-      repo_url_shorthand: true
-      user: squidfunk
-      repo: mkdocs-material
-  - pymdownx.mark
-  - pymdownx.smartsymbols
-  - pymdownx.superfences
-  - pymdownx.tabbed
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
-  - pymdownx.tilde
 
 # Page tree
 nav:
   - Home: index.md
-  - Getting started:
+  - Getting Started:
       - Quick Start: guides/quick-start.md
-      - Linux Installation: install/linux-installation.md
-      - Local Mode: install/local-mode.md
       - Web Dashboard: guides/web-dashboard.md
-      - Migration: install/migration.md
-  - Setup & Configuration:
-      - Authelia: install/authelia.md
-      - Cloudflare: install/cloudflare.md
-      - cf-companion: install/cf-companion.md
-      - Traefik: install/traefik.md
-  - Deployment Guides:
-      - Container Deployment: guides/deployment-guide.md
-  - Developer Documentation:
-      - Contributing: guides/contributing.md
-      - Architecture Overview: guides/architecture.md
-      - CLI Bridge: guides/cli-bridge.md
+      - Mobile App: guides/mobile-app.md
+      - Configuration: guides/configuration.md
+  - Guides:
+      - Traefik & Domain Setup: guides/traefik-setup.md
+      - CLI Installation: guides/cli-installation.md
       - API Reference: guides/api-reference.md
-      - CLI Development: guides/cli-development.md
-      - YAML Cleanup Tool: guides/yaml-cleanup-tool.md
-  - Commands:
-      - Commands: commands/commands.md
-      - Backup: commands/backup.md
-      - Restore: commands/restore.md
-  - Special Features:
-      - Cloudflare Tunnel: tunnel/cf_tunnel.md
-      - LXC-Container: lxc/lxc.md
-      - Changelog: install/changelog.md
-
-  - Applications:
-      - Applications: apps/apps.md
-      - Add-ons:
-          - Autoscan: apps/addons/autoscan.md
-          - A-Train: apps/addons/a-train.md
-          - Cloud: apps/addons/cloud.md
-          - CloudCMD: apps/addons/cloudcmd.md
-          - Cloudflare-DDNS: apps/addons/cloudflare-ddns.md
-          - Dashmachine: apps/addons/dashmachine.md
-          - Diun: apps/addons/diun.md
-          - Dozzle: apps/addons/dozzle.md
-          - Flaresolverr: apps/addons/flaresolverr.md
-          - Heimdall: apps/addons/heimdall.md
-          - Kitana: apps/addons/kitana.md
-          - Librespeed: apps/addons/librespeed.md
-          - NetData: apps/addons/netdata.md
-          - NotiFiarr: apps/addons/notifiarr.md
-          - Remmina: apps/addons/remmina.md
-          - Speedtest: apps/addons/speedtest.md
-          - Tauticord: apps/addons/tauticord.md
-          - vnstat: apps/addons/vnstat.md
-      - Backup:
-          - Duplicati: apps/backup/duplicati.md
-          - Restic: apps/backup/restic.md
-          - Rsnapshot: apps/backup/rsnapshot.md
-      - Development:
-          - Cloud9: apps/coding/cloud9.md
-          - Code-Server: apps/coding/code-server.md
-      - Downloads:
-          - Davos: apps/downloadclients/davos.md
-          - Deluge: apps/downloadclients/deluge.md
-          - FileZilla: apps/downloadclients/filezilla.md
-          - Jacket: apps/downloadclients/jackett.md
-          - JDOwnloader2: apps/downloadclients/jdownloader2.md
-          - NZBGet: apps/downloadclients/nzbget.md
-          - NZBHydra: apps/downloadclients/nzbhydra.md
-          - QBittorrent: apps/downloadclients/qbittorrent.md
-          - RuTorrent: apps/downloadclients/rutorrent.md
-          - SabNZBD: apps/downloadclients/sabnzbd.md
-          - Youtubedl-Material: apps/downloadclients/youtubedl-material.md
-      - Transcoding:
-          - HandBrake: apps/encoder/handbrake.md
-          - Tdarr: apps/encoder/tdarr.md
-      - Virtual Desktops:
-          - Kasmdesktop: apps/kasmworkspace/kasmdesktop.md
-      - Media Management:
-          - Bazarr: apps/mediamanager/bazarr.md
-          - Calibre-WEB: apps/mediamanager/calibre-web.md
-          - Embystats: apps/mediamanager/embystats.md
-          - Lazylibrarian: apps/mediamanager/lazylibrarian.md
-          - Lidarr: apps/mediamanager/lidarr.md
-          - Plex-Utills: apps/mediamanager/plex-utills.md
-          - Prowlarr: apps/mediamanager/prowlarr.md
-          #- Radarr: apps/mediamanager/radarr.md  # file missing
-          - Readarr: apps/mediamanager/readarr.md
-          - Sonarr: apps/mediamanager/sonarr.md
-          - Tautulli: apps/mediamanager/tautulli.md
-          - Traktarr: apps/mediamanager/traktarr.md
-          - Xteve: apps/mediamanager/xteve.md
-      - Media Servers:
-          - Emby: apps/mediaserver/emby.md
-          - Jellyfin: apps/mediaserver/jellyfin.md
-          - MStream: apps/mediaserver/mstream.md
-          - Plex: apps/mediaserver/plex.md
-      - Requests:
-          - Conreq: apps/request/conreq.md
-          #- Overseerr: apps/request/overseerr.md  # file missing
-          - Petio: apps/request/petio.md
-      - Self-hosted:
-          - Alltube: apps/selfhosted/alltube.md
-          - Bitwarden: apps/selfhosted/bitwarden.md
-          - Bliss: apps/selfhosted/bliss.md
-          - Changedetection: apps/selfhosted/changedetection.md
-          - Cloudbeaver: apps/selfhosted/cloudbeaver.md
-          - Conmixed: apps/selfhosted/comixed.md
-          - Crewlink: apps/selfhosted/crewlink.md
-          - FreshRSS: apps/selfhosted/freshrss.md
-          - Gotify: apps/selfhosted/gotify.md
-          - Homeassistant: apps/selfhosted/homeassistant.md
-          - IObroker: apps/selfhosted/iobroker.md
-          - Joplin-server: apps/selfhosted/joplin-server.md
-          - Moviematch: apps/selfhosted/moviematch.md
-          - Netbox: apps/selfhosted/netbox.md
-          - Nowshowing: apps/selfhosted/nowshowing.md
-          - Organizr: apps/selfhosted/organizr.md
-          - PiHole: apps/selfhosted/pihole.md
-          - Recipes: apps/selfhosted/recipes.md
-          - Snapdrop: apps/selfhosted/snapdrop.md
-          - Teamspeak: apps/selfhosted/teamspeak.md
-          - Unifi-Controller: apps/selfhosted/unifi-controller.md
-          - Whoogle: apps/selfhosted/whoogle.md
-          - Wireguard: apps/selfhosted/wireguard.md
-          - XBVR: apps/selfhosted/xbvr.md
-      - File Sharing:
-          - Filerun: apps/selfhosted/share/filerun.md
-          - Nextcloud: apps/selfhosted/share/nextcloud.md
-          - Projectsend: apps/selfhosted/share/projectsend.md
-      - System:
-          - Mount: apps/system/mount.md
-          #- Uploader: apps/system/uploader.md  # file missing
-          - Dockupdater: apps/system/dockupdater.md
-          - endlessh: apps/system/endlessh.md
-          - Rclone-GUI: apps/system/rclone-gui.md
-          - Statping: apps/system/statping.md
-          - HomelabARR Wiki: apps/system/wiki.md
-  - Scripts:
-      - Scripts Overview: scripts/scripts.md
-      - YAML Cleanup Script: scripts/yaml-cleanup.md
-      - Maintenance Scripts: scripts/maintenance.md
-  - Release Information:
-      - Latest Release: releases/RELEASE-NOTES.md
-      - YAML Standardization v2.1: releases/yaml-standardization-v2.1.md
-      - Version History: releases/version-history.md
-  - Professional Edition:
-      - Overview: pe/overview.md
-      - Installation: pe/installation.md
-      - Storage Management: pe/storage.md
-      - Dashboard: pe/dashboard.md
-      - File Sharing: pe/file-sharing.md
-      - Licensing & Pricing: pe/licensing.md
+  - Developer:
+      - Architecture: guides/architecture.md
+      - CLI Bridge: guides/cli-bridge.md
+      - Contributing: guides/contributing.md
   - Community:
-      - History: guides/history.md
-      - Support: guides/support.md
-      - FAQ: guides/faq.md
-      - Troubleshooting: guides/faq-troubleshooting.md
+      - Migration Guide: guides/migration.md
+      - Project History: guides/history.md
+      - FAQ & Troubleshooting: guides/faq.md
       - Discord: https://discord.gg/Pc7mXX786x
       - GitHub Discussions: https://github.com/smashingtags/homelabarr-ce/discussions
-
-#E-O-F#
+  - Professional Edition:
+      - Overview: pe/overview.md
