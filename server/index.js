@@ -334,6 +334,61 @@ app.get('/auth/users', requireAuth('admin'), (req, res) => {
   res.json(sanitizedUsers);
 });
 
+app.delete('/auth/users/:userId', requireAuth('admin'), (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (userId === req.user.id) {
+      return res.status(400).json({ error: 'Cannot delete your own account' });
+    }
+
+    const users = loadUsers();
+    const userIndex = users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const deletedUser = users[userIndex];
+    users.splice(userIndex, 1);
+    saveUsers(users);
+
+    logger.info(`Admin ${req.user.username} deleted user ${deletedUser.username}`);
+    res.json({ success: true, message: `User ${deletedUser.username} deleted` });
+  } catch (error) {
+    logger.error('Delete user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/auth/users/:userId/password', requireAuth('admin'), async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const users = loadUsers();
+    const userIndex = users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const bcrypt = await import('bcryptjs');
+    users[userIndex].password = await bcrypt.hash(newPassword, 12);
+    saveUsers(users);
+
+    logger.info(`Admin ${req.user.username} reset password for ${users[userIndex].username}`);
+    res.json({ success: true, message: `Password reset for ${users[userIndex].username}` });
+  } catch (error) {
+    logger.error('Reset password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Enhanced health check endpoint with comprehensive platform and configuration information
 app.get('/health', async (req, res) => {
   const connectionState = dockerManager.getConnectionState();
