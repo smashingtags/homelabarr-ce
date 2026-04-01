@@ -306,14 +306,10 @@ app.post('/auth/users', requireAuth('admin'), async (req, res) => {
       return res.status(400).json({ error: 'Username, email, and password required' });
     }
 
-    const result = await createUser({ username, email, password, role });
+    const user = await createUser({ username, email, password, role });
 
-    if (!result.success) {
-      return res.status(400).json({ error: result.error });
-    }
-
-    logger.info(`Admin ${req.user.username} created user ${result.user.username}`);
-    res.json(result);
+    logger.info(`Admin ${req.user.username} created user ${user.username}`);
+    res.json({ success: true, user });
   } catch (error) {
     logger.error('Create user error:', error);
     res.status(500).json({ error: 'Internal server error' });
