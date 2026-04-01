@@ -108,7 +108,28 @@ docker compose -f homelabarr.yml --env-file .env up -d
 
 Each app gets its own folder. **This is what you back up.**
 
-**HomelabARR's own data** (user accounts, sessions) lives in a Docker volume called `homelabarr-data`. This persists across restarts automatically.
+**HomelabARR's own data** (user accounts, sessions) lives in two Docker volumes:
+
+- `homelabarr-data` — app data and logs
+- `homelabarr-config` — user accounts, API keys, and sessions (`/app/server/config/`)
+
+Both persist across container restarts and updates automatically.
+
+---
+
+## Credential Security
+
+Your passwords are never stored in plain text.
+
+- **Passwords** are hashed with **bcrypt (12 rounds)** before writing to disk. The stored value looks like `$2a$12$xK9...` — not reversible.
+- **JWT tokens** are signed with your `JWT_SECRET` environment variable and expire after 24 hours.
+- **API keys** are generated with `crypto.randomBytes(32)` — 256 bits of cryptographic randomness, prefixed with `hlr_`.
+- **Sessions** use random IDs via `crypto.randomBytes(12)` and are invalidated on logout.
+
+All auth data is stored in `/app/server/config/` inside the backend container, persisted by the `homelabarr-config` volume.
+
+!!! warning "Set a real JWT_SECRET"
+    The install instructions use `openssl rand -base64 32` to generate a secret. If you skip this step, a random key is generated on each container start — which means **all user sessions invalidate on every restart**. Set it once and keep it.
 
 ---
 
