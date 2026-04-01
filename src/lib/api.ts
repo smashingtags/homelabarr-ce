@@ -101,11 +101,27 @@ export async function getContainers(includeStats = false) {
       headers: getAuthHeaders()
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return handleResponse(response);
+    const data = await response.json();
+    // Backend returns 200 with empty containers when no Docker socket
+    // Use demo data in dev/staging so deployed apps section is previewable
+    if ((!data.containers || data.containers.length === 0) && isDemoEnvironment()) {
+      return { ...data, containers: DEMO_CONTAINERS };
+    }
+    return data;
   } catch {
-    // Backend unreachable (no Docker socket) — return demo data
-    return { containers: DEMO_CONTAINERS };
+    // Backend unreachable — return demo data in dev/staging
+    if (isDemoEnvironment()) {
+      return { containers: DEMO_CONTAINERS };
+    }
+    return { containers: [] };
   }
+}
+
+function isDemoEnvironment(): boolean {
+  const host = window.location.hostname;
+  return host.includes('dev.') || host.includes('ce-dev.') || 
+         host.includes('staging.') || host.includes('ce-staging.') ||
+         host === 'localhost' || host === '127.0.0.1';
 }
 
 export async function getContainerStats(containerId: string) {
