@@ -37,6 +37,14 @@ import { DeploymentLogger } from './deployment-logger.js';
 import { CLIBridge } from './cli-bridge.js';
 import { progressStream, StreamingCLIBridge } from './progress-stream.js';
 import { randomUUID } from 'crypto';
+import { initializeActivityLog, logActivity, getActivities } from './activity-logger.js';
+
+function getRequestMeta(req) {
+  return {
+    ipAddress: req.ip || req.headers['x-forwarded-for'] || req.connection?.remoteAddress || '',
+    userAgent: req.headers['user-agent'] || ''
+  };
+}
 
 // Global error handlers to prevent container crashes
 process.on('unhandledRejection', (reason, promise) => {
@@ -198,6 +206,16 @@ app.post('/auth/login', async (req, res) => {
       user: result.user,
       token: result.token
     });
+
+    logActivity({
+      userId: result.user.id,
+      username: result.user.username,
+      action: 'user_login',
+      targetType: 'user',
+      targetId: result.user.id,
+      targetName: result.user.username,
+      ...getRequestMeta(req)
+    });
   } catch (error) {
     logger.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -220,6 +238,16 @@ app.post('/auth/logout', requireAuth(), (req, res) => {
 
     logger.info(`User ${req.user.username} logged out`);
     res.json({ success: true });
+
+    logActivity({
+      userId: req.user.id,
+      username: req.user.username,
+      action: 'user_logout',
+      targetType: 'user',
+      targetId: req.user.id,
+      targetName: req.user.username,
+      ...getRequestMeta(req)
+    });
   } catch (error) {
     logger.error('Logout error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -263,6 +291,16 @@ app.post('/auth/change-password', requireAuth(), async (req, res) => {
 
     logger.info(`User ${req.user.username} changed password`);
     res.json({ success: true });
+
+    logActivity({
+      userId: req.user.id,
+      username: req.user.username,
+      action: 'password_changed',
+      targetType: 'user',
+      targetId: req.user.id,
+      targetName: req.user.username,
+      ...getRequestMeta(req)
+    });
   } catch (error) {
     logger.error('Change password error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -310,6 +348,17 @@ app.post('/auth/users', requireAuth('admin'), async (req, res) => {
 
     logger.info(`Admin ${req.user.username} created user ${user.username}`);
     res.json({ success: true, user });
+
+    logActivity({
+      userId: req.user.id,
+      username: req.user.username,
+      action: 'user_created',
+      targetType: 'user',
+      targetId: user.id,
+      targetName: user.username,
+      details: { role: user.role, email: user.email },
+      ...getRequestMeta(req)
+    });
   } catch (error) {
     logger.error('Create user error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -351,6 +400,16 @@ app.delete('/auth/users/:userId', requireAuth('admin'), (req, res) => {
 
     logger.info(`Admin ${req.user.username} deleted user ${deletedUser.username}`);
     res.json({ success: true, message: `User ${deletedUser.username} deleted` });
+
+    logActivity({
+      userId: req.user.id,
+      username: req.user.username,
+      action: 'user_deleted',
+      targetType: 'user',
+      targetId: deletedUser.id,
+      targetName: deletedUser.username,
+      ...getRequestMeta(req)
+    });
   } catch (error) {
     logger.error('Delete user error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -379,6 +438,16 @@ app.put('/auth/users/:userId/password', requireAuth('admin'), async (req, res) =
 
     logger.info(`Admin ${req.user.username} reset password for ${users[userIndex].username}`);
     res.json({ success: true, message: `Password reset for ${users[userIndex].username}` });
+
+    logActivity({
+      userId: req.user.id,
+      username: req.user.username,
+      action: 'user_password_reset',
+      targetType: 'user',
+      targetId: userId,
+      targetName: users[userIndex].username,
+      ...getRequestMeta(req)
+    });
   } catch (error) {
     logger.error('Reset password error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -804,7 +873,24 @@ app.delete('/auth/api-keys/:keyId', requireAuth(), (req, res) => {
   else res.status(404).json({ error: 'API key not found' });
 });
 
+// Activity log endpoint
+app.get('/auth/activity-log', requireAuth('admin'), (req, res) => {
+  try {
+    const { userId, action, limit = '50', offset = '0' } = req.query;
 
+    const result = getActivities({
+      userId: userId || undefined,
+      action: action || undefined,
+      limit: Math.min(parseInt(limit) || 50, 200),
+      offset: parseInt(offset) || 0
+    });
+
+    res.json(result);
+  } catch (error) {
+    logger.error('Activity log error:', error);
+    res.status(500).json({ error: 'Failed to retrieve activity log' });
+  }
+});
 
 // Authentication routes
 app.post('/auth/login', async (req, res) => {
@@ -3273,6 +3359,16 @@ app.post('/containers/:id/start', conditionalAuth, async (req, res) => {
       message: 'Container started successfully',
       containerId: req.params.id
     });
+
+    logActivity({
+      userId: req.user?.id || 'anonymous',
+      username: req.user?.username || 'Anonymous',
+      action: 'container_started',
+      targetType: 'container',
+      targetId: req.params.id,
+      targetName: req.params.id,
+      ...getRequestMeta(req)
+    });
   } catch (error) {
     logger.error(`Error starting container ${req.params.id}:`, error);
     const errorResponse = dockerManager.createErrorResponse('Start container', error);
@@ -3303,6 +3399,16 @@ app.post('/containers/:id/stop', conditionalAuth, async (req, res) => {
       message: 'Container stopped successfully',
       containerId: req.params.id
     });
+
+    logActivity({
+      userId: req.user?.id || 'anonymous',
+      username: req.user?.username || 'Anonymous',
+      action: 'container_stopped',
+      targetType: 'container',
+      targetId: req.params.id,
+      targetName: req.params.id,
+      ...getRequestMeta(req)
+    });
   } catch (error) {
     logger.error(`Error stopping container ${req.params.id}:`, error);
     const errorResponse = dockerManager.createErrorResponse('Stop container', error);
@@ -3332,6 +3438,16 @@ app.post('/containers/:id/restart', conditionalAuth, async (req, res) => {
       success: true,
       message: 'Container restarted successfully',
       containerId: req.params.id
+    });
+
+    logActivity({
+      userId: req.user?.id || 'anonymous',
+      username: req.user?.username || 'Anonymous',
+      action: 'container_restarted',
+      targetType: 'container',
+      targetId: req.params.id,
+      targetName: req.params.id,
+      ...getRequestMeta(req)
     });
   } catch (error) {
     logger.error(`Error restarting container ${req.params.id}:`, error);
@@ -3375,6 +3491,16 @@ app.delete('/containers/:id', conditionalAuth, async (req, res) => {
       success: true,
       message: 'Container removed successfully',
       containerId: req.params.id
+    });
+
+    logActivity({
+      userId: req.user?.id || 'anonymous',
+      username: req.user?.username || 'Anonymous',
+      action: 'container_deleted',
+      targetType: 'container',
+      targetId: req.params.id,
+      targetName: req.params.id,
+      ...getRequestMeta(req)
     });
   } catch (error) {
     logger.error(`Error removing container ${req.params.id}:`, error);
@@ -3520,6 +3646,17 @@ app.post('/deploy', authEnabled ? requireAuth : optionalAuth, async (req, res) =
         }, 30000);
         
         // Return success immediately for MVP testing
+        logActivity({
+          userId: req.user?.id || 'anonymous',
+          username: req.user?.username || 'Anonymous',
+          action: 'application_deployed',
+          targetType: 'application',
+          targetId: appId,
+          targetName: appId,
+          details: { mode: 'docker-cli' },
+          ...getRequestMeta(req)
+        });
+
         return res.json({
           success: true,
           message: `${appId} deployed successfully using Docker CLI`,
@@ -3530,7 +3667,7 @@ app.post('/deploy', authEnabled ? requireAuth : optionalAuth, async (req, res) =
           appId,
           port: parseInt(port)
         });
-        
+
       } catch (cliError) {
         logger.error('Docker CLI deployment failed:', cliError.message);
         return res.status(500).json({
@@ -3565,12 +3702,23 @@ app.post('/deploy', authEnabled ? requireAuth : optionalAuth, async (req, res) =
           streamEndpoint: `/stream/progress`,
           statusEndpoint: `/deployments/${deploymentId}/status`
         });
-        
+
+        logActivity({
+          userId: req.user?.id || 'anonymous',
+          username: req.user?.username || 'Anonymous',
+          action: 'application_deployed',
+          targetType: 'application',
+          targetId: appId,
+          targetName: appId,
+          details: { mode },
+          ...getRequestMeta(req)
+        });
+
         // Continue deployment in background
         deploymentPromise.catch((error) => {
           logger.error('Background CLI deployment failed:', error.message);
         });
-        
+
         return;
       } catch (cliError) {
         logger.error('Streaming CLI deployment failed:', cliError.message);
@@ -4677,6 +4825,7 @@ try {
   
   // Initialize default admin user if no users exist
   await initializeAuth();
+  initializeActivityLog();
 
   try {
     const server = app.listen(PORT, BIND_ADDRESS, () => {

@@ -80,6 +80,9 @@ services:
       # Auth persistence (users, API keys, sessions)
       - homelabarr-config:/app/server/config
 
+      # Activity log persistence
+      - homelabarr-activity:/app/server/activity-data
+
     ports:
       - "${BACKEND_PORT:-8092}:8092"
     networks:
@@ -104,4 +107,7 @@ volumes:
     driver: local
   homelabarr-config:
     name: homelabarr-config
+    driver: local
+  homelabarr-activity:
+    name: homelabarr-activity
     driver: local
