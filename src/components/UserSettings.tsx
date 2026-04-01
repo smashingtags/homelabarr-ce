@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Key, Users, Shield, Loader2, Trash2, KeyRound, Plus, RefreshCw } from 'lucide-react';
+import { X, Key, Users, Shield, Loader2, Trash2, KeyRound, Plus, RefreshCw, ListRestart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -10,6 +10,21 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+
+interface Activity {
+  id: string;
+  userId: string;
+  username: string;
+  timestamp: string;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  targetName: string | null;
+  details: Record<string, any> | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+}
 
 interface ManagedUser {
   id: string;
@@ -26,7 +41,7 @@ interface UserSettingsProps {
 }
 
 export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
-  const [activeTab, setActiveTab] = useState<'password' | 'users'>('password');
+  const [activeTab, setActiveTab] = useState<'password' | 'users' | 'activity'>('password');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -45,6 +60,13 @@ export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
   const [resetForm, setResetForm] = useState({ newPassword: '', confirmPassword: '' });
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Activity log state
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+  const [activityTotal, setActivityTotal] = useState(0);
+  const [activityOffset, setActivityOffset] = useState(0);
+  const ACTIVITY_PAGE_SIZE = 25;
+
   const fetchUsers = useCallback(async () => {
     if (!isAdmin || !token) return;
     setUsersLoading(true);
@@ -62,11 +84,33 @@ export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
     }
   }, [isAdmin, token, error]);
 
+  const fetchActivities = useCallback(async (offset = 0) => {
+    if (!isAdmin || !token) return;
+    setActivityLoading(true);
+    try {
+      const res = await fetch(`/api/auth/activity-log?limit=${ACTIVITY_PAGE_SIZE}&offset=${offset}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch activity log');
+      const data = await res.json();
+      setActivities(data.activities);
+      setActivityTotal(data.total);
+      setActivityOffset(offset);
+    } catch (err) {
+      error('Error', 'Failed to load activity log');
+    } finally {
+      setActivityLoading(false);
+    }
+  }, [isAdmin, token, error]);
+
   useEffect(() => {
     if (isOpen && activeTab === 'users' && isAdmin) {
       fetchUsers();
     }
-  }, [isOpen, activeTab, isAdmin, fetchUsers]);
+    if (isOpen && activeTab === 'activity' && isAdmin) {
+      fetchActivities(0);
+    }
+  }, [isOpen, activeTab, isAdmin, fetchUsers, fetchActivities]);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,7 +257,7 @@ export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className={`bg-white dark:bg-gray-800 rounded-lg w-full max-h-[90vh] overflow-hidden ${activeTab === 'activity' ? 'max-w-4xl' : 'max-w-2xl'}`}>
         <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">User Settings</h2>
           <button
@@ -247,6 +291,19 @@ export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
             >
               <Users className="w-4 h-4 inline mr-2" />
               User Management
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('activity')}
+              className={`px-6 py-3 text-sm font-medium border-b-2 ${
+                activeTab === 'activity'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <ListRestart className="w-4 h-4 inline mr-2" />
+              Activity Log
             </button>
           )}
         </div>
@@ -529,8 +586,174 @@ export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
               </Dialog>
             </div>
           )}
+
+          {activeTab === 'activity' && isAdmin && (
+            <ActivityLogTab
+              activities={activities}
+              loading={activityLoading}
+              total={activityTotal}
+              offset={activityOffset}
+              pageSize={ACTIVITY_PAGE_SIZE}
+              onPageChange={fetchActivities}
+              onRefresh={() => fetchActivities(activityOffset)}
+            />
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+const ACTION_LABELS: Record<string, string> = {
+  user_login: 'Logged in',
+  user_logout: 'Logged out',
+  user_created: 'Created user',
+  user_deleted: 'Deleted user',
+  user_password_reset: 'Reset password',
+  password_changed: 'Changed password',
+  container_started: 'Started container',
+  container_stopped: 'Stopped container',
+  container_restarted: 'Restarted container',
+  container_deleted: 'Deleted container',
+  application_deployed: 'Deployed app',
+};
+
+const ACTION_COLORS: Record<string, string> = {
+  user_login: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  user_logout: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  user_created: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  user_deleted: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  user_password_reset: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  password_changed: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  container_started: 'bg-green-500/20 text-green-400 border-green-500/30',
+  container_stopped: 'bg-red-500/20 text-red-400 border-red-500/30',
+  container_restarted: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  container_deleted: 'bg-red-500/20 text-red-400 border-red-500/30',
+  application_deployed: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+};
+
+function formatRelativeTime(timestamp: string): string {
+  const now = Date.now();
+  const then = new Date(timestamp).getTime();
+  const diff = now - then;
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return new Date(timestamp).toLocaleDateString();
+}
+
+function ActivityLogTab({
+  activities,
+  loading,
+  total,
+  offset,
+  pageSize,
+  onPageChange,
+  onRefresh,
+}: {
+  activities: Activity[];
+  loading: boolean;
+  total: number;
+  offset: number;
+  pageSize: number;
+  onPageChange: (offset: number) => void;
+  onRefresh: () => void;
+}) {
+  const showingFrom = total === 0 ? 0 : offset + 1;
+  const showingTo = Math.min(offset + pageSize, total);
+  const hasPrev = offset > 0;
+  const hasNext = offset + pageSize < total;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Activity Log</h3>
+          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+            <Shield className="w-3 h-3 mr-1" />
+            Admin
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+        </div>
+      ) : activities.length === 0 ? (
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <ListRestart className="w-8 h-8 mx-auto mb-3 opacity-50" />
+          <p>No activity recorded yet.</p>
+          <p className="text-sm mt-1">Actions like logins, deployments, and user management will appear here.</p>
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
+            <TooltipProvider>
+              <Table>
+                <TableHeader>
+                  <TableRow className="dark:border-gray-700">
+                    <TableHead className="dark:text-gray-300">Time</TableHead>
+                    <TableHead className="dark:text-gray-300">User</TableHead>
+                    <TableHead className="dark:text-gray-300">Action</TableHead>
+                    <TableHead className="dark:text-gray-300">Target</TableHead>
+                    <TableHead className="dark:text-gray-300">IP Address</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {activities.map((a) => (
+                    <TableRow key={a.id} className="dark:border-gray-700">
+                      <TableCell className="dark:text-gray-300 whitespace-nowrap">
+                        <Tooltip>
+                          <TooltipTrigger className="cursor-default">
+                            {formatRelativeTime(a.timestamp)}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {new Date(a.timestamp).toLocaleString()}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell className="font-medium dark:text-white">{a.username}</TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${ACTION_COLORS[a.action] || 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+                          {ACTION_LABELS[a.action] || a.action}
+                        </span>
+                      </TableCell>
+                      <TableCell className="dark:text-gray-300">
+                        {a.targetName || a.targetId || '-'}
+                      </TableCell>
+                      <TableCell className="dark:text-gray-400 text-sm font-mono">
+                        {a.ipAddress || '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TooltipProvider>
+          </div>
+
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+            <span>Showing {showingFrom}-{showingTo} of {total}</span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => onPageChange(offset - pageSize)} disabled={!hasPrev || loading}>
+                Previous
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => onPageChange(offset + pageSize)} disabled={!hasNext || loading}>
+                Next
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
