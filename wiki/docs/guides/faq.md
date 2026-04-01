@@ -1,339 +1,218 @@
-# Frequently Asked Questions (FAQ)
+# FAQ & Troubleshooting
 
-## General Questions
+---
+
+## Before Installing
 
 ### What is HomelabARR CE?
-HomelabARR CE is a comprehensive Docker-based media server stack that provides automated deployment and management of 162+ self-hosted applications including Plex, Radarr, Sonarr, and many others.
 
-### What happened to HomelabARR CE?
-HomelabARR CE has been rebranded to HomelabARR CE as part of a major restructuring effort. All functionality remains the same, but with improved documentation, better organization, and modernized tooling.
+HomelabARR CE (Community Edition) is a free, open-source dashboard for deploying and managing Docker containers on your own server. It comes with 100+ pre-configured apps — media servers, download clients, AI tools, and more. Just click Deploy.
 
-### Is this free to use?
-Yes! HomelabARR CE is completely free and open-source under the MIT license. There are no premium features or paid tiers.
+### What do I need to run it?
 
-### What's the difference between Full Mode and Local Mode?
-- **Full Mode**: Production-ready deployment with Traefik reverse proxy, Authelia authentication, and Cloudflare integration for external access
-- **Local Mode**: Simplified deployment for home labs with direct IP:PORT access, no domain required
+| Component | Minimum |
+|-----------|---------|
+| OS | Ubuntu 22.04+ / Debian 12+ / any Docker-capable Linux |
+| CPU | 2 cores |
+| RAM | 4 GB |
+| Disk | 20 GB |
+| Docker | 24.0+ with Compose v2 |
 
-### Which mode should I choose?
-- Choose **Local Mode** if you're new to Docker, want quick setup, or only need local network access
-- Choose **Full Mode** if you want external access, need authentication, or are deploying for multiple users
+Both **x86_64** and **ARM64** are supported — runs on Raspberry Pi 4/5, standard Intel/AMD servers, Apple Silicon Macs, and ARM cloud instances.
 
-## Installation Questions
+### I'm new to Docker. Can I still use this?
 
-### What are the system requirements?
-**Minimum Requirements:**
-- CPU: 2 cores or 2 vCores (x86/x64 only, no ARM)
-- RAM: 4GB
-- Storage: 20GB available space
-- OS: Ubuntu 22.04 LTS (recommended) or Debian
-- Docker: Latest version with Compose V2
+Yes — that's the point. HomelabARR was built so you don't have to write Docker Compose files just to run Plex or Nextcloud. The dashboard handles all of that. You do need to run a few shell commands during setup, but the [Quick Start guide](quick-start.md) walks through every step.
 
-### Do I need a domain name?
-- **Full Mode**: Yes, you need a domain and Cloudflare account
-- **Local Mode**: No domain required, works with localhost
+### How is this different from Portainer?
 
-### Can I run this on Windows or macOS?
-Currently, HomelabARR CE is designed for Linux systems only. Windows and macOS support may be added in the future.
+Portainer is a general Docker management tool — powerful, but you need to know what you want to run. HomelabARR gives you a curated catalog of 100+ homelab apps with one-click deployment. Think of it as an app store for your server. They work great together — Portainer is even in the catalog.
 
-### Can I run this on a Raspberry Pi?
-No, ARM processors are not currently supported. The stack requires x86/x64 architecture.
+### Can I use it without Docker?
 
-### How long does installation take?
-- **Local Mode**: 5-10 minutes
-- **Full Mode**: 15-30 minutes (depending on DNS propagation)
+No. HomelabARR runs as Docker containers and deploys Docker containers. Docker is required.
 
-## Local Mode Questions
+### Is it free?
 
-### How do I access applications in Local Mode?
-Applications are accessible via direct IP and port:
-- Plex: `http://localhost:32400`
-- Radarr: `http://localhost:7878`
-- qBittorrent: `http://localhost:8082`
+CE (Community Edition) is 100% free and open source under the MIT license. There's also a [Professional Edition](../pe/overview.md) with NAS management features — that one's paid.
 
-### Can I access Local Mode from other devices?
-Yes, replace `localhost` with your server's IP address:
-- Example: `http://192.168.1.100:32400`
+---
 
-### How do I add external access to Local Mode?
-You would need to:
-1. Configure port forwarding on your router
-2. Set up dynamic DNS (optional)
-3. Consider security implications (no authentication by default)
+## After Installing
 
-For proper external access, consider upgrading to Full Mode.
+### The dashboard loads but no apps show up ("Failed to load applications")
 
-### How does HomelabARR handle storage volumes?
-HomelabARR uses Docker's native bind mount volumes to store container data in specific host directories (`/opt/appdata`) rather than Docker's managed volume location. No plugins required — it works with standard Docker out of the box.
+The app templates are missing. Make sure you ran the `git clone` step:
 
-## Full Mode Questions
-
-### What Cloudflare features do I need?
-The free Cloudflare tier is sufficient. You need:
-- DNS management for your domain
-- API key for certificate management
-- Basic DDoS protection (included)
-
-### Why can't I access my applications after Full Mode installation?
-Common issues:
-1. **DNS not propagated**: Wait 15-30 minutes for DNS changes
-2. **Cloudflare SSL setting**: Must be set to "Full" (not "Full Strict")
-3. **Authelia not configured**: Check authentication setup
-4. **Firewall blocking**: Ensure ports 80 and 443 are open
-
-### How do I reset Authelia password?
 ```bash
-# Access Authelia container
-docker exec -it authelia bash
-
-# Reset user password
-authelia crypto hash generate pbkdf2 --password "newpassword"
-
-# Update configuration with new hash
+git clone https://github.com/smashingtags/homelabarr-ce.git /opt/homelabarr
 ```
 
-### Can I use a subdomain instead of main domain?
-Yes, you can use any subdomain. Update your DNS and configuration accordingly.
+The 100+ app templates live in the `apps/` folder inside the repo. Without it, the catalog is empty. This is the most common setup mistake.
 
-## Application Questions
+### I get a CORS error or API calls fail after login
 
-### How many applications are available?
-- **Local Mode**: 179+ applications (includes bulk-converted apps)
-- **Full Mode**: 162+ applications (fully tested and documented)
+`CORS_ORIGIN` must match **exactly** how you access the dashboard in your browser — same protocol, IP or hostname, and port.
 
-### How do I request a new application?
-1. Check if it already exists in the apps directory
-2. Create a GitHub issue using the "Application Request" template
-3. Join Discord and ask in #app-requests channel
-
-### Why won't my application start?
-Common issues:
-1. **Port conflicts**: Check if port is already in use
-2. **Image not found**: Verify image name and tag
-3. **Permission issues**: Check file/folder permissions
-4. **Missing dependencies**: Some apps require native Docker bind mounts
-
-### How do I update applications?
 ```bash
-# Update single application
-docker compose -f apps/category/app.yml pull
-docker compose -f apps/category/app.yml up -d
-
-# Update all containers
-docker images | grep -v REPOSITORY | awk '{print $1":"$2}' | xargs -L1 docker pull
+export CORS_ORIGIN=http://192.168.1.100:8084
+docker compose -f homelabarr.yml up -d
 ```
 
-### Where is my application data stored?
-- **Local Mode**: `/opt/appdata/<application-name>`
-- **Full Mode**: Same location, managed by Docker bind mount volumes
+Common mistake: `CORS_ORIGIN=http://server-hostname:8084` but you browse to `http://192.168.1.100:8084`. They must be identical.
 
-## Troubleshooting Questions
+### "Port already in use"
 
-### Docker says "permission denied"
+Something's already using port 8084 or 8092. Find it:
+
 ```bash
-# Add user to docker group
-sudo usermod -aG docker $USER
-newgrp docker
-
-# Or run with sudo (not recommended)
-sudo docker ps
+sudo ss -tlnp | grep 8084
 ```
 
-### "Port already in use" error
+Change the port in your `.env` file:
+
 ```bash
-# Find what's using the port
-sudo netstat -tulpn | grep :8080
-
-# Kill the process
-sudo kill -9 <PID>
-
-# Or change the port in docker-compose file
+FRONTEND_PORT=8085
 ```
 
-### How do I check container logs?
+### Docker socket permission denied
+
+`DOCKER_GID` must match your server's Docker group ID:
+
 ```bash
-# View logs
-docker logs <container-name>
-
-# Follow logs in real-time
-docker logs -f <container-name>
-
-# View last 50 lines
-docker logs --tail 50 <container-name>
+getent group docker | cut -d: -f3  # Find your GID
+export DOCKER_GID=YOUR_NUMBER
+docker compose -f homelabarr.yml up -d
 ```
 
-### Application is running but not accessible
-1. **Check container status**: `docker ps`
-2. **Verify port mapping**: Look for port in `docker ps` output
-3. **Test connectivity**: `curl -I http://localhost:<port>`
-4. **Check firewall**: `sudo ufw status`
-5. **Review logs**: `docker logs <container-name>`
+### Running in a Proxmox LXC container
 
-### How do I completely uninstall?
+Docker inside LXC needs AppArmor disabled at the Proxmox host level:
+
 ```bash
-# Stop all containers
-docker stop $(docker ps -aq)
-
-# Remove all containers
-docker rm $(docker ps -aq)
-
-# Remove all images (optional)
-docker rmi $(docker images -q)
-
-# Remove application data (WARNING: This deletes all data!)
-sudo rm -rf /opt/appdata
-
-# Remove HomelabARR directory
-rm -rf homelabarr-ce
+# Run on the Proxmox host, not inside the container
+echo 'lxc.apparmor.profile: unconfined' >> /etc/pve/lxc/YOUR-VMID.conf
 ```
 
-## Backup & Migration Questions
+Replace `YOUR-VMID` with your container's ID (like `100`). Restart the LXC from the Proxmox UI.
 
-### How do I backup my setup?
+---
+
+## Deploying Apps
+
+### What are the three deployment modes?
+
+1. **Standard** — simplest. App gets a port, access it at `http://your-server:PORT`. No extra setup. **Choose this if you're not sure.**
+2. **Traefik** — real URL like `https://plex.yourdomain.com` with automatic free SSL. Requires a domain and Traefik. ([Setup guide](traefik-setup.md))
+3. **Traefik + Authelia** — same as Traefik, plus a login page in front of the app. Recommended for anything internet-facing.
+
+### My deployed app isn't accessible
+
+Work through these in order:
+
 ```bash
-# Backup application data
-sudo tar -czf homelabarr-backup-$(date +%Y%m%d).tar.gz -C /opt appdata
-
-# Backup configuration
-tar -czf config-backup-$(date +%Y%m%d).tar.gz homelabarr-ce/
+docker ps | grep app-name         # Is it running?
+docker logs app-name --tail 30    # Any errors?
+docker port app-name              # What port did it get?
+sudo ufw allow PORT/tcp           # Firewall blocking it?
 ```
 
-### How do I migrate to a new server?
-1. **Stop services** on old server
-2. **Backup data**: `/opt/appdata` and configuration files
-3. **Install HomelabARR** on new server
-4. **Restore data** to `/opt/appdata`
-5. **Update configurations** (IP addresses, domains)
-6. **Start services** on new server
+### Can I deploy without the web UI?
 
-### Can I move from Local Mode to Full Mode?
-Yes, but it requires:
-1. Backing up application data
-2. Setting up domain and Cloudflare
-3. Installing Full Mode
-4. Restoring data and reconfiguring applications
+Yes. The templates in `apps/` are standard Docker Compose files:
 
-## Performance Questions
+```bash
+docker compose -f apps/media-servers/plex.yml --env-file .env up -d
+```
 
-### How much resources does this use?
-**Local Mode** (minimal setup):
-- RAM: 2-4GB
-- CPU: Low usage during normal operation
-- Storage: Depends on media collection
+---
 
-**Full Mode** (with proxy stack):
-- RAM: 4-6GB
-- CPU: Slightly higher due to Traefik/Authelia
-- Storage: Same as Local Mode
+## Security
 
-### Can I limit container resources?
-Yes, add resource limits to docker-compose files:
+### The default login is admin/admin — is that safe?
+
+No. Change it immediately after setup. Anyone on your local network can log in until you do. Click your username in the top right after signing in to update your password.
+
+### Should I expose HomelabARR to the internet?
+
+Only with authentication in front of it. Use Traefik + Authelia mode for any app you expose publicly. Never put an unauthenticated dashboard on the public internet.
+
+### What are API keys and when should I use them?
+
+API keys (`hlr_` prefix) are long-lived credentials for scripts, automation, and the mobile app. They don't expire until you revoke them. JWT tokens (from `/auth/login`) expire after a short period — fine for interactive sessions, but not for automation that runs overnight.
+
+**Key rules:**
+- Keep API keys out of public repositories
+- Revoke keys for devices you no longer use (Dashboard → your username → API Keys → Delete)
+- The full key is shown only once when created — save it somewhere safe
+
+### How do I keep the Docker socket secure?
+
+Mounting `/var/run/docker.sock` gives HomelabARR control over Docker on your server. For most homelabs this is fine. If you want to restrict what it can do, use [Docker Socket Proxy](https://github.com/Tecnativa/docker-socket-proxy) — it sits between HomelabARR and Docker and lets you allow only specific API calls.
+
+---
+
+## Data & Backups
+
+### Where's my data?
+
+- **App configs and data**: `/opt/appdata/` — each deployed app gets its own subfolder
+- **HomelabARR settings** (users, sessions): `homelabarr-data` Docker volume
+
+### How do I back up everything?
+
+```bash
+sudo tar -czf homelabarr-backup-$(date +%Y%m%d).tar.gz /opt/appdata/
+```
+
+### How do I update to the latest version?
+
+```bash
+docker compose -f homelabarr.yml pull
+docker compose -f homelabarr.yml up -d
+```
+
+Your data and settings are untouched — only the app itself updates.
+
+---
+
+## Advanced Topics
+
+### Can I add my own apps?
+
+Yes. Create a Docker Compose file in `apps/myapps/`:
+
 ```yaml
+# apps/myapps/my-app.yml
+version: "3"
 services:
-  app:
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
+  my-app:
+    image: my-image:latest
+    container_name: my-app
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ${APPFOLDER}/my-app:/config
 ```
 
-### How do I optimize performance?
-1. **Use SSD storage** for application data
-2. **Ensure adequate RAM** for all containers
-3. **Monitor resource usage** with Netdata/Glances
-4. **Optimize container resource limits**
-5. **Use hardware transcoding** for media servers
+Refresh the dashboard and your app shows up in **My Apps**. See [CLI Bridge](cli-bridge.md) for all available `${VARIABLE}` placeholders.
 
-## Security Questions
+### How does authentication work?
 
-### Is Local Mode secure?
-Local Mode assumes a trusted local network. It provides:
-- Container isolation via Docker
-- No external exposure by default
-- Standard Linux file permissions
+Two options: JWT tokens (short-lived, from `/auth/login`) and API keys (`hlr_` prefix, permanent until revoked). The dashboard uses JWT. For scripts, automation, and the mobile app, use API keys. See [API Reference](api-reference.md) for full details.
 
-For enhanced security, use Full Mode with Authelia.
+### Can I disable the login screen?
 
-### How secure is Full Mode?
-Full Mode provides enterprise-grade security:
-- Multi-factor authentication via Authelia
-- TLS encryption for all traffic
-- Cloudflare DDoS protection
-- Regular security updates
-
-### How do I enable 2FA?
-1. Access Authelia configuration
-2. Configure TOTP or WebAuthn
-3. Scan QR code with authenticator app
-4. Test login with 2FA code
-
-### Should I expose Docker daemon?
-No, never expose Docker daemon to the internet. HomelabARR CE doesn't require this.
-
-## Update Questions
-
-### How do I update HomelabARR CE?
-```bash
-# Update repository
-cd homelabarr-ce
-git pull origin master
-
-# Update containers
-docker compose pull
-docker compose up -d
-```
-
-### How often should I update?
-- **Security updates**: Immediately
-- **Application updates**: Monthly or as needed
-- **HomelabARR updates**: Check releases monthly
-
-### Will updates break my setup?
-We strive for backward compatibility, but:
-- Always backup before updating
-- Read release notes for breaking changes
-- Test updates in development environment first
-
-## Community Questions
-
-### How can I contribute?
-- Report bugs and request features
-- Improve documentation
-- Add new application support
-- Help other users in Discord
-- Submit code improvements
-
-See our [Contributing Guide](contributing.md) for details.
-
-### Where can I get help?
-1. **Discord** (fastest): [https://discord.gg/Pc7mXX786x](https://discord.gg/Pc7mXX786x)
-2. **GitHub Issues**: [https://github.com/smashingtags/homelabarr-ce/issues](https://github.com/smashingtags/homelabarr-ce/issues)
-3. **Documentation**: Check relevant guides first
-4. **Community Forums**: Reddit r/selfhosted, r/homelab
-
-### Is there a mobile app?
-No mobile app currently exists. Access is via web browsers on mobile devices.
+Yes, set `AUTH_ENABLED=false` in your `.env` file. **Only do this on an isolated local network** — disabling auth exposes all API endpoints including container management and user administration to anyone who can reach your server.
 
 ---
 
-## Still Have Questions?
+## Getting Help
 
-If your question isn't answered here:
-
-1. **Search the documentation** - Use the search function
-2. **Check Discord history** - Previous discussions may have answers
-3. **Ask in Discord** - Our community is helpful and active
-4. **Create GitHub issue** - For bugs or feature requests
-
-**Remember to provide system information and error messages when asking for help!**
-
-## Support Development
-
-If this FAQ helped you solve your issue, consider supporting HomelabARR CE development:
-
-**☕ [Support on Ko-fi](https://ko-fi.com/homelabarr)** - Help us maintain and improve documentation, fix bugs, and add new features!
-
----
-
-**This FAQ is continuously updated based on community questions. Last updated: August 2025**
+- **[Discord](https://discord.gg/Pc7mXX786x)** — fastest, someone's usually around — ask in #help
+- **[GitHub Issues](https://github.com/smashingtags/homelabarr-ce/issues)** — bug reports
+- **[GitHub Discussions](https://github.com/smashingtags/homelabarr-ce/discussions)** — questions and feature requests
+- **[homelabarr.com](https://homelabarr.com)** — product page
