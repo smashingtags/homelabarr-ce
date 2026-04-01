@@ -77,6 +77,9 @@ services:
       # Data persistence
       - homelabarr-data:/app/data
 
+      # Auth persistence (users, API keys, sessions)
+      - homelabarr-config:/app/server/config
+
     ports:
       - "${BACKEND_PORT:-8092}:8092"
     networks:
@@ -98,4 +101,7 @@ networks:
 volumes:
   homelabarr-data:
     name: homelabarr-data
+    driver: local
+  homelabarr-config:
+    name: homelabarr-config
     driver: local
