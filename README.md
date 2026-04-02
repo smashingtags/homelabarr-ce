@@ -120,7 +120,7 @@ Want to build from source instead? Check the [full install guide](https://wiki.h
 - **Three ways to deploy.** Just IP:port, or with Traefik reverse proxy for SSL, or Traefik + Authelia for 2FA on top.
 - **Manage running containers.** Start, stop, restart, remove, view logs — all from the dashboard.
 - **Port Manager.** See every port in use across all your containers. Catch conflicts before they happen.
-- **Community app store.** 110+ templates maintained in a [separate repo](https://github.com/smashingtags/homelabarr-templates) — update independently, contribute your own, or swap in custom template packs.
+- **Community app store.** 110+ official templates plus 2,900+ community apps from the [Unraid Community Applications](https://github.com/Squidly271/AppFeed) catalog. Browse by category, search, sort by downloads or trending, and deploy with one click.
 - **Add your own apps.** Drop a YAML file in `templates/myapps/` and it shows up in the catalog automatically.
 - **Secure by default.** Login required, API keys for automation, rate limiting, security headers.
 - **Dark mode.** Obviously.

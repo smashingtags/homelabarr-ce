@@ -124,6 +124,7 @@ nav:
       - Mobile App: guides/mobile-app.md
       - Configuration: guides/configuration.md
   - Guides:
+      - Community App Store: guides/community-store.md
       - Traefik & Domain Setup: guides/traefik-setup.md
       - CLI Installation: guides/cli-installation.md
       - API Reference: guides/api-reference.md
