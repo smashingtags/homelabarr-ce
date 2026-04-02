@@ -11,6 +11,11 @@ const DB_PATHS = [
 
 let db = null;
 
+export function resetDb() {
+  if (db) { try { db.close(); } catch {} }
+  db = null;
+}
+
 function getDb() {
   if (db) return db;
   for (const p of DB_PATHS) {

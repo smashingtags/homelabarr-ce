@@ -30,7 +30,7 @@ import {
   Search as SearchIcon,
   Star,
 } from 'lucide-react';
-import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp, getCommunityApps, installCommunityApp } from './lib/api';
+import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp, getCommunityApps, installCommunityApp, refreshCommunityApps } from './lib/api';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -107,6 +107,7 @@ export default function App() {
   const [communityApps, setCommunityApps] = useState<CommunityApp[]>([]);
   const [communityCategories, setCommunityCategories] = useState<string[]>([]);
   const [communityLoading, setCommunityLoading] = useState(false);
+  const [communityRefreshing, setCommunityRefreshing] = useState(false);
 
   const { success, error: showError, info } = useNotifications();
   const { loading: deploymentInProgress } = useLoading();
@@ -272,6 +273,21 @@ export default function App() {
       _communityApp: app,
     } as any;
     setSelectedApp(template);
+  }, []);
+
+  const handleCommunityRefresh = useCallback(async () => {
+    setCommunityRefreshing(true);
+    try {
+      await refreshCommunityApps();
+      const data = await getCommunityApps({ perPage: 5000 });
+      setCommunityApps(data.apps || []);
+      setCommunityCategories(data.categories || []);
+      success('Refreshed', 'Community apps updated');
+    } catch {
+      showError('Refresh Failed', 'Could not refresh community apps');
+    } finally {
+      setCommunityRefreshing(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -505,6 +521,8 @@ export default function App() {
           categories={communityCategories}
           onInstall={handleCommunityInstall}
           loading={communityLoading}
+          onRefresh={handleCommunityRefresh}
+          refreshing={communityRefreshing}
         />
       );
     }

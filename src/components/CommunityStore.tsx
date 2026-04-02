@@ -3,11 +3,13 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Download, ExternalLink, User } from "lucide-react";
+import { Search, Download, ExternalLink, User, RefreshCw } from "lucide-react";
 import { CommunityApp } from "../types";
 
 interface CommunityStoreProps {
   apps: CommunityApp[];
+  onRefresh?: () => void;
+  refreshing?: boolean;
   categories: string[];
   onInstall: (app: CommunityApp) => void;
   loading?: boolean;
@@ -61,7 +63,7 @@ function getAuthor(repo: string): string {
   return repo;
 }
 
-export function CommunityStore({ apps, categories: _categories, onInstall, loading = false }: CommunityStoreProps) {
+export function CommunityStore({ apps, categories: _categories, onInstall, loading = false, onRefresh, refreshing = false }: CommunityStoreProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"name" | "newest">("name");
@@ -195,6 +197,12 @@ export function CommunityStore({ apps, categories: _categories, onInstall, loadi
           <span className="text-sm text-muted-foreground self-center whitespace-nowrap">
             {filteredApps.length} apps
           </span>
+          {onRefresh && (
+            <Button variant="outline" size="sm" onClick={onRefresh} disabled={refreshing} className="whitespace-nowrap">
+              <RefreshCw className={`w-4 h-4 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          )}
         </div>
 
         {/* Mobile category bar */}
