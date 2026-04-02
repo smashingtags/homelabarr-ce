@@ -55,9 +55,10 @@ test_docker_connection || echo "⚠️  Docker connection test failed - will ret
 echo "📁 Checking config directory..."
 CONFIG_DIR="server/config"
 mkdir -p "$CONFIG_DIR"
-for f in users.json api-keys.json stars.json; do
-  [ ! -f "$CONFIG_DIR/$f" ] && echo '{}' > "$CONFIG_DIR/$f" && echo "  Created $CONFIG_DIR/$f"
+for f in users.json api-keys.json; do
+  [ ! -f "$CONFIG_DIR/$f" ] && echo '[]' > "$CONFIG_DIR/$f" && echo "  Created $CONFIG_DIR/$f"
 done
+[ ! -f "$CONFIG_DIR/stars.json" ] && echo '{}' > "$CONFIG_DIR/stars.json" && echo "  Created $CONFIG_DIR/stars.json"
 # Fix ownership if running as homelabarr but files are root-owned (bind mount)
 if [ "$(id -u)" = "1001" ]; then
   sudo chown -R 1001:1001 "$CONFIG_DIR" 2>/dev/null || true
