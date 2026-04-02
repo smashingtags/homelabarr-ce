@@ -76,7 +76,7 @@ function cliAppToTemplate(app: CLIApplication): AppTemplate {
 export default function App() {
   const [cliApps, setCliApps] = useState<CLIApplication[]>([]);
   const [cliDeploymentModes, setCliDeploymentModes] = useState<DeploymentMode[]>([]);
-  const [catalogSource, setCatalogSource] = useState<'cli' | 'templates'>('templates');
+  const [catalogSource, setCatalogSource] = useState<'cli' | 'unified' | 'templates'>('templates');
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState<string | null>(null);
 
@@ -727,14 +727,14 @@ export default function App() {
             {/* Connection status indicator */}
             {!catalogLoading && (
               <span className={`inline-flex items-center gap-1 md:gap-1.5 text-[10px] md:text-xs font-medium px-1.5 md:px-2.5 py-0.5 md:py-1 rounded-full ${
-                catalogSource === 'cli'
+                catalogSource === 'cli' || catalogSource === 'unified'
                   ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                   : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
               }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${
-                  catalogSource === 'cli' ? 'bg-green-500' : 'bg-yellow-500'
+                  catalogSource === 'cli' || catalogSource === 'unified' ? 'bg-green-500' : 'bg-yellow-500'
                 }`} />
-                {catalogSource === 'cli' ? `Connected · ${cliApps.length} apps` : 'Browse Mode'}
+                {catalogSource === 'cli' || catalogSource === 'unified' ? `Connected · ${cliApps.length} apps` : 'Browse Mode'}
               </span>
             )}
           </div>
