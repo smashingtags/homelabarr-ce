@@ -16,12 +16,13 @@ function rewritePath(hostPath) {
   return hostPath;
 }
 
-function parseConfig(config) {
+function parseConfig(config, appName) {
   const ports = [];
   const volumes = [];
   const envVars = [];
 
   if (!Array.isArray(config)) return { ports, volumes, envVars };
+  const safeName = appName || 'app';
 
   for (const entry of config) {
     const attrs = entry?.['@attributes'] || entry;
@@ -40,9 +41,9 @@ function parseConfig(config) {
         break;
       }
       case 'Path': {
-        const hostPath = rewritePath(defaultVal);
+        const hostPath = rewritePath(defaultVal) || `/opt/appdata/${safeName}${target}`;
         const rw = mode || 'rw';
-        volumes.push(`${hostPath}:${target}:${rw}`);
+        if (target) volumes.push(`${hostPath}:${target}:${rw}`);
         break;
       }
       case 'Variable': {
@@ -62,7 +63,7 @@ export function generateComposeObject(app) {
 
   const name = sanitizeName(app.Name || 'app');
   const isHostNetwork = (app.Network || '').toLowerCase() === 'host';
-  const { ports, volumes, envVars } = parseConfig(app.Config);
+  const { ports, volumes, envVars } = parseConfig(app.Config, name);
 
   const envMap = new Map(envVars.map(e => [e.key, e.value]));
   if (!envMap.has('PUID')) envMap.set('PUID', '1000');

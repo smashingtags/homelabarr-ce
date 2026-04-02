@@ -275,6 +275,14 @@ export async function detectGpu(): Promise<{ success: boolean; gpus: { nvidia: b
 }
 
 // Community App Store API functions
+export async function refreshCommunityApps(): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}/community/refresh`, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}
+
 export async function getCommunityApps(params?: {
   category?: string;
   search?: string;

@@ -502,6 +502,19 @@ app.get('/community/repos', requireAuth(), async (req, res) => {
   }
 });
 
+app.post('/community/refresh', requireAuth('admin'), async (req, res) => {
+  try {
+    const templatesPath = process.env.TEMPLATES_PATH || path.join(process.cwd(), 'apps');
+    const result = execSync('git pull --ff-only', { cwd: templatesPath, encoding: 'utf8', timeout: 30000 });
+    // Reset the cached database connection so it picks up the new file
+    const feedModule = await import('./community-feed.js');
+    if (feedModule.resetDb) feedModule.resetDb();
+    res.json({ success: true, message: result.trim() || 'Templates updated' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to refresh: ' + (err.message || 'unknown error') });
+  }
+});
+
 app.post('/community/install/:appName', requireAuth(), async (req, res) => {
   try {
     const app = await getCommunityApp(req.params.appName);
