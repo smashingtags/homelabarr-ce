@@ -83,7 +83,7 @@ export default function App() {
   const [selectedApp, setSelectedApp] = useState<AppTemplate | null>(null);
   const [deployedApps, setDeployedApps] = useState<DeployedApp[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<TabId>('all-apps');
+  const [activeCategory, setActiveCategory] = useState<TabId>('deployed');
   const [sortField, setSortField] = useState<'name' | 'status' | 'deployedAt' | 'uptime'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [catalogSort, setCatalogSort] = useState<'asc' | 'desc'>('asc');
