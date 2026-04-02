@@ -135,12 +135,12 @@ export class CLIBridge {
 
       for (const category of allowedCategories) {
         const categoryPath = path.join(this.appsPath, category);
-        
+
         // Skip if category doesn't exist
         if (!fs.existsSync(categoryPath)) {
           continue;
         }
-        
+
         applications[category] = [];
 
         const files = fs.readdirSync(categoryPath)
