@@ -30,7 +30,7 @@ import {
   Search as SearchIcon,
   Star,
 } from 'lucide-react';
-import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp, getCommunityApps, installCommunityApp, refreshCommunityApps } from './lib/api';
+import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp, installCommunityApp, refreshCommunityApps } from './lib/api';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -104,9 +104,6 @@ export default function App() {
   } | null>(null);
 
   const [starredApps, setStarredApps] = useState<Set<string>>(new Set());
-  const [communityApps, setCommunityApps] = useState<CommunityApp[]>([]);
-  const [communityCategories, setCommunityCategories] = useState<string[]>([]);
-  const [communityLoading, setCommunityLoading] = useState(false);
   const [communityRefreshing, setCommunityRefreshing] = useState(false);
 
   const { success, error: showError, info } = useNotifications();
@@ -248,20 +245,6 @@ export default function App() {
     };
   }, [activeCategory, isAuthenticated]);
 
-  // Load community apps when community tab is first selected
-  useEffect(() => {
-    if (activeCategory === 'community' && communityApps.length === 0 && !communityLoading) {
-      setCommunityLoading(true);
-      getCommunityApps({ perPage: 5000 })
-        .then(data => {
-          setCommunityApps(data.apps || []);
-          setCommunityCategories(data.categories || []);
-        })
-        .catch(() => {})
-        .finally(() => setCommunityLoading(false));
-    }
-  }, [activeCategory]);
-
   const handleCommunityInstall = useCallback((app: CommunityApp) => {
     const template: AppTemplate = {
       id: `community-${app.Name}`,
@@ -279,10 +262,7 @@ export default function App() {
     setCommunityRefreshing(true);
     try {
       await refreshCommunityApps();
-      const data = await getCommunityApps({ perPage: 5000 });
-      setCommunityApps(data.apps || []);
-      setCommunityCategories(data.categories || []);
-      success('Refreshed', 'Community apps updated');
+      success('Refreshed', 'Community apps updated — reload the page to see changes');
     } catch {
       showError('Refresh Failed', 'Could not refresh community apps');
     } finally {
@@ -517,10 +497,7 @@ export default function App() {
     if (activeCategory === 'community') {
       return (
         <CommunityStore
-          apps={communityApps}
-          categories={communityCategories}
           onInstall={handleCommunityInstall}
-          loading={communityLoading}
           onRefresh={handleCommunityRefresh}
           refreshing={communityRefreshing}
         />

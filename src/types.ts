@@ -150,6 +150,11 @@ export interface CommunityApp {
   CategoryList: string[];
   LastUpdateScan: number;
   FirstSeen: number;
+  downloads?: number;
+  stars?: number;
+  trending?: number;
+  author?: string;
+  authorUrl?: string;
 }
 
 export interface CommunityStoreResponse {

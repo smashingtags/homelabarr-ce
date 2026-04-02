@@ -1015,47 +1015,6 @@ app.get('/auth/activity-log', requireAuth('admin'), (req, res) => {
 });
 
 // Authentication routes
-app.post('/auth/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-      return res.status(400).json({
-        error: 'Missing credentials',
-        details: 'Username and password are required'
-      });
-    }
-
-    const user = await validatePassword(username, password);
-    if (!user) {
-      return res.status(401).json({
-        error: 'Invalid credentials',
-        details: 'Username or password is incorrect'
-      });
-    }
-
-    const token = generateToken(user);
-
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        lastLogin: user.lastLogin
-      }
-    });
-  } catch (error) {
-    logger.error('Login error:', error);
-    res.status(500).json({
-      error: 'Login failed',
-      details: error.message
-    });
-  }
-});
-
 app.post('/auth/register', requireAuth, requireRole('admin'), async (req, res) => {
   try {
     const { username, password, email, role } = req.body;

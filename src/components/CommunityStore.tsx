@@ -1,125 +1,94 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Download, ExternalLink, User, RefreshCw } from "lucide-react";
+import { Search, ExternalLink, RefreshCw, Loader2 } from "lucide-react";
 import { CommunityApp } from "../types";
+import { getCommunityApps, getCommunityCategories } from "../lib/api";
 
 interface CommunityStoreProps {
-  apps: CommunityApp[];
+  onInstall: (app: CommunityApp) => void;
   onRefresh?: () => void;
   refreshing?: boolean;
-  categories: string[];
-  onInstall: (app: CommunityApp) => void;
-  loading?: boolean;
 }
 
 const CATEGORY_MAP: Record<string, string> = {
   "AI:": "AI",
   "Backup:": "Backup",
-  "Downloaders:": "Downloads",
-  "MediaApp:Video": "Media Apps",
-  "MediaApp:Music": "Media Apps",
-  "MediaApp:Books": "Media Apps",
-  "MediaApp:Photos": "Media Apps",
-  "MediaApp:Other": "Media Apps",
-  "MediaServer:Video": "Media Servers",
-  "MediaServer:Music": "Media Servers",
-  "MediaServer:Books": "Media Servers",
-  "MediaServer:Other": "Media Servers",
-  "Network:VPN": "Networking",
-  "Network:DNS": "Networking",
-  "Network:Web": "Networking",
-  "Network:Proxy": "Networking",
-  "Network:Management": "Networking",
-  "Network:Other": "Networking",
-  "Network:Messenger": "Networking",
-  "Tools:Utilities": "Tools",
-  "Tools:Profitability": "Tools",
-  "Productivity:": "Productivity",
-  "GameServers:": "Game Servers",
-  "HomeAutomation:": "Home Automation",
   "Cloud:": "Cloud",
-  "Security:": "Security",
-  "Status:": "Status",
+  "Crypto Currency": "Crypto",
+  "Downloaders:": "Downloads",
+  "Drivers:": "Drivers",
+  "Game Servers": "Games",
+  "Home Automation": "Home Auto",
+  "Media Applications": "Media Apps",
+  "Media Servers": "Media Servers",
+  "Network Services": "Networking",
   "Other:": "Other",
+  "Productivity:": "Productivity",
+  "Security:": "Security",
+  "Tools / Utilities": "Tools",
 };
 
 function cleanCategory(raw: string): string {
   if (CATEGORY_MAP[raw]) return CATEGORY_MAP[raw];
-
-  for (const [pattern, label] of Object.entries(CATEGORY_MAP)) {
-    if (raw.startsWith(pattern)) return label;
-  }
-
-  const parent = raw.split(":")[0];
-  return parent || raw;
+  const parts = raw.replace(/:$/, "").split(":");
+  return parts[parts.length - 1] || raw;
 }
 
 function getAuthor(repo: string): string {
-  const parts = repo.replace(/^https?:\/\//, "").split("/");
-  if (parts.length >= 2) return parts[parts.length - 2];
+  if (!repo) return "Unknown";
+  const parts = repo.split("'");
+  if (parts.length >= 2) return parts[0].trim();
   return repo;
 }
 
-export function CommunityStore({ apps, categories: _categories, onInstall, loading = false, onRefresh, refreshing = false }: CommunityStoreProps) {
+export function CommunityStore({ onInstall, onRefresh, refreshing = false }: CommunityStoreProps) {
+  const [apps, setApps] = useState<CommunityApp[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"name" | "newest">("name");
+  const [sortBy, setSortBy] = useState<"name" | "newest" | "downloads" | "trending">("name");
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 12;
 
-  const cleanedCategories = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const app of apps) {
-      const seen = new Set<string>();
-      for (const raw of (Array.isArray(app.CategoryList) ? app.CategoryList : [])) {
-        const clean = cleanCategory(raw);
-        if (!seen.has(clean)) {
-          seen.add(clean);
-          counts[clean] = (counts[clean] || 0) + 1;
-        }
-      }
+  const fetchApps = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getCommunityApps({
+        search: searchQuery || undefined,
+        category: activeCategory || undefined,
+        sort: sortBy,
+        page: currentPage,
+        perPage,
+      });
+      setApps(data.apps || []);
+      setTotal(data.total || 0);
+    } catch {
+      setApps([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
     }
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  }, [apps]);
+  }, [searchQuery, activeCategory, sortBy, currentPage]);
 
-  const filteredApps = useMemo(() => {
-    const q = searchQuery.toLowerCase();
+  useEffect(() => {
+    fetchApps();
+  }, [fetchApps]);
 
-    let result = apps.filter((app) => {
-      if (activeCategory) {
-        const appCategories = (Array.isArray(app.CategoryList) ? app.CategoryList : []).map(cleanCategory);
-        if (!appCategories.includes(activeCategory)) return false;
-      }
-      if (q) {
-        return (
-          app.Name.toLowerCase().includes(q) ||
-          app.Overview.toLowerCase().includes(q) ||
-          app.Repo.toLowerCase().includes(q)
-        );
-      }
-      return true;
-    });
+  useEffect(() => {
+    getCommunityCategories()
+      .then(data => setCategories(data.categories || []))
+      .catch(() => {});
+  }, []);
 
-    result.sort((a, b) => {
-      if (sortBy === "newest") return b.FirstSeen - a.FirstSeen;
-      return a.Name.localeCompare(b.Name);
-    });
-
-    return result;
-  }, [apps, searchQuery, activeCategory, sortBy]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredApps.length / perPage));
-  const safeCurrentPage = Math.min(currentPage, totalPages);
-  const paginatedApps = filteredApps.slice(
-    (safeCurrentPage - 1) * perPage,
-    safeCurrentPage * perPage
-  );
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
 
   function handleCategoryClick(category: string) {
-    setActiveCategory((prev) => (prev === category ? null : category));
+    setActiveCategory(prev => prev === category ? null : category);
     setCurrentPage(1);
   }
 
@@ -128,50 +97,33 @@ export function CommunityStore({ apps, categories: _categories, onInstall, loadi
     setCurrentPage(1);
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
-        <span className="ml-3 text-muted-foreground">Loading community apps...</span>
-      </div>
-    );
+  let searchTimer: ReturnType<typeof setTimeout>;
+  function handleSearchDebounced(value: string) {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => handleSearch(value), 300);
   }
 
   return (
-    <div className="flex gap-6 min-h-[600px]">
-      {/* Category sidebar */}
-      <aside className="w-56 shrink-0 hidden lg:block">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          Categories
-        </h3>
-        <div className="space-y-0.5">
-          <button
-            onClick={() => { setActiveCategory(null); setCurrentPage(1); }}
-            className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-              activeCategory === null
-                ? "bg-indigo-500/20 text-indigo-300 font-medium"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-            }`}
-          >
-            All Apps
-            <span className="float-right text-xs opacity-60">{apps.length}</span>
-          </button>
-          {cleanedCategories.map(([category, count]) => (
+    <div className="flex gap-6">
+      {/* Category sidebar — desktop */}
+      <div className="hidden lg:block w-48 shrink-0">
+        <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Categories</h3>
+        <div className="space-y-1">
+          {categories.map(cat => (
             <button
-              key={category}
-              onClick={() => handleCategoryClick(category)}
-              className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-                activeCategory === category
-                  ? "bg-indigo-500/20 text-indigo-300 font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              key={cat}
+              onClick={() => handleCategoryClick(cat)}
+              className={`block w-full text-left text-sm px-2 py-1.5 rounded transition-colors ${
+                activeCategory === cat
+                  ? "bg-orange-500/20 text-orange-300 font-medium"
+                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
               }`}
             >
-              {category}
-              <span className="float-right text-xs opacity-60">{count}</span>
+              {cleanCategory(cat)}
             </button>
           ))}
         </div>
-      </aside>
+      </div>
 
       {/* Main content */}
       <div className="flex-1 min-w-0">
@@ -181,21 +133,23 @@ export function CommunityStore({ apps, categories: _categories, onInstall, loadi
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search community apps..."
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
+              defaultValue={searchQuery}
+              onChange={(e) => handleSearchDebounced(e.target.value)}
               className="pl-9"
             />
           </div>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "name" | "newest")}
+            onChange={(e) => { setSortBy(e.target.value as typeof sortBy); setCurrentPage(1); }}
             className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="name">Sort: A-Z</option>
             <option value="newest">Sort: Newest</option>
+            <option value="downloads">Sort: Downloads</option>
+            <option value="trending">Sort: Trending</option>
           </select>
           <span className="text-sm text-muted-foreground self-center whitespace-nowrap">
-            {filteredApps.length} apps
+            {total.toLocaleString()} apps
           </span>
           {onRefresh && (
             <Button variant="outline" size="sm" onClick={onRefresh} disabled={refreshing} className="whitespace-nowrap">
@@ -207,35 +161,26 @@ export function CommunityStore({ apps, categories: _categories, onInstall, loadi
 
         {/* Mobile category bar */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-4 lg:hidden scrollbar-none">
-          <Badge
-            onClick={() => { setActiveCategory(null); setCurrentPage(1); }}
-            className={`cursor-pointer shrink-0 ${
-              activeCategory === null
-                ? "bg-indigo-500 text-white"
-                : "bg-white/5 text-muted-foreground hover:text-foreground"
-            }`}
-            variant="outline"
-          >
-            All
-          </Badge>
-          {cleanedCategories.slice(0, 12).map(([category]) => (
+          {categories.slice(0, 10).map(cat => (
             <Badge
-              key={category}
-              onClick={() => handleCategoryClick(category)}
-              className={`cursor-pointer shrink-0 ${
-                activeCategory === category
-                  ? "bg-indigo-500 text-white"
-                  : "bg-white/5 text-muted-foreground hover:text-foreground"
+              key={cat}
+              variant={activeCategory === cat ? "default" : "outline"}
+              className={`cursor-pointer whitespace-nowrap ${
+                activeCategory === cat ? "bg-orange-500 text-white" : ""
               }`}
-              variant="outline"
+              onClick={() => handleCategoryClick(cat)}
             >
-              {category}
+              {cleanCategory(cat)}
             </Badge>
           ))}
         </div>
 
-        {/* App grid */}
-        {paginatedApps.length === 0 ? (
+        {/* Loading */}
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : apps.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
             <p className="text-lg">No apps found</p>
@@ -243,44 +188,22 @@ export function CommunityStore({ apps, categories: _categories, onInstall, loadi
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {paginatedApps.map((app) => (
+            {apps.map((app) => (
               <CommunityAppCard key={app.Name + app.Repository} app={app} onInstall={onInstall} />
             ))}
           </div>
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {totalPages > 1 && !loading && (
           <div className="flex items-center justify-center gap-2 mt-8">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={safeCurrentPage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            >
+            <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>
               Previous
             </Button>
-            {generatePageNumbers(safeCurrentPage, totalPages).map((page, i) =>
-              page === null ? (
-                <span key={`ellipsis-${i}`} className="px-1 text-muted-foreground">...</span>
-              ) : (
-                <Button
-                  key={page}
-                  variant={page === safeCurrentPage ? "default" : "outline"}
-                  size="sm"
-                  className={page === safeCurrentPage ? "bg-indigo-500 hover:bg-indigo-600" : ""}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </Button>
-              )
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={safeCurrentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            >
+            <span className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>
               Next
             </Button>
           </div>
@@ -310,80 +233,65 @@ function CommunityAppCard({ app, onInstall }: { app: CommunityApp; onInstall: (a
   const displayCategories = [...new Set((Array.isArray(app.CategoryList) ? app.CategoryList : []).map(cleanCategory))].slice(0, 3);
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20 hover:translate-y-[-3px] flex flex-col h-full border-0 ring-1 ring-gray-200 dark:ring-white/[0.08] hover:ring-indigo-400/50 dark:hover:ring-indigo-500/40 bg-white dark:bg-[hsl(222,28%,10%)]">
+    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/10 dark:hover:shadow-orange-500/20 hover:translate-y-[-3px] flex flex-col h-full border-0 ring-1 ring-gray-200 dark:ring-white/[0.08] hover:ring-orange-400/50 dark:hover:ring-orange-500/40 bg-white dark:bg-[hsl(222,28%,10%)]">
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 opacity-60 group-hover:opacity-100 transition-opacity" />
 
-      <CardHeader className="flex flex-row items-center gap-3 pt-5 pb-2">
-        <div className="w-12 h-12 shrink-0 rounded-xl ring-1 ring-orange-200 dark:ring-orange-800/30 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/10 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-orange-500/20">
+      <CardHeader className="flex flex-row items-center gap-4 pt-5 pb-3">
+        <div className="p-2 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/20 rounded-xl ring-1 ring-orange-100 dark:ring-orange-800/30 w-12 h-12 flex items-center justify-center overflow-hidden">
           {app.Icon ? (
             <img
               src={app.Icon}
               alt={app.Name}
               className="w-8 h-8 object-contain"
-              loading="lazy"
               onError={(e) => {
-                const target = e.currentTarget;
-                target.style.display = "none";
+                e.currentTarget.style.display = "none";
                 const letter = document.createElement("span");
-                letter.className = "w-8 h-8 flex items-center justify-center rounded-md bg-orange-500/20 text-orange-300 text-sm font-bold";
+                letter.className = "text-orange-400 font-bold text-lg";
                 letter.textContent = (app.Name || "?")[0].toUpperCase();
-                target.parentElement?.appendChild(letter);
+                e.currentTarget.parentElement?.appendChild(letter);
               }}
             />
           ) : (
-            <span className="text-lg font-bold text-orange-400">
-              {(app.Name || "?")[0].toUpperCase()}
-            </span>
+            <span className="text-orange-400 font-bold text-lg">{(app.Name || "?")[0].toUpperCase()}</span>
           )}
         </div>
         <div className="min-w-0 flex-1">
           <CardTitle className="text-base font-semibold truncate">{app.Name}</CardTitle>
-          <CardDescription className="truncate text-xs mt-0.5 flex items-center gap-1">
-            <User className="w-3 h-3" />
-            {author}
-          </CardDescription>
+          <CardDescription className="truncate text-xs mt-0.5">by {author}</CardDescription>
         </div>
       </CardHeader>
 
       <CardContent className="flex-grow pb-3">
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-3">
-          {app.Overview || "No description available."}
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-4">
+          {app.Overview || "Docker application"}
         </p>
         <div className="flex flex-wrap gap-1.5">
-          {displayCategories.map((cat) => (
-            <Badge
-              key={cat}
-              variant="outline"
-              className="text-xs bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/40"
-            >
+          <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 border-orange-200 dark:border-orange-800/50" variant="outline">
+            Community
+          </Badge>
+          {displayCategories.map(cat => (
+            <Badge key={cat} variant="outline" className="text-xs capitalize">
               {cat}
             </Badge>
           ))}
-          <Badge
-            variant="outline"
-            className="text-xs bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800/40"
-          >
-            Unraid Community
-          </Badge>
+          {app.downloads ? (
+            <Badge variant="outline" className="text-xs">
+              {app.downloads >= 1000000 ? `${(app.downloads / 1000000).toFixed(1)}M` : app.downloads >= 1000 ? `${(app.downloads / 1000).toFixed(0)}K` : app.downloads} pulls
+            </Badge>
+          ) : null}
         </div>
       </CardContent>
 
       <CardFooter className="pt-0 pb-4 gap-2">
         <Button
           onClick={() => onInstall(app)}
-          className="flex-1 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-medium shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-200"
+          className="flex-1 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-medium shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
           size="default"
         >
-          <Download className="w-4 h-4 mr-2" />
           Install
         </Button>
         {app.Project && (
-          <Button
-            variant="outline"
-            size="icon"
-            asChild
-            className="shrink-0"
-          >
+          <Button variant="outline" size="icon" asChild>
             <a href={app.Project} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="w-4 h-4" />
             </a>
@@ -392,23 +300,4 @@ function CommunityAppCard({ app, onInstall }: { app: CommunityApp; onInstall: (a
       </CardFooter>
     </Card>
   );
-}
-
-function generatePageNumbers(current: number, total: number): (number | null)[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-
-  const pages: (number | null)[] = [1];
-
-  if (current > 3) pages.push(null);
-
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-
-  for (let i = start; i <= end; i++) pages.push(i);
-
-  if (current < total - 2) pages.push(null);
-
-  pages.push(total);
-
-  return pages;
 }
