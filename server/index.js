@@ -521,20 +521,41 @@ app.post('/community/install/:appName', requireAuth(), async (req, res) => {
     if (!app) {
       return res.status(404).json({ error: 'App not found' });
     }
-    const compose = generateComposeObject(app);
-    if (!compose) {
-      return res.status(400).json({ error: 'Cannot generate template for this app' });
+
+    // Look for pre-generated YAML first
+    const templatesPath = process.env.TEMPLATES_PATH || path.join(process.cwd(), 'apps');
+    const safeName = (app.Name || '').toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-');
+    const categories = app.CategoryList || [];
+    let yamlPath = null;
+
+    // Search community directories for the pre-generated template
+    const communityDir = path.join(templatesPath, 'community');
+    if (fs.existsSync(communityDir)) {
+      const dirs = fs.readdirSync(communityDir).filter(d => {
+        try { return fs.statSync(path.join(communityDir, d)).isDirectory(); } catch { return false; }
+      });
+      for (const dir of dirs) {
+        const candidate = path.join(communityDir, dir, `${safeName}.yml`);
+        if (fs.existsSync(candidate)) { yamlPath = candidate; break; }
+      }
     }
 
-    const yaml = (await import('yaml')).default;
-    const tmpDir = path.join(process.cwd(), 'server', 'data');
-    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
-    const tmpPath = path.join(tmpDir, `community-${app.Name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.yml`);
-    fs.writeFileSync(tmpPath, yaml.stringify(compose));
+    // Fallback: generate on the fly if no pre-generated YAML found
+    if (!yamlPath) {
+      const compose = generateComposeObject(app);
+      if (!compose) {
+        return res.status(400).json({ error: 'Cannot generate template for this app' });
+      }
+      const yamlMod = (await import('yaml')).default;
+      const tmpDir = path.join(process.cwd(), 'server', 'data');
+      if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+      yamlPath = path.join(tmpDir, `community-${safeName}.yml`);
+      fs.writeFileSync(yamlPath, yamlMod.stringify(compose));
+    }
 
     try {
       if (cliBridge) {
-        const result = await cliBridge.executeDockerCompose(tmpPath, 'up -d', {
+        const result = await cliBridge.executeDockerCompose(yamlPath, 'up -d', {
           ...req.body.config,
           DOCKERNETWORK: req.body.mode?.type === 'traefik' ? 'proxy' : 'bridge'
         });

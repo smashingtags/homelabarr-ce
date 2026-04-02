@@ -133,11 +133,15 @@ export class CLIBridge {
         'virtual-desktops'
       ];
 
-      // Scan official template directories
       for (const category of allowedCategories) {
         const categoryPath = path.join(this.appsPath, category);
-        if (!fs.existsSync(categoryPath)) continue;
-        if (!applications[category]) applications[category] = [];
+
+        // Skip if category doesn't exist
+        if (!fs.existsSync(categoryPath)) {
+          continue;
+        }
+
+        applications[category] = [];
 
         const files = fs.readdirSync(categoryPath)
           .filter(file => file.endsWith('.yml') && file !== 'install.sh');
@@ -145,27 +149,8 @@ export class CLIBridge {
         for (const file of files) {
           const appPath = path.join(categoryPath, file);
           const appConfig = await this.parseApplicationConfig(appPath, category);
-          if (appConfig) applications[category].push(appConfig);
-        }
-      }
-
-      // Scan community template directories
-      const communityDir = path.join(this.appsPath, 'community');
-      if (fs.existsSync(communityDir)) {
-        const communityCategories = fs.readdirSync(communityDir)
-          .filter(d => fs.statSync(path.join(communityDir, d)).isDirectory());
-
-        for (const category of communityCategories) {
-          const categoryPath = path.join(communityDir, category);
-          if (!applications[category]) applications[category] = [];
-
-          const files = fs.readdirSync(categoryPath)
-            .filter(file => file.endsWith('.yml'));
-
-          for (const file of files) {
-            const appPath = path.join(categoryPath, file);
-            const appConfig = await this.parseApplicationConfig(appPath, category);
-            if (appConfig) applications[category].push(appConfig);
+          if (appConfig) {
+            applications[category].push(appConfig);
           }
         }
       }
