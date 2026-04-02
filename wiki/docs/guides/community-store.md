@@ -104,9 +104,21 @@ Click **Install** on any community app. You'll see the same deploy modal as nati
 
 1. Choose a deployment mode (Standard, Traefik, or Traefik + Authelia)
 2. Click **Deploy**
-3. The backend generates a Docker Compose file from the app's config and deploys it
+3. The app deploys from a pre-generated Docker Compose YAML — no on-the-fly conversion
 
-The translation handles ports, volumes, environment variables, and network mode automatically.
+All 2,900+ community templates are pre-generated and validated against `docker compose config`. The daily refresh regenerates them from the latest feed data. Templates are stored at `community/<category>/<app>.yml` in the templates repo.
+
+---
+
+## Template Validation
+
+Every community template is validated with `docker compose config` during generation:
+
+- **2,816** pass validation (99.75%)
+- **7** fail due to bad data in the upstream Unraid feed (malformed ports, volume names with spaces, undefined named volumes)
+- **21** skipped (no Docker image — Unraid plugins, not containers)
+
+Failed templates are still generated but may not deploy successfully. These are upstream data quality issues.
 
 ---
 
