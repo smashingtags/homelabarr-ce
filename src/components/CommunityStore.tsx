@@ -61,7 +61,7 @@ function getAuthor(repo: string): string {
   return repo;
 }
 
-export function CommunityStore({ apps, categories, onInstall, loading = false }: CommunityStoreProps) {
+export function CommunityStore({ apps, categories: _categories, onInstall, loading = false }: CommunityStoreProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"name" | "newest">("name");
