@@ -1180,31 +1180,79 @@ app.post('/auth/change-password', requireAuth, async (req, res) => {
 });
 
 // Application catalog endpoint - replaces template validation
+// Category mapping from Unraid community categories to HomelabARR categories
+const COMMUNITY_CATEGORY_MAP = {
+  'ai': 'ai',
+  'backup': 'backup',
+  'cloud': 'cloud',
+  'downloaders': 'downloads',
+  'game servers': 'game-servers',
+  'home automation': 'home-automation',
+  'media applications': 'media-management',
+  'media servers': 'media-servers',
+  'network services': 'networking',
+  'productivity': 'productivity',
+  'security': 'security',
+  'tools / utilities': 'tools',
+  'crypto currency': 'crypto',
+  'drivers': 'drivers',
+  'other': 'other',
+};
+
+function mapCommunityCategory(categoryList) {
+  if (!Array.isArray(categoryList) || categoryList.length === 0) return 'other';
+  for (const cat of categoryList) {
+    const mapped = COMMUNITY_CATEGORY_MAP[cat.toLowerCase()];
+    if (mapped) return mapped;
+  }
+  return 'other';
+}
+
+function convertCommunityApp(app) {
+  const safeName = (app.Name || 'unknown').toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+  return {
+    id: `community-${safeName}`,
+    name: app.Name,
+    displayName: app.Name,
+    category: mapCommunityCategory(app.CategoryList),
+    description: app.Overview || '',
+    image: app.Repository || '',
+    ports: {},
+    environment: {},
+    volumes: [],
+    networks: [],
+    labels: [],
+    filePath: '',
+    healthcheck: null,
+    restart: 'unless-stopped',
+    requiresTraefik: false,
+    requiresAuthelia: false,
+    gpuSupport: false,
+    author: app.author || app.Repo || null,
+    source: 'community',
+    tags: [],
+    icon: app.Icon || '',
+    downloads: app.downloads || 0,
+    stars: app.stars || 0,
+  };
+}
+
 app.get('/applications', async (req, res) => {
   try {
+    let applications = {};
+
     if (cliBridge) {
-      // Use CLI Bridge to get real HomelabARR applications
-      const applications = await cliBridge.getAvailableApplications();
-      
-      res.json({
-        success: true,
-        source: 'cli',
-        applications: applications,
-        totalApps: Object.values(applications).flat().length,
-        categories: Object.keys(applications)
-      });
+      applications = await cliBridge.getAvailableApplications();
     } else {
-      // Fallback to template mode if CLI not available
       const templateDir = path.join(process.cwd(), 'server', 'templates');
       const templateFiles = fs.readdirSync(templateDir)
         .filter(file => file.endsWith('.yml'))
         .map(file => file.replace('.yml', ''));
 
-      // Format templates to match CLI structure for frontend compatibility
-      const templateApps = templateFiles.map(name => ({
+      applications['templates'] = templateFiles.map(name => ({
         id: name,
         name: name,
-        displayName: name.split('-').map(word => 
+        displayName: name.split('-').map(word =>
           word.charAt(0).toUpperCase() + word.slice(1)
         ).join(' '),
         description: `Docker application: ${name}`,
@@ -1213,20 +1261,35 @@ app.get('/applications', async (req, res) => {
         ports: { "80": "8080" },
         environment: {},
         requiresTraefik: false,
-        requiresAuthelia: false
+        requiresAuthelia: false,
+        source: 'official',
       }));
-      
-      res.json({
-        success: true,
-        source: 'templates',
-        applications: {
-          'templates': templateApps
-        },
-        totalApps: templateFiles.length,
-        categories: ['templates'],
-        message: 'Using template mode - CLI integration unavailable'
-      });
     }
+
+    // Merge community apps into the unified catalog
+    try {
+      const communityResult = await getCommunityApps({ perPage: 10000 });
+      const communityApps = (communityResult.apps || []).map(convertCommunityApp);
+      for (const app of communityApps) {
+        if (!applications[app.category]) {
+          applications[app.category] = [];
+        }
+        applications[app.category].push(app);
+      }
+    } catch (err) {
+      logger.warn('Failed to load community apps for unified catalog:', err.message);
+    }
+
+    const allApps = Object.values(applications).flat();
+    res.json({
+      success: true,
+      source: cliBridge ? 'unified' : 'templates',
+      applications,
+      totalApps: allApps.length,
+      categories: Object.keys(applications),
+      officialCount: allApps.filter(a => a.source !== 'community').length,
+      communityCount: allApps.filter(a => a.source === 'community').length,
+    });
   } catch (error) {
     logger.error('Error loading applications:', error);
     res.status(500).json({

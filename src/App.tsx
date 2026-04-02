@@ -19,8 +19,6 @@ import { LoginModal } from './components/LoginModal';
 import { ApiKeysModal } from './components/ApiKeysModal';
 import { UserMenu } from './components/UserMenu';
 import { UserSettings } from './components/UserSettings';
-import { CommunityStore } from './components/CommunityStore';
-import { CommunityApp } from './types';
 import {
   Network,
   Box,
@@ -30,7 +28,7 @@ import {
   Search as SearchIcon,
   Star,
 } from 'lucide-react';
-import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp, installCommunityApp, refreshCommunityApps } from './lib/api';
+import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp } from './lib/api';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -48,7 +46,6 @@ const baseCategoryTabs = [
     name: dc.name,
     icon: dc.icon,
   })),
-  { id: 'community', name: 'Community', icon: Package },
   { id: 'all-apps', name: 'All Apps', icon: SearchIcon },
 ];
 
@@ -104,7 +101,6 @@ export default function App() {
   } | null>(null);
 
   const [starredApps, setStarredApps] = useState<Set<string>>(new Set());
-  const [communityRefreshing, setCommunityRefreshing] = useState(false);
 
   const { success, error: showError, info } = useNotifications();
   const { loading: deploymentInProgress } = useLoading();
@@ -186,11 +182,6 @@ export default function App() {
         const cliApp = (app as any)._cliApp as CLIApplication;
         return starredApps.has(cliApp?.id || app.name);
       });
-    } else if (activeCategory === 'community') {
-      apps = apps.filter(app => {
-        const cliApp = (app as any)._cliApp as CLIApplication;
-        return cliApp?.source === 'community';
-      });
     } else if (activeCategory !== 'all-apps' && activeCategory !== 'deployed') {
       const displayCat = getDisplayCategory(activeCategory);
       if (displayCat) {
@@ -244,31 +235,6 @@ export default function App() {
       clearInterval(statsInterval);
     };
   }, [activeCategory, isAuthenticated]);
-
-  const handleCommunityInstall = useCallback((app: CommunityApp) => {
-    const template: AppTemplate = {
-      id: `community-${app.Name}`,
-      name: app.Name,
-      description: app.Overview || '',
-      category: 'selfhosted' as any,
-      logo: Package,
-      deploymentModes: ['local', 'traefik', 'authelia'],
-      _communityApp: app,
-    } as any;
-    setSelectedApp(template);
-  }, []);
-
-  const handleCommunityRefresh = useCallback(async () => {
-    setCommunityRefreshing(true);
-    try {
-      await refreshCommunityApps();
-      success('Refreshed', 'Community apps updated — reload the page to see changes');
-    } catch {
-      showError('Refresh Failed', 'Could not refresh community apps');
-    } finally {
-      setCommunityRefreshing(false);
-    }
-  }, []);
 
   useEffect(() => {
     if (activeCategory === 'deployed' && deployedApps.length === 0) {
@@ -377,19 +343,6 @@ export default function App() {
     }
 
     setSelectedApp(null);
-
-    // Community app — use community install endpoint
-    const communityApp = (selectedApp as any)?._communityApp as CommunityApp | undefined;
-    if (communityApp) {
-      try {
-        await installCommunityApp(communityApp.Name, config, mode);
-        success('Deployed', `${communityApp.Name} is being deployed`);
-      } catch (err) {
-        showError('Deploy Failed', `Could not deploy ${communityApp.Name}`);
-      }
-      return;
-    }
-
     await handleDeploy(appId, config, mode);
   };
 
@@ -493,17 +446,6 @@ export default function App() {
   };
 
   const renderContent = () => {
-
-    if (activeCategory === 'community') {
-      return (
-        <CommunityStore
-          onInstall={handleCommunityInstall}
-          onRefresh={handleCommunityRefresh}
-          refreshing={communityRefreshing}
-        />
-      );
-    }
-
     if (activeCategory === 'deployed') {
       const handleSort = (field: typeof sortField) => {
         if (sortField === field) {
