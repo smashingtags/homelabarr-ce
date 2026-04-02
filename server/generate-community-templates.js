@@ -70,6 +70,7 @@ const appCats = db.prepare(`
 let generated = 0;
 let skipped = 0;
 let errors = 0;
+const indexEntries = [];
 
 for (const app of apps) {
   const appConfigs = configs.all(app.id);
@@ -111,6 +112,25 @@ for (const app of apps) {
     const fileName = sanitizeName(app.name) + '.yml';
     fs.writeFileSync(path.join(categoryDir, fileName), yaml);
     generated++;
+
+    indexEntries.push({
+      Name: app.name,
+      Repository: app.docker_image,
+      Overview: app.overview || '',
+      Icon: app.icon_url || '',
+      Repo: app.author_name || app.repo_name || '',
+      Project: app.project_url || '',
+      Support: app.support_url || '',
+      CategoryList: categories,
+      FirstSeen: app.first_seen || 0,
+      LastUpdateScan: app.last_update_scan || 0,
+      downloads: app.downloads || 0,
+      stars: app.stars || 0,
+      trending: app.trending_score || 0,
+      author: app.author_name || app.repo_name || '',
+      category: dirName,
+      yamlFile: `community/${dirName}/${fileName}`,
+    });
   } catch (err) {
     errors++;
   }
@@ -118,7 +138,20 @@ for (const app of apps) {
 
 db.close();
 
-console.log(`Generated: ${generated}`);
+// Write the browsing index
+const indexPath = path.join(outDir, '..', 'community-index.json');
+const allCategories = [...new Set(indexEntries.flatMap(e => e.CategoryList))].sort();
+fs.writeFileSync(indexPath, JSON.stringify({
+  version: 1,
+  generated: new Date().toISOString(),
+  total: indexEntries.length,
+  categories: allCategories,
+  apps: indexEntries,
+}, null, 0));
+
+console.log(`Generated: ${generated} YAMLs`);
+console.log(`Index: ${indexEntries.length} apps in ${indexPath}`);
+console.log(`Categories: ${allCategories.length}`);
 console.log(`Skipped: ${skipped} (no image or empty)`);
 console.log(`Errors: ${errors}`);
 console.log(`Output: ${outDir}`);
