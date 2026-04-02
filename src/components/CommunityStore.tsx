@@ -72,7 +72,7 @@ export function CommunityStore({ apps, categories: _categories, onInstall, loadi
     const counts: Record<string, number> = {};
     for (const app of apps) {
       const seen = new Set<string>();
-      for (const raw of app.CategoryList) {
+      for (const raw of (Array.isArray(app.CategoryList) ? app.CategoryList : [])) {
         const clean = cleanCategory(raw);
         if (!seen.has(clean)) {
           seen.add(clean);
@@ -88,7 +88,7 @@ export function CommunityStore({ apps, categories: _categories, onInstall, loadi
 
     let result = apps.filter((app) => {
       if (activeCategory) {
-        const appCategories = app.CategoryList.map(cleanCategory);
+        const appCategories = (Array.isArray(app.CategoryList) ? app.CategoryList : []).map(cleanCategory);
         if (!appCategories.includes(activeCategory)) return false;
       }
       if (q) {
@@ -284,7 +284,7 @@ export function CommunityStore({ apps, categories: _categories, onInstall, loadi
 
 function CommunityAppCard({ app, onInstall }: { app: CommunityApp; onInstall: (app: CommunityApp) => void }) {
   const author = getAuthor(app.Repo);
-  const displayCategories = [...new Set(app.CategoryList.map(cleanCategory))].slice(0, 3);
+  const displayCategories = [...new Set((Array.isArray(app.CategoryList) ? app.CategoryList : []).map(cleanCategory))].slice(0, 3);
 
   return (
     <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/20 hover:translate-y-[-3px] flex flex-col h-full border-0 ring-1 ring-gray-200 dark:ring-white/[0.08] hover:ring-indigo-400/50 dark:hover:ring-indigo-500/40 bg-white dark:bg-[hsl(222,28%,10%)]">
