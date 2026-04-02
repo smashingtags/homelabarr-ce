@@ -46,6 +46,7 @@ const baseCategoryTabs = [
     name: dc.name,
     icon: dc.icon,
   })),
+  { id: 'community', name: 'Community', icon: Package },
   { id: 'all-apps', name: 'All Apps', icon: SearchIcon },
 ];
 
@@ -182,6 +183,11 @@ export default function App() {
         const cliApp = (app as any)._cliApp as CLIApplication;
         return starredApps.has(cliApp?.id || app.name);
       });
+    } else if (activeCategory === 'community') {
+      apps = apps.filter(app => {
+        const cliApp = (app as any)._cliApp as CLIApplication;
+        return cliApp?.source === 'community';
+      });
     } else if (activeCategory !== 'all-apps' && activeCategory !== 'deployed') {
       const displayCat = getDisplayCategory(activeCategory);
       if (displayCat) {
@@ -201,7 +207,9 @@ export default function App() {
           app.name.toLowerCase().includes(q) ||
           app.description.toLowerCase().includes(q) ||
           cliApp.category.toLowerCase().includes(q) ||
-          cliApp.image.toLowerCase().includes(q)
+          cliApp.image.toLowerCase().includes(q) ||
+          (cliApp.tags && cliApp.tags.some(t => t.toLowerCase().includes(q))) ||
+          (cliApp.author && cliApp.author.toLowerCase().includes(q))
         );
       });
     }

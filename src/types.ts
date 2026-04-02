@@ -108,6 +108,9 @@ export interface CLIApplication {
   requiresTraefik: boolean;
   requiresAuthelia: boolean;
   gpuSupport: boolean;
+  author: string | null;
+  source: 'official' | 'community' | null;
+  tags: string[];
 }
 
 export interface ApplicationCatalog {

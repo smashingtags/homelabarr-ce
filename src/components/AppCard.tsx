@@ -65,7 +65,7 @@ export function AppCard({ app, onDeploy, starred = false, onToggleStar }: AppCar
           <CardTitle className="text-base font-semibold truncate">{app.name}</CardTitle>
           {cliApp && (
             <CardDescription className="truncate text-xs mt-0.5">
-              {cliApp.image.split(":")[0]}
+              {cliApp.author ? `by ${cliApp.author}` : cliApp.image.split(":")[0]}
             </CardDescription>
           )}
         </div>
@@ -92,6 +92,16 @@ export function AppCard({ app, onDeploy, starred = false, onToggleStar }: AppCar
             <Badge className="bg-lime-100 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300 border-lime-200 dark:border-lime-800/50" variant="outline">
               <Cpu className="w-3 h-3 mr-1" />
               GPU
+            </Badge>
+          )}
+          {cliApp?.source === 'official' && (
+            <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200 dark:border-blue-800/50" variant="outline">
+              Official
+            </Badge>
+          )}
+          {cliApp?.source === 'community' && (
+            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 border-green-200 dark:border-green-800/50" variant="outline">
+              Community
             </Badge>
           )}
           {!cliApp && app.deploymentModes && app.deploymentModes.map(mode => {
