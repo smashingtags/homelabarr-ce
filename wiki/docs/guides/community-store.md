@@ -6,13 +6,13 @@ HomelabARR CE includes a community app store with 2,900+ Docker apps sourced fro
 
 ## How It Works
 
-The community store is powered by a local SQLite database. When you click the **Community** tab in the dashboard, you're querying a database of apps, not fetching from the internet. This makes it fast and works offline.
+The community store is powered by a local SQLite database that ships with the [templates repo](https://github.com/smashingtags/homelabarr-templates). When you click the **Community** tab, you're querying a local database — fast and works offline.
 
 ### Data Flow
 
-1. The [unraid-ca-db](https://github.com/smashingtags/homelabarr-templates) import tool downloads the Unraid Community Applications feed
-2. It parses 3,400+ apps into a structured SQLite database with full-text search
-3. The CE backend reads the database and serves it to the frontend
+1. A [GitHub Action](https://github.com/smashingtags/homelabarr-templates/actions) refreshes the database daily at 6 AM UTC
+2. When you click **Refresh** in the Community Store, the backend runs `git pull` on the templates directory to fetch the latest database
+3. The CE backend queries the SQLite database and serves results to the frontend
 4. When you click **Install**, the backend auto-generates a Docker Compose file from the app's config and deploys it
 
 ### What Gets Translated
@@ -32,44 +32,49 @@ You don't need Unraid to use community apps. They're standard Docker containers.
 
 ## Setup
 
-### 1. Import the database
+If you followed the [Quick Start](quick-start.md), the templates repo (including the community database) is already cloned at `/opt/homelabarr/templates`. The community store works out of the box.
 
-Clone the import tool and run it:
+### Database location
 
-```bash
-cd /opt/homelabarr
-git clone https://github.com/smashingtags/homelabarr-templates.git templates
-cd templates
-pip install -r requirements.txt  # if using unraid-ca-db
-python3 import.py --stats
-```
+The backend looks for the database in these locations (first match wins):
 
-This creates `data/unraid-ca.db` (~30MB).
+1. `COMMUNITY_DB_PATH` environment variable
+2. `data/unraid-ca.db` inside the app directory
+3. `server/data/unraid-ca.db` inside the app directory
+4. `/app/data/unraid-ca.db` (Docker container default)
 
-### 2. Make the database available to CE
-
-Mount the database into the backend container. Add to your `homelabarr.yml`:
+If you mounted the templates repo at `/opt/homelabarr/templates`, the database is at `/opt/homelabarr/templates/data/unraid-ca.db`. Make sure this path is accessible to the backend container — either via the existing templates volume mount or a separate mount:
 
 ```yaml
 backend:
   volumes:
-    - /path/to/unraid-ca.db:/app/data/unraid-ca.db:ro
+    - /opt/homelabarr/templates/data/unraid-ca.db:/app/data/unraid-ca.db:ro
 ```
 
-Or set the environment variable:
+---
+
+## Updating
+
+### Automatic (recommended)
+
+A GitHub Action on the templates repo refreshes the database daily at 6 AM UTC. To get the update:
+
+1. Click the **Refresh** button in the Community Store (top right, next to sort)
+2. The backend runs `git pull` on the templates directory
+3. The app list reloads with the latest data
+
+Only admins can refresh.
+
+### Manual
+
+If you prefer to update manually:
 
 ```bash
-COMMUNITY_DB_PATH=/app/data/unraid-ca.db
+cd /opt/homelabarr/templates
+git pull
 ```
 
-### 3. Keep it updated
-
-Set up a daily cron to refresh the data:
-
-```bash
-# Add to crontab
-0 6 * * * cd /opt/homelabarr/unraid-ca-db && ./refresh.sh
-```
+The backend picks up the new database automatically.
 
 ---
 
@@ -77,10 +82,10 @@ Set up a daily cron to refresh the data:
 
 Click the **Community** tab in the dashboard to browse. You can:
 
-- **Search** by app name, description, or author
+- **Search** by app name, description, or author (full-text search)
 - **Filter** by category (AI, Backup, Downloaders, Media, etc.)
 - **Sort** by name, newest, downloads, trending, or stars
-- **Page** through results (12 per page by default)
+- **Page** through results (12 per page)
 
 Each app card shows:
 
@@ -102,6 +107,16 @@ Click **Install** on any community app. You'll see the same deploy modal as nati
 3. The backend generates a Docker Compose file from the app's config and deploys it
 
 The translation handles ports, volumes, environment variables, and network mode automatically.
+
+---
+
+## Database Stats
+
+- **2,900+** Docker apps (blacklisted, deprecated, and plugins filtered out)
+- **628** template repositories / authors
+- **15** categories
+- **25,000+** config entries (ports, volumes, env vars)
+- **Full-text search** across names, descriptions, and search terms
 
 ---
 
