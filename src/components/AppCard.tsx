@@ -1,5 +1,5 @@
 import { AppTemplate, CLIApplication } from "../types";
-import { Shield, Network, Monitor, Star, Cpu } from "lucide-react";
+import { Shield, Network, Monitor, Star, Cpu, Download } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,11 +42,17 @@ export function AppCard({ app, onDeploy, starred = false, onToggleStar }: AppCar
       <CardHeader className="flex flex-row items-center gap-4 pt-5 pb-3">
         <div className="p-3 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/20 rounded-xl ring-1 ring-indigo-100 dark:ring-indigo-800/30 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-indigo-500/20">
           <img
-            src={getAppIconPath(app.name, theme)}
+            src={cliApp?.icon || getAppIconPath(app.name, theme)}
             alt={`${app.name} icon`}
             className="w-7 h-7 object-contain"
             onError={(e) => {
               const target = e.currentTarget;
+              // If we started with a community icon URL, fall back to local/CDN path
+              if (cliApp?.icon && !target.dataset.triedLocal) {
+                target.dataset.triedLocal = "1";
+                target.src = getAppIconPath(app.name, theme);
+                return;
+              }
               const cdnUrl = getCdnFallbackUrl(app.name);
               if (!target.dataset.triedCdn && target.src !== cdnUrl) {
                 target.dataset.triedCdn = "1";
@@ -65,7 +71,13 @@ export function AppCard({ app, onDeploy, starred = false, onToggleStar }: AppCar
           <CardTitle className="text-base font-semibold truncate">{app.name}</CardTitle>
           {cliApp && (
             <CardDescription className="truncate text-xs mt-0.5">
-              {cliApp.author ? `by ${cliApp.author}` : cliApp.image.split(":")[0]}
+              <span>{cliApp.author ? `by ${cliApp.author}` : cliApp.image.split(":")[0]}</span>
+              {cliApp.downloads != null && cliApp.downloads > 0 && (
+                <span className="inline-flex items-center gap-0.5 ml-2 text-muted-foreground">
+                  <Download className="w-3 h-3" />
+                  {cliApp.downloads >= 1000 ? `${(cliApp.downloads / 1000).toFixed(1)}k` : cliApp.downloads}
+                </span>
+              )}
             </CardDescription>
           )}
         </div>

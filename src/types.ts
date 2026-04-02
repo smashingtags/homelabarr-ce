@@ -16,13 +16,23 @@ export interface AppTemplate {
 }
 
 export type AppCategory =
-  | 'media'
-  | 'downloads'
-  | 'monitoring'
-  | 'development'
+  | 'ai'
   | 'backup'
-  | 'system'
+  | 'cloud'
+  | 'downloads'
+  | 'game-servers'
+  | 'home-automation'
+  | 'media-management'
+  | 'media-servers'
+  | 'monitoring'
+  | 'networking'
+  | 'productivity'
+  | 'security'
+  | 'tools'
+  | 'crypto'
+  | 'other'
   | 'selfhosted'
+  | 'virtual-desktops'
   | 'myapps'
   | 'all-apps';
 
@@ -111,6 +121,8 @@ export interface CLIApplication {
   author: string | null;
   source: 'official' | 'community' | null;
   tags: string[];
+  icon?: string;
+  downloads?: number;
 }
 
 export interface ApplicationCatalog {

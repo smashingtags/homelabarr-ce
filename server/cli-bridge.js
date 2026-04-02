@@ -221,7 +221,7 @@ export class CLIBridge {
         requiresAuthelia: this.requiresAuthelia(service),
         gpuSupport: this.hasGpuSupport(service),
         author: meta?.author || null,
-        source: meta?.source || null,
+        source: meta?.source || 'official',
         tags: meta?.tags || []
       };
     } catch (error) {
