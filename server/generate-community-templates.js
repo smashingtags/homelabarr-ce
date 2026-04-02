@@ -67,6 +67,21 @@ const appCats = db.prepare(`
   WHERE ac.app_id = ?
 `);
 
+function sanitizeOverview(text) {
+  if (!text) return '';
+  return text
+    .replace(/\bfor Unraid\b/gi, 'for your homelab')
+    .replace(/\bon Unraid\b/gi, 'on your server')
+    .replace(/\bUnraid ('s |)Docker (container|template)\b/gi, 'Docker $2')
+    .replace(/\bUnraid plugin\b/gi, 'application')
+    .replace(/\bUnraid server\b/gi, 'server')
+    .replace(/\bUnraid\b/g, 'HomelabARR')
+    .replace(/\bunraid\b/g, 'HomelabARR')
+    .replace(/\/mnt\/user\/appdata\//g, '/opt/appdata/')
+    .replace(/\/mnt\/user\//g, '/mnt/')
+    .trim();
+}
+
 let generated = 0;
 let skipped = 0;
 let errors = 0;
@@ -116,7 +131,7 @@ for (const app of apps) {
     indexEntries.push({
       Name: app.name,
       Repository: app.docker_image,
-      Overview: app.overview || '',
+      Overview: sanitizeOverview(app.overview),
       Icon: app.icon_url || '',
       Repo: app.author_name || app.repo_name || '',
       Project: app.project_url || '',
