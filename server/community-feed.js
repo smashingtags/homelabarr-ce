@@ -74,10 +74,20 @@ export async function fetchFeed() {
   }
 }
 
+function filterExcluded(feed) {
+  const blacklisted = new Set(Object.keys(feed.blacklisted || {}));
+  const deprecated = new Set(Object.keys(feed.deprecated || {}));
+  return (feed.applist || []).filter(app =>
+    app.Repository &&
+    !blacklisted.has(app.Repository) &&
+    !deprecated.has(app.Repository)
+  );
+}
+
 export async function getCommunityApps(options = {}) {
   const { category, search, sort = 'name', page = 1, perPage = 50 } = options;
   const feed = await fetchFeed();
-  let apps = (feed.applist || []).filter(app => app.Repository);
+  let apps = filterExcluded(feed);
 
   if (category) {
     const cat = category.toLowerCase();
@@ -115,15 +125,14 @@ export async function getCommunityApps(options = {}) {
 
 export async function getCommunityApp(name) {
   const feed = await fetchFeed();
+  const apps = filterExcluded(feed);
   const q = name.toLowerCase();
-  return (feed.applist || []).find(app =>
-    app.Repository && (app.Name || '').toLowerCase() === q
-  ) || null;
+  return apps.find(app => (app.Name || '').toLowerCase() === q) || null;
 }
 
 export async function getCommunityCategories() {
   const feed = await fetchFeed();
-  const apps = (feed.applist || []).filter(app => app.Repository);
+  const apps = filterExcluded(feed);
   const cats = new Set();
   for (const app of apps) {
     for (const c of (app.CategoryList || [])) {
@@ -135,7 +144,7 @@ export async function getCommunityCategories() {
 
 export async function getCommunityRepos() {
   const feed = await fetchFeed();
-  const apps = (feed.applist || []).filter(app => app.Repository);
+  const apps = filterExcluded(feed);
   const repos = new Set();
   for (const app of apps) {
     if (app.Repo) repos.add(app.Repo);
