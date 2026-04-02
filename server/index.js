@@ -522,13 +522,13 @@ app.post('/community/install/:appName', requireAuth(), async (req, res) => {
       return res.status(404).json({ error: 'App not found' });
     }
 
-    // Look for pre-generated YAML first
+    const yamlMod = (await import('yaml')).default;
     const templatesPath = process.env.TEMPLATES_PATH || path.join(process.cwd(), 'apps');
     const safeName = (app.Name || '').toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-');
-    const categories = app.CategoryList || [];
+    const isLocalMode = !req.body.mode || req.body.mode.type === 'local' || req.body.mode.type === 'standard';
     let yamlPath = null;
 
-    // Search community directories for the pre-generated template
+    // Search ALL community subdirectories for the pre-generated template
     const communityDir = path.join(templatesPath, 'community');
     if (fs.existsSync(communityDir)) {
       const dirs = fs.readdirSync(communityDir).filter(d => {
@@ -540,31 +540,68 @@ app.post('/community/install/:appName', requireAuth(), async (req, res) => {
       }
     }
 
-    // Fallback: generate on the fly if no pre-generated YAML found
+    // Fallback: generate on the fly
     if (!yamlPath) {
       const compose = generateComposeObject(app);
       if (!compose) {
         return res.status(400).json({ error: 'Cannot generate template for this app' });
       }
-      const yamlMod = (await import('yaml')).default;
       const tmpDir = path.join(process.cwd(), 'server', 'data');
       if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
       yamlPath = path.join(tmpDir, `community-${safeName}.yml`);
       fs.writeFileSync(yamlPath, yamlMod.stringify(compose));
     }
 
+    // For local mode: rewrite YAML to strip external networks (same as deployStandard)
+    let deployPath = yamlPath;
+    if (isLocalMode) {
+      const content = fs.readFileSync(yamlPath, 'utf8');
+      const doc = yamlMod.parse(content);
+
+      // Remove external network declarations
+      if (doc.networks) {
+        for (const netName of Object.keys(doc.networks)) {
+          const netConfig = doc.networks[netName];
+          if (netConfig && typeof netConfig === 'object' && netConfig.external) {
+            delete doc.networks[netName];
+          }
+        }
+        if (Object.keys(doc.networks).length === 0) delete doc.networks;
+      }
+
+      // Strip network refs and traefik labels from services
+      if (doc.services) {
+        for (const svcName of Object.keys(doc.services)) {
+          const svc = doc.services[svcName];
+          delete svc.networks;
+          if (svc.labels && Array.isArray(svc.labels)) {
+            svc.labels = svc.labels.filter(l => typeof l === 'string' && !l.includes('traefik'));
+            if (svc.labels.length === 0) delete svc.labels;
+          }
+        }
+      }
+
+      const tmpDir = path.join(process.cwd(), 'server', 'data');
+      if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+      deployPath = path.join(tmpDir, `community-${safeName}-local.yml`);
+      fs.writeFileSync(deployPath, yamlMod.stringify(doc));
+    }
+
     try {
       if (cliBridge) {
-        const result = await cliBridge.executeDockerCompose(yamlPath, 'up -d', {
+        const result = await cliBridge.executeDockerCompose(deployPath, 'up -d', {
           ...req.body.config,
-          DOCKERNETWORK: req.body.mode?.type === 'traefik' ? 'proxy' : 'bridge'
+          DOCKERNETWORK: isLocalMode ? 'bridge' : 'proxy'
         });
         res.json({ success: true, result });
       } else {
         res.status(503).json({ error: 'Docker deployment unavailable' });
       }
     } finally {
-      try { fs.unlinkSync(tmpPath); } catch {}
+      // Clean up temp file if we created one
+      if (deployPath !== yamlPath) {
+        try { fs.unlinkSync(deployPath); } catch {}
+      }
     }
   } catch (err) {
     logger.error('Community app install error:', err);
