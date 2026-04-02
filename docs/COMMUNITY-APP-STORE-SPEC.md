@@ -119,3 +119,6 @@ Like Unraid's Community Applications. Decentralized template repos maintained by
 - Trending/popularity
 - User reviews
 - Spotlight/featured apps
+
+## Credits & Attribution
+The Community App Store uses data from the [Unraid Community Applications](https://github.com/Squidly271/AppFeed) project, maintained by [Squidly271](https://github.com/Squidly271) and the Unraid community. We are grateful for their work in curating the largest self-hosted application catalog in the homelab ecosystem. Docker images are provided by their respective authors and maintainers. HomelabARR is not affiliated with or endorsed by Lime Technology (Unraid).

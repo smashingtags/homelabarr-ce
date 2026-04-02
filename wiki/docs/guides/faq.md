@@ -36,6 +36,10 @@ No. HomelabARR runs as Docker containers and deploys Docker containers. Docker i
 
 CE (Community Edition) is 100% free and open source under the MIT license. There's also a [Professional Edition](../pe/overview.md) with NAS management features — that one's paid.
 
+### Where do the Community Store apps come from?
+
+The Community Store aggregates app data from the [Unraid Community Applications](https://github.com/Squidly271/AppFeed) project, maintained by [Squidly271](https://github.com/Squidly271) and the Unraid community. This gives you access to 3,000+ Docker apps. HomelabARR auto-generates deployment configs from the feed data — you don't need Unraid to use them. Docker images are provided by their respective authors. HomelabARR is not affiliated with or endorsed by Lime Technology (Unraid).
+
 ---
 
 ## After Installing

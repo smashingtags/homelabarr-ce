@@ -261,13 +261,17 @@ export default function App() {
     }
   }, [activeCategory]);
 
-  const handleCommunityInstall = useCallback(async (app: CommunityApp) => {
-    try {
-      await installCommunityApp(app.Name, {}, { type: 'local' });
-      success('Deployed', `${app.Name} is being deployed`);
-    } catch (err) {
-      showError('Deploy Failed', `Could not deploy ${app.Name}`);
-    }
+  const handleCommunityInstall = useCallback((app: CommunityApp) => {
+    const template: AppTemplate = {
+      id: `community-${app.Name}`,
+      name: app.Name,
+      description: app.Overview || '',
+      category: 'selfhosted' as any,
+      logo: Package,
+      deploymentModes: ['local', 'traefik', 'authelia'],
+      _communityApp: app,
+    } as any;
+    setSelectedApp(template);
   }, []);
 
   useEffect(() => {
@@ -377,6 +381,19 @@ export default function App() {
     }
 
     setSelectedApp(null);
+
+    // Community app — use community install endpoint
+    const communityApp = (selectedApp as any)?._communityApp as CommunityApp | undefined;
+    if (communityApp) {
+      try {
+        await installCommunityApp(communityApp.Name, config, mode);
+        success('Deployed', `${communityApp.Name} is being deployed`);
+      } catch (err) {
+        showError('Deploy Failed', `Could not deploy ${communityApp.Name}`);
+      }
+      return;
+    }
+
     await handleDeploy(appId, config, mode);
   };
 
