@@ -277,6 +277,21 @@ export function CommunityStore({ apps, categories: _categories, onInstall, loadi
             </Button>
           </div>
         )}
+
+        {/* Credits */}
+        <div className="mt-8 pt-6 border-t border-white/10 text-center text-xs text-zinc-500">
+          <p>
+            Community app data provided by the{' '}
+            <a href="https://github.com/Squidly271/AppFeed" className="text-indigo-400 hover:underline" target="_blank" rel="noopener noreferrer">
+              Unraid Community Applications
+            </a>{' '}
+            project, maintained by{' '}
+            <a href="https://github.com/Squidly271" className="text-indigo-400 hover:underline" target="_blank" rel="noopener noreferrer">
+              Squidly271
+            </a>{' '}
+            and the Unraid community. Docker images are provided by their respective authors.
+          </p>
+        </div>
       </div>
     </div>
   );
