@@ -39,6 +39,7 @@ import { progressStream, StreamingCLIBridge } from './progress-stream.js';
 import { randomUUID } from 'crypto';
 import { initializeActivityLog, logActivity, getActivities } from './activity-logger.js';
 import { getUserStars, addStar, removeStar } from './stars.js';
+import { getUserPreferences, setHiddenCategories, resetPreferences } from './preferences.js';
 import { getCommunityApps, getCommunityApp, getCommunityCategories, getCommunityRepos } from './community-feed.js';
 import { generateCompose, generateComposeObject } from './template-generator.js';
 
@@ -1053,6 +1054,37 @@ app.delete('/auth/me/stars/:appId', requireAuth(), (req, res) => {
   }
 });
 
+// User preferences routes
+app.get('/auth/me/preferences', requireAuth(), (req, res) => {
+  try {
+    res.json(getUserPreferences(req.user.id));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load preferences' });
+  }
+});
+
+app.put('/auth/me/preferences/hidden-categories', requireAuth(), (req, res) => {
+  try {
+    const { categories } = req.body;
+    if (!Array.isArray(categories)) {
+      return res.status(400).json({ error: 'categories must be an array' });
+    }
+    const prefs = setHiddenCategories(req.user.id, categories);
+    res.json(prefs);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update preferences' });
+  }
+});
+
+app.delete('/auth/me/preferences', requireAuth(), (req, res) => {
+  try {
+    resetPreferences(req.user.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reset preferences' });
+  }
+});
+
 // Activity log endpoint
 app.get('/auth/activity-log', requireAuth('admin'), (req, res) => {
   try {
@@ -1237,7 +1269,7 @@ function convertCommunityApp(app) {
   };
 }
 
-app.get('/applications', async (req, res) => {
+app.get('/applications', optionalAuth, async (req, res) => {
   try {
     let applications = {};
 
@@ -1278,6 +1310,16 @@ app.get('/applications', async (req, res) => {
       }
     } catch (err) {
       logger.warn('Failed to load community apps for unified catalog:', err.message);
+    }
+
+    // Filter out hidden categories for authenticated users
+    if (req.user) {
+      const { hiddenCategories } = getUserPreferences(req.user.id);
+      if (hiddenCategories.length > 0) {
+        for (const cat of hiddenCategories) {
+          delete applications[cat];
+        }
+      }
     }
 
     const allApps = Object.values(applications).flat();

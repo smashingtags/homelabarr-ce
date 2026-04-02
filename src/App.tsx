@@ -27,8 +27,9 @@ import {
   Package,
   Search as SearchIcon,
   Star,
+  SlidersHorizontal,
 } from 'lucide-react';
-import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp } from './lib/api';
+import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp, getUserPreferences, setHiddenCategories as apiSetHiddenCategories } from './lib/api';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -101,6 +102,8 @@ export default function App() {
   } | null>(null);
 
   const [starredApps, setStarredApps] = useState<Set<string>>(new Set());
+  const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
+  const [categorySettingsOpen, setCategorySettingsOpen] = useState(false);
 
   const { success, error: showError, info } = useNotifications();
   const { loading: deploymentInProgress } = useLoading();
@@ -144,6 +147,12 @@ export default function App() {
     getStars().then(data => setStarredApps(new Set(data.stars))).catch(() => {});
   }, [isAuthenticated]);
 
+  // Fetch hidden categories when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) { setHiddenCategories(new Set()); return; }
+    getUserPreferences().then(data => setHiddenCategories(new Set(data.hiddenCategories || []))).catch(() => {});
+  }, [isAuthenticated]);
+
   const handleToggleStar = useCallback(async (appId: string) => {
     setStarredApps(prev => {
       const wasStarred = prev.has(appId);
@@ -165,6 +174,28 @@ export default function App() {
 
       return next;
     });
+  }, []);
+
+  const handleToggleCategoryVisibility = useCallback((categoryId: string) => {
+    setHiddenCategories(prev => {
+      const next = new Set(prev);
+      next.has(categoryId) ? next.delete(categoryId) : next.add(categoryId);
+      apiSetHiddenCategories(Array.from(next)).catch(() => {
+        setHiddenCategories(prev); // rollback
+      });
+      return next;
+    });
+  }, []);
+
+  const handleShowAllCategories = useCallback(() => {
+    setHiddenCategories(new Set());
+    apiSetHiddenCategories([]).catch(() => {});
+  }, []);
+
+  const handleHideAllCategories = useCallback(() => {
+    const allIds = new Set(DISPLAY_CATEGORIES.map(dc => dc.id));
+    setHiddenCategories(allIds);
+    apiSetHiddenCategories(Array.from(allIds)).catch(() => {});
   }, []);
 
   // Convert all CLI apps to AppTemplates
@@ -211,15 +242,18 @@ export default function App() {
     return apps;
   }, [allAppTemplates, activeCategory, searchQuery, starredApps]);
 
-  // Build tabs dynamically — include Starred only when user has stars
+  // Build tabs dynamically — include Starred only when user has stars, filter hidden categories
   const categoryTabs = React.useMemo(() => {
-    if (starredApps.size === 0) return baseCategoryTabs;
+    const filtered = baseCategoryTabs.filter(tab =>
+      tab.id === 'deployed' || tab.id === 'all-apps' || !hiddenCategories.has(tab.id)
+    );
+    if (starredApps.size === 0) return filtered;
     return [
-      baseCategoryTabs[0], // Deployed
+      filtered[0], // Deployed
       { id: 'starred', name: 'Starred', icon: Star },
-      ...baseCategoryTabs.slice(1),
+      ...filtered.slice(1),
     ];
-  }, [starredApps.size]);
+  }, [starredApps.size, hiddenCategories]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -765,29 +799,40 @@ export default function App() {
 
         {/* Category Navigation */}
         <div className="mb-10">
-          <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)}>
-            <TabsList className="flex flex-nowrap gap-2 h-auto bg-transparent px-4 py-2 w-full overflow-x-auto md:flex-wrap md:overflow-x-visible scrollbar-hide snap-x snap-mandatory md:snap-none justify-start">
-              {categoryTabs.map(tab => {
-                const Icon = tab.icon;
-                const isActive = activeCategory === tab.id;
-                return (
-                  <TabsTrigger
-                    key={tab.id}
-                    value={tab.id}
-                    className={cn(
-                      "flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border snap-start shrink-0",
-                      isActive
-                        ? "bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25 border-transparent ring-0"
-                        : "border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[hsl(222,28%,10%)] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[hsl(222,28%,13%)] hover:border-indigo-300 dark:hover:border-indigo-500/30 hover:text-gray-900 dark:hover:text-white"
-                    )}
-                  >
-                    <Icon className="w-4 h-4 mr-2 shrink-0" />
-                    {tab.name}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-          </Tabs>
+          <div className="flex items-start gap-2">
+            <Tabs value={activeCategory} onValueChange={(val) => setActiveCategory(val as TabId)} className="flex-1 min-w-0">
+              <TabsList className="flex flex-nowrap gap-2 h-auto bg-transparent px-4 py-2 w-full overflow-x-auto md:flex-wrap md:overflow-x-visible scrollbar-hide snap-x snap-mandatory md:snap-none justify-start">
+                {categoryTabs.map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activeCategory === tab.id;
+                  return (
+                    <TabsTrigger
+                      key={tab.id}
+                      value={tab.id}
+                      className={cn(
+                        "flex items-center whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border snap-start shrink-0",
+                        isActive
+                          ? "bg-gradient-to-r from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/25 border-transparent ring-0"
+                          : "border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[hsl(222,28%,10%)] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[hsl(222,28%,13%)] hover:border-indigo-300 dark:hover:border-indigo-500/30 hover:text-gray-900 dark:hover:text-white"
+                      )}
+                    >
+                      <Icon className="w-4 h-4 mr-2 shrink-0" />
+                      {tab.name}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCategorySettingsOpen(true)}
+              className="mt-2 shrink-0 border-gray-200 dark:border-white/[0.08] bg-white dark:bg-[hsl(222,28%,10%)] hover:bg-gray-50 dark:hover:bg-[hsl(222,28%,13%)]"
+              title="Visible Categories"
+            >
+              <SlidersHorizontal className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            </Button>
+          </div>
         </div>
 
         {/* Main Content Area */}
@@ -863,6 +908,44 @@ export default function App() {
 
         {/* Help Modal */}
         <HelpModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
+
+        {/* Category Visibility Settings */}
+        <Dialog open={categorySettingsOpen} onOpenChange={setCategorySettingsOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Visible Categories</DialogTitle>
+            </DialogHeader>
+            <div className="flex gap-2 mb-4">
+              <Button variant="outline" size="sm" onClick={handleShowAllCategories}>Show All</Button>
+              <Button variant="outline" size="sm" onClick={handleHideAllCategories}>Hide All</Button>
+            </div>
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+              {DISPLAY_CATEGORIES.map(dc => {
+                const appCount = allAppTemplates.filter(app => {
+                  const cliApp = (app as any)._cliApp as CLIApplication;
+                  return dc.cliCategories.includes(cliApp.category);
+                }).length;
+                const isVisible = !hiddenCategories.has(dc.id);
+                return (
+                  <label
+                    key={dc.id}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.04] cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isVisible}
+                      onChange={() => handleToggleCategoryVisibility(dc.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <dc.icon className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                    <span className="flex-1 text-sm text-gray-900 dark:text-white">{dc.name}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{appCount} apps</span>
+                  </label>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
 
       {/* Footer */}

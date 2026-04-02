@@ -272,7 +272,7 @@ export const DISPLAY_CATEGORIES: DisplayCategory[] = [
     description: 'Media management, organization, and automation',
     icon: Film,
     color: 'from-purple-500 to-pink-500',
-    cliCategories: ['media-management'],
+    cliCategories: ['media-management', 'transcoding'],
   },
   {
     id: 'media-servers',

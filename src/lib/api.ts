@@ -328,6 +328,23 @@ export async function installCommunityApp(appName: string, config: Record<string
   return handleResponse(response);
 }
 
+// User Preferences API functions
+export async function getUserPreferences(): Promise<{ hiddenCategories: string[] }> {
+  const response = await fetch(`${API_BASE_URL}/auth/me/preferences`, {
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}
+
+export async function setHiddenCategories(categories: string[]): Promise<{ hiddenCategories: string[] }> {
+  const response = await fetch(`${API_BASE_URL}/auth/me/preferences/hidden-categories`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+    body: JSON.stringify({ categories })
+  });
+  return handleResponse(response);
+}
+
 // Starred Apps API functions
 export async function getStars(): Promise<{ stars: string[] }> {
   const response = await fetch(`${API_BASE_URL}/auth/me/stars`, {
