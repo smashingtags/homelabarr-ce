@@ -1,4 +1,4 @@
-import { DeploymentMode } from '../types';
+import { DeploymentMode, CommunityStoreResponse, CommunityReposResponse } from '../types';
 
 // In production, use relative URL so requests go through nginx proxy (/api/ → backend)
 // In development (npm run dev), Vite proxy handles the forwarding
@@ -270,6 +270,52 @@ export async function findAvailablePort(startPort: number = 8000, endPort: numbe
 export async function detectGpu(): Promise<{ success: boolean; gpus: { nvidia: boolean; intel: boolean } }> {
   const response = await fetch(`${API_BASE_URL}/gpu/detect`, {
     headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}
+
+// Community App Store API functions
+export async function getCommunityApps(params?: {
+  category?: string;
+  search?: string;
+  sort?: string;
+  page?: number;
+  perPage?: number;
+}): Promise<CommunityStoreResponse> {
+  const query = new URLSearchParams();
+  if (params?.category) query.set('category', params.category);
+  if (params?.search) query.set('search', params.search);
+  if (params?.sort) query.set('sort', params.sort);
+  if (params?.page) query.set('page', String(params.page));
+  if (params?.perPage) query.set('perPage', String(params.perPage));
+  const response = await fetch(`${API_BASE_URL}/community/apps?${query}`, {
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}
+
+export async function getCommunityCategories(): Promise<{ categories: string[] }> {
+  const response = await fetch(`${API_BASE_URL}/community/categories`, {
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}
+
+export async function getCommunityRepos(): Promise<CommunityReposResponse> {
+  const response = await fetch(`${API_BASE_URL}/community/repos`, {
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}
+
+export async function installCommunityApp(appName: string, config: Record<string, string>, mode: any): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/community/install/${encodeURIComponent(appName)}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify({ config, mode })
   });
   return handleResponse(response);
 }

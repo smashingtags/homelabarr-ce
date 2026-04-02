@@ -108,6 +108,9 @@ export interface CLIApplication {
   requiresTraefik: boolean;
   requiresAuthelia: boolean;
   gpuSupport: boolean;
+  author: string | null;
+  source: 'official' | 'community' | null;
+  tags: string[];
 }
 
 export interface ApplicationCatalog {
@@ -119,4 +122,49 @@ export interface ApplicationCatalog {
   availableTemplates?: string[];
   count?: number;
   message?: string;
+}
+
+export interface CommunityApp {
+  Name: string;
+  Repository: string;
+  Registry: string;
+  Network: string;
+  Privileged: string;
+  Support: string;
+  Project: string;
+  Overview: string;
+  WebUI: string;
+  Icon: string;
+  Config: Array<{
+    '@attributes': {
+      Name: string;
+      Target: string;
+      Default: string;
+      Mode: string;
+      Type: string;
+      Description: string;
+    };
+  }>;
+  Repo: string;
+  ExtraSearchTerms: string;
+  CategoryList: string[];
+  LastUpdateScan: number;
+  FirstSeen: number;
+}
+
+export interface CommunityStoreResponse {
+  success: boolean;
+  apps: CommunityApp[];
+  total: number;
+  page: number;
+  perPage: number;
+  categories: string[];
+}
+
+export interface CommunityReposResponse {
+  success: boolean;
+  repos: Array<{
+    name: string;
+    appCount: number;
+  }>;
 }

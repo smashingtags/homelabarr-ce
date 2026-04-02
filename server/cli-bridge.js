@@ -73,6 +73,9 @@ export class CLIBridge {
     this.scriptsPath = path.join(this.cliPath, 'scripts');
     this.traefik = path.join(this.cliPath, 'traefik');
 
+    // Load community app index if available
+    this.communityIndex = this.loadCommunityIndex();
+
     // Verify CLI installation
     this.verifyCLIInstallation();
 
@@ -196,12 +199,15 @@ export class CLIBridge {
       
       const appName = path.basename(filePath, '.yml');
       
+      const appId = `${category}-${appName}`;
+      const meta = this.getCommunityMeta(appId);
+
       return {
-        id: `${category}-${appName}`,
+        id: appId,
         name: appName,
-        displayName: this.formatDisplayName(appName),
+        displayName: meta?.displayName || this.formatDisplayName(appName),
         category: category,
-        description: this.extractDescription(service),
+        description: meta?.description || this.extractDescription(service),
         image: CLIBridge.resolveTemplateVar(service.image) || 'Unknown',
         ports: this.extractPorts(service),
         environment: this.extractEnvironmentVars(service),
@@ -213,7 +219,10 @@ export class CLIBridge {
         restart: this.resolveTemplateVar(service.restart || '${RESTARTAPP}'),
         requiresTraefik: this.requiresTraefik(service),
         requiresAuthelia: this.requiresAuthelia(service),
-        gpuSupport: this.hasGpuSupport(service)
+        gpuSupport: this.hasGpuSupport(service),
+        author: meta?.author || null,
+        source: meta?.source || null,
+        tags: meta?.tags || []
       };
     } catch (error) {
       DeploymentLogger.logDockerOperationFailed('parseApplicationConfig', error, {
@@ -604,6 +613,25 @@ export class CLIBridge {
   hasGpuSupport(service) {
     if (!service.labels) return false;
     return service.labels.some(label => label.includes('x-gpu=true'));
+  }
+
+  loadCommunityIndex() {
+    try {
+      const indexPath = path.join(this.appsPath, 'community-apps.json');
+      if (!fs.existsSync(indexPath)) return {};
+      const data = JSON.parse(fs.readFileSync(indexPath, 'utf8'));
+      const index = {};
+      for (const app of (data.apps || [])) {
+        index[`${app.category}-${app.name}`] = app;
+      }
+      return index;
+    } catch {
+      return {};
+    }
+  }
+
+  getCommunityMeta(appId) {
+    return this.communityIndex[appId] || null;
   }
 
   /**

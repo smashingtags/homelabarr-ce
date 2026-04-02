@@ -19,6 +19,8 @@ import { LoginModal } from './components/LoginModal';
 import { ApiKeysModal } from './components/ApiKeysModal';
 import { UserMenu } from './components/UserMenu';
 import { UserSettings } from './components/UserSettings';
+import { CommunityStore } from './components/CommunityStore';
+import { CommunityApp } from './types';
 import {
   Network,
   Box,
@@ -28,7 +30,7 @@ import {
   Search as SearchIcon,
   Star,
 } from 'lucide-react';
-import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp } from './lib/api';
+import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp, getCommunityApps, installCommunityApp } from './lib/api';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -46,6 +48,7 @@ const baseCategoryTabs = [
     name: dc.name,
     icon: dc.icon,
   })),
+  { id: 'community', name: 'Community', icon: Package },
   { id: 'all-apps', name: 'All Apps', icon: SearchIcon },
 ];
 
@@ -101,6 +104,9 @@ export default function App() {
   } | null>(null);
 
   const [starredApps, setStarredApps] = useState<Set<string>>(new Set());
+  const [communityApps, setCommunityApps] = useState<CommunityApp[]>([]);
+  const [communityCategories, setCommunityCategories] = useState<string[]>([]);
+  const [communityLoading, setCommunityLoading] = useState(false);
 
   const { success, error: showError, info } = useNotifications();
   const { loading: deploymentInProgress } = useLoading();
@@ -182,6 +188,11 @@ export default function App() {
         const cliApp = (app as any)._cliApp as CLIApplication;
         return starredApps.has(cliApp?.id || app.name);
       });
+    } else if (activeCategory === 'community') {
+      apps = apps.filter(app => {
+        const cliApp = (app as any)._cliApp as CLIApplication;
+        return cliApp?.source === 'community';
+      });
     } else if (activeCategory !== 'all-apps' && activeCategory !== 'deployed') {
       const displayCat = getDisplayCategory(activeCategory);
       if (displayCat) {
@@ -201,7 +212,9 @@ export default function App() {
           app.name.toLowerCase().includes(q) ||
           app.description.toLowerCase().includes(q) ||
           cliApp.category.toLowerCase().includes(q) ||
-          cliApp.image.toLowerCase().includes(q)
+          cliApp.image.toLowerCase().includes(q) ||
+          (cliApp.tags && cliApp.tags.some(t => t.toLowerCase().includes(q))) ||
+          (cliApp.author && cliApp.author.toLowerCase().includes(q))
         );
       });
     }
@@ -233,6 +246,29 @@ export default function App() {
       clearInterval(statsInterval);
     };
   }, [activeCategory, isAuthenticated]);
+
+  // Load community apps when community tab is first selected
+  useEffect(() => {
+    if (activeCategory === 'community' && communityApps.length === 0 && !communityLoading) {
+      setCommunityLoading(true);
+      getCommunityApps({ perPage: 5000 })
+        .then(data => {
+          setCommunityApps(data.apps || []);
+          setCommunityCategories(data.categories || []);
+        })
+        .catch(() => {})
+        .finally(() => setCommunityLoading(false));
+    }
+  }, [activeCategory]);
+
+  const handleCommunityInstall = useCallback(async (app: CommunityApp) => {
+    try {
+      await installCommunityApp(app.Name, {}, { type: 'local' });
+      success('Deployed', `${app.Name} is being deployed`);
+    } catch (err) {
+      showError('Deploy Failed', `Could not deploy ${app.Name}`);
+    }
+  }, []);
 
   useEffect(() => {
     if (activeCategory === 'deployed' && deployedApps.length === 0) {
@@ -444,6 +480,17 @@ export default function App() {
   };
 
   const renderContent = () => {
+
+    if (activeCategory === 'community') {
+      return (
+        <CommunityStore
+          apps={communityApps}
+          categories={communityCategories}
+          onInstall={handleCommunityInstall}
+          loading={communityLoading}
+        />
+      );
+    }
 
     if (activeCategory === 'deployed') {
       const handleSort = (field: typeof sortField) => {

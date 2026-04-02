@@ -39,6 +39,8 @@ import { progressStream, StreamingCLIBridge } from './progress-stream.js';
 import { randomUUID } from 'crypto';
 import { initializeActivityLog, logActivity, getActivities } from './activity-logger.js';
 import { getUserStars, addStar, removeStar } from './stars.js';
+import { getCommunityApps, getCommunityApp, getCommunityCategories, getCommunityRepos } from './community-feed.js';
+import { generateCompose, generateComposeObject } from './template-generator.js';
 
 function getRequestMeta(req) {
   return {
@@ -462,6 +464,77 @@ app.get('/gpu/detect', requireAuth(), (req, res) => {
     res.json({ success: true, gpus });
   } catch (err) {
     res.status(500).json({ error: 'GPU detection failed' });
+  }
+});
+
+// ─── Community App Store Routes ─────────────────────────────────────────
+app.get('/community/apps', requireAuth(), async (req, res) => {
+  try {
+    const { category, search, sort, page, perPage } = req.query;
+    const result = await getCommunityApps({
+      category: category || undefined,
+      search: search || undefined,
+      sort: sort || 'name',
+      page: parseInt(page) || 1,
+      perPage: parseInt(perPage) || 12
+    });
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load community apps' });
+  }
+});
+
+app.get('/community/categories', requireAuth(), async (req, res) => {
+  try {
+    const categories = await getCommunityCategories();
+    res.json({ success: true, categories });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load categories' });
+  }
+});
+
+app.get('/community/repos', requireAuth(), async (req, res) => {
+  try {
+    const repos = await getCommunityRepos();
+    res.json({ success: true, repos });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load repositories' });
+  }
+});
+
+app.post('/community/install/:appName', requireAuth(), async (req, res) => {
+  try {
+    const app = await getCommunityApp(req.params.appName);
+    if (!app) {
+      return res.status(404).json({ error: 'App not found' });
+    }
+    const compose = generateComposeObject(app);
+    if (!compose) {
+      return res.status(400).json({ error: 'Cannot generate template for this app' });
+    }
+
+    const yaml = (await import('yaml')).default;
+    const tmpDir = path.join(process.cwd(), 'server', 'data');
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+    const tmpPath = path.join(tmpDir, `community-${app.Name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.yml`);
+    fs.writeFileSync(tmpPath, yaml.stringify(compose));
+
+    try {
+      if (cliBridge) {
+        const result = await cliBridge.executeDockerCompose(tmpPath, 'up -d', {
+          ...req.body.config,
+          DOCKERNETWORK: req.body.mode?.type === 'traefik' ? 'proxy' : 'bridge'
+        });
+        res.json({ success: true, result });
+      } else {
+        res.status(503).json({ error: 'Docker deployment unavailable' });
+      }
+    } finally {
+      try { fs.unlinkSync(tmpPath); } catch {}
+    }
+  } catch (err) {
+    logger.error('Community app install error:', err);
+    res.status(500).json({ error: 'Failed to install community app' });
   }
 });
 
