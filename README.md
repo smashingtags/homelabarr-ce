@@ -59,7 +59,7 @@
 
 You know how setting up self-hosted apps usually means Googling Docker Compose files, copying YAML, editing ports, and hoping it works? HomelabARR skips all of that.
 
-It's a dashboard. You open it, you see a catalog of 110+ apps, you click **Deploy**, and the app is running. That's it.
+It's a dashboard with 3,000+ apps. You open it, pick an app, click **Deploy**, and it's running. That's it.
 
 Plex, Sonarr, Radarr, Jellyfin, Ollama, Home Assistant, qBittorrent — they're all in there, ready to go.
 
@@ -116,11 +116,14 @@ Want to build from source instead? Check the [full install guide](https://wiki.h
 
 ## What You Get
 
-- **110+ apps, one click each.** Media servers, download clients, monitoring, AI tools, virtual desktops, backup, and more.
+- **3,000+ apps, one click each.** 115 official templates plus 2,900+ community apps across 18 categories.
+- **Community app store.** Browse, search, filter by category, sort by downloads. Submit your own apps via PR to the [templates repo](https://github.com/smashingtags/homelabarr-templates).
 - **Three ways to deploy.** Just IP:port, or with Traefik reverse proxy for SSL, or Traefik + Authelia for 2FA on top.
+- **Star your favorites.** Per-user starred apps for quick access.
+- **GPU passthrough.** Auto-detects NVIDIA and Intel/AMD GPUs. One toggle in the deploy modal for AI and transcoding apps.
 - **Manage running containers.** Start, stop, restart, remove, view logs — all from the dashboard.
 - **Port Manager.** See every port in use across all your containers. Catch conflicts before they happen.
-- **Community app store.** 110+ official templates plus 2,900+ community apps from the [Unraid Community Applications](https://github.com/Squidly271/AppFeed) catalog. Browse by category, search, sort by downloads or trending, and deploy with one click.
+- **Category filtering.** Hide categories you don't care about (looking at you, game servers).
 - **Add your own apps.** Drop a YAML file in `templates/myapps/` and it shows up in the catalog automatically.
 - **Secure by default.** Login required, API keys for automation, rate limiting, security headers.
 - **Dark mode.** Obviously.
@@ -131,21 +134,28 @@ Want to build from source instead? Check the [full install guide](https://wiki.h
 
 ## What Apps Are Included?
 
-| Category | # | Some highlights |
-|----------|---|-----------------|
-| 🤖 AI & Machine Learning | 14 | Ollama, Open WebUI, ComfyUI, Stable Diffusion, LocalAI |
-| 🎬 Media Servers | 5 | Plex, Jellyfin, Emby |
-| 📚 Media Management | 16 | Sonarr, Radarr, Lidarr, Bazarr, Prowlarr |
-| ⬇️ Downloads | 14 | qBittorrent, SABnzbd, NZBGet, Deluge, Transmission |
-| 📊 Monitoring | 9 | Grafana, Netdata, Uptime Kuma, Tautulli |
-| 🌐 Self-hosted | 37 | Nextcloud, Vaultwarden, Immich, Home Assistant, n8n |
-| ⚙️ System | 13 | Portainer, Dozzle, Watchtower, Traefik |
-| 🖥️ Virtual Desktops | 10 | Kasm Workspaces, Firefox, Chrome, Tor Browser |
-| 🎞️ Transcoding | 5 | Tdarr, Handbrake, MakeMKV |
-| 💾 Backup | 3 | Duplicati, Restic |
-| 📁 My Apps | — | Whatever you add |
+| Category | Apps | Some highlights |
+|----------|------|-----------------|
+| 🤖 AI | 104 | Ollama, Open WebUI, ComfyUI, Stable Diffusion, LocalAI, LiteLLM |
+| 🎬 Media Servers | 175 | Plex, Jellyfin, Emby, Navidrome, Tautulli |
+| 📚 Media Apps | 62 | Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Immich |
+| ⬇️ Downloads | 186 | qBittorrent, SABnzbd, NZBGet, Deluge, Transmission |
+| 📊 Monitoring | 60 | Grafana, Prometheus, Netdata, Uptime Kuma, Speedtest Tracker |
+| 🌐 Networking | 159 | Pi-hole, AdGuard, Nginx, Traefik, WireGuard, Tailscale |
+| 🏠 Home Automation | 151 | Home Assistant, Node-RED, Zigbee2MQTT, Frigate, ESPHome |
+| ☁️ Cloud | 134 | Nextcloud, Seafile, Syncthing, FileBrowser |
+| 🔒 Security | 104 | Vaultwarden, Authelia, CrowdSec, Fail2ban |
+| 🛠️ Tools | 324 | Portainer, Dozzle, Watchtower, Code Server, Gitea |
+| 💼 Productivity | 411 | Paperless, Bookstack, Mealie, Wiki.js, n8n |
+| 🎮 Game Servers | 260 | Minecraft, Valheim, Satisfactory, Palworld |
+| 💾 Backup | 123 | Duplicati, Restic, Borg, Kopia |
+| 💰 Crypto | 101 | Various mining and node containers |
+| 🖥️ Virtual Desktops | 10 | Kasm Workspaces — Firefox, Chrome, Steam, Tor |
+| 🌍 Self-Hosted | 34 | Miscellaneous self-hosted services |
+| 📁 My Apps | — | Your custom templates |
+| 📦 Other | 563 | Niche utilities and specialized tools |
 
-Every template is a standard Docker Compose YAML file. The community templates live in a [separate repo](https://github.com/smashingtags/homelabarr-templates) — update them independently with `git pull`, contribute your own via PR, or swap in a custom template pack.
+Every template is a standard Docker Compose YAML file. The [community templates repo](https://github.com/smashingtags/homelabarr-templates) is maintained independently — update with `git pull`, contribute your own via PR.
 
 ---
 

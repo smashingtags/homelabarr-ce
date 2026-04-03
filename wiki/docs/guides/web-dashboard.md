@@ -30,25 +30,35 @@ Below each app card: a **category tag** (e.g., `media-servers`, `ai`) and any ca
 
 ## Browsing Apps
 
-Apps are sorted into 10 categories. Click any tab to filter:
+Apps are sorted into 18 categories. Click any tab to filter:
 
 | Tab | What's in it |
 |-----|-------------|
-| **Media & Entertainment** | Plex, Jellyfin, Emby — your streaming servers |
-| **Downloads & Automation** | qBittorrent, SABnzbd, NZBGet, Prowlarr, Jackett |
-| **Monitoring & Analytics** | Netdata, Grafana, Speedtest Tracker, Uptime Kuma |
-| **Virtual Desktops** | Chrome, Firefox, Discord, Steam — full desktops in your browser via Kasm |
-| **Backup & Storage** | Duplicati, Restic, Rsnapshot |
-| **System & Utilities** | Portainer, Dozzle, Watchtower, Gluetun (VPN) |
-| **Self-hosted** | Nextcloud, Bitwarden, Pi-hole, Home Assistant, n8n |
-| **AI & Machine Learning** | Ollama, Open WebUI, ComfyUI, Stable Diffusion, LocalAI |
-| **My Apps** | Your own custom templates (more on this below) |
-| **All Apps** | Everything in one alphabetical list |
+| **AI** | Ollama, Open WebUI, ComfyUI, Stable Diffusion, LocalAI |
+| **Backup** | Duplicati, Restic, Borg, Kopia |
+| **Cloud** | Nextcloud, Seafile, Syncthing, FileBrowser |
+| **Downloads** | qBittorrent, SABnzbd, NZBGet, Deluge, Transmission |
+| **Game Servers** | Minecraft, Valheim, Satisfactory, Palworld |
+| **Home Automation** | Home Assistant, Node-RED, Zigbee2MQTT, Frigate |
+| **Media Apps** | Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Immich |
+| **Media Servers** | Plex, Jellyfin, Emby, Navidrome, Tautulli |
+| **Monitoring** | Grafana, Prometheus, Netdata, Uptime Kuma |
+| **Networking** | Pi-hole, AdGuard, Nginx, Traefik, WireGuard |
+| **Productivity** | Paperless, Bookstack, Mealie, Wiki.js, n8n |
+| **Security** | Vaultwarden, Authelia, CrowdSec, Fail2ban |
+| **Tools** | Portainer, Dozzle, Watchtower, Code Server, Gitea |
+| **Crypto** | Mining and blockchain node containers |
+| **Self-Hosted** | Miscellaneous self-hosted services |
+| **Virtual Desktops** | Kasm Workspaces — Firefox, Chrome, Steam, Tor |
+| **My Apps** | Your own custom templates |
+| **Other** | Niche utilities and specialized tools |
+| **All Apps** | Everything in one list |
 
-Two special views:
+Special views:
 
-- **Deployed Apps** — shows only the containers currently running on your server
-- **All Apps** — the full catalog, A to Z
+- **Deployed Apps** (default) — containers currently running on your server
+- **Starred** — your favorited apps (appears when you have stars)
+- **All Apps** — the full 3,000+ app catalog
 
 Use the **search bar** at the top to find apps by name across all categories.
 

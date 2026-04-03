@@ -3,14 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('App Catalog', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    // Wait for the app to hydrate and load data
     await page.waitForSelector('text=Connected');
   });
 
   test('loads and displays app count', async ({ page }) => {
     const header = page.locator('text=/Connected.*\\d+ apps/');
     await expect(header).toBeVisible();
-    // Should have 100+ apps
     const text = await header.textContent();
     const match = text?.match(/(\d+) apps/);
     expect(match).toBeTruthy();
@@ -20,14 +18,23 @@ test.describe('App Catalog', () => {
   test('all category tabs are present', async ({ page }) => {
     const expectedTabs = [
       'Deployed Apps',
-      'Media & Entertainment',
-      'Downloads & Automation',
-      'Monitoring & Analytics',
+      'AI',
+      'Backup',
+      'Cloud',
+      'Downloads',
+      'Game Servers',
+      'Home Automation',
+      'Media Apps',
+      'Media Servers',
+      'Monitoring',
+      'Networking',
+      'Productivity',
+      'Security',
+      'Tools',
+      'Crypto',
+      'Other',
+      'Self-Hosted',
       'Virtual Desktops',
-      'Backup & Storage',
-      'System & Utilities',
-      'Self-hosted',
-      'AI & Machine Learning',
       'My Apps',
       'All Apps',
     ];
@@ -37,42 +44,42 @@ test.describe('App Catalog', () => {
     }
   });
 
-  test('defaults to All Apps tab', async ({ page }) => {
-    const allAppsTab = page.getByRole('tab', { name: 'All Apps' });
-    await expect(allAppsTab).toHaveAttribute('data-state', 'active');
+  test('defaults to Deployed Apps tab', async ({ page }) => {
+    const deployedTab = page.getByRole('tab', { name: 'Deployed Apps' });
+    await expect(deployedTab).toHaveAttribute('data-state', 'active');
   });
 
   test('category tabs filter apps correctly', async ({ page }) => {
-    // Click Media & Entertainment
-    await page.getByRole('tab', { name: 'Media & Entertainment' }).click();
+    await page.getByRole('tab', { name: 'Media Servers' }).click();
     await page.waitForTimeout(500);
-    // Should show app content — look for deploy buttons which exist on every card
     const deployButtons = page.getByRole('button', { name: /deploy/i });
     await expect(deployButtons.first()).toBeVisible({ timeout: 10_000 });
   });
 
   test('no raw template variables visible', async ({ page }) => {
-    // This is critical — no ${VARNAME} should ever appear in the UI
+    await page.getByRole('tab', { name: 'AI' }).click();
+    await page.waitForTimeout(500);
     const body = await page.locator('body').textContent();
     const templateVars = body?.match(/\$\{[A-Z_]+\}/g);
     expect(templateVars).toBeNull();
   });
 
   test('search filters apps', async ({ page }) => {
+    await page.getByRole('tab', { name: 'All Apps' }).click();
+    await page.waitForTimeout(500);
     const searchBox = page.getByPlaceholder(/search/i);
     await searchBox.fill('plex');
-    // Should show Plex-related apps and hide others
-    await page.waitForTimeout(300); // debounce
+    await page.waitForTimeout(500);
     const visibleText = await page.locator('body').textContent();
     expect(visibleText?.toLowerCase()).toContain('plex');
   });
 
   test('sort toggle works', async ({ page }) => {
-    // Find and click sort button
+    await page.getByRole('tab', { name: 'AI' }).click();
+    await page.waitForTimeout(500);
     const sortButton = page.getByRole('button', { name: /sort|a.*z|z.*a/i });
     if (await sortButton.isVisible()) {
       await sortButton.click();
-      // Just verify it doesn't crash — visual order tested via screenshots
       await expect(page.locator('body')).toBeVisible();
     }
   });

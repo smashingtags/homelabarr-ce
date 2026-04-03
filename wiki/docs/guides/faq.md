@@ -53,7 +53,7 @@ git clone https://github.com/smashingtags/homelabarr-ce.git /opt/homelabarr
 git clone https://github.com/smashingtags/homelabarr-templates.git /opt/homelabarr/templates
 ```
 
-The 110+ app templates live in the [homelabarr-templates](https://github.com/smashingtags/homelabarr-templates) repo. Without it, the catalog is empty. This is the most common setup mistake.
+The 3,000+ app templates live in the [homelabarr-templates](https://github.com/smashingtags/homelabarr-templates) repo. Without it, the catalog is empty. This is the most common setup mistake.
 
 ### I get a CORS error or API calls fail after login
 

@@ -1,6 +1,6 @@
 # CLI Bridge
 
-The CLI Bridge is how the dashboard knows about all 110+ apps. It reads Docker Compose files from the [community templates repo](https://github.com/smashingtags/homelabarr-templates) (or a bundled `apps/` fallback) and turns them into the browsable, deployable catalog you see in the UI.
+The CLI Bridge is how the dashboard knows about all 3,000+ apps. It reads Docker Compose files from the [community templates repo](https://github.com/smashingtags/homelabarr-templates) (or a bundled `apps/` fallback) and turns them into the browsable, deployable catalog you see in the UI.
 
 !!! info "Who this page is for"
     Developers who want to understand how app templates work, or anyone adding custom apps beyond simple ones in `apps/myapps/`. You don't need to read this to use HomelabARR.
