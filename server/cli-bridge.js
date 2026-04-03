@@ -237,9 +237,25 @@ export class CLIBridge {
    * Deploy application using CLI infrastructure
    */
   async deployApplication(appId, config, deploymentMode) {
-    const [category, appName] = appId.split('-');
-    const appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
-    
+    const dashIndex = appId.indexOf('-');
+    const category = appId.substring(0, dashIndex);
+    const appName = appId.substring(dashIndex + 1);
+    let appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
+
+    // Community apps: search all community subdirectories
+    if (!fs.existsSync(appPath) && category === 'community') {
+      const communityDir = path.join(this.appsPath, 'community');
+      if (fs.existsSync(communityDir)) {
+        const dirs = fs.readdirSync(communityDir).filter(d => {
+          try { return fs.statSync(path.join(communityDir, d)).isDirectory(); } catch { return false; }
+        });
+        for (const dir of dirs) {
+          const candidate = path.join(communityDir, dir, `${sanitizePathComponent(appName)}.yml`);
+          if (fs.existsSync(candidate)) { appPath = candidate; break; }
+        }
+      }
+    }
+
     if (!fs.existsSync(appPath)) {
       throw new Error(`Application ${appId} not found at ${appPath}`);
     }
