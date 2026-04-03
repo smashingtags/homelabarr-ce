@@ -42,6 +42,22 @@
   "liveNow": false,
   "panels": [
     {
+      "id": 99,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;gap:16px;justify-content:center;align-items:center;padding:4px 0;\">\n  <a href=\"/d/homelabarr-v2-overview\" style=\"color:#ff9830;font-weight:600;font-size:14px;text-decoration:none;\">\ud83c\udfe0 Overview</a>\n  <span style=\"color:#555;\">|</span>\n  <a href=\"/d/node-exporter-monitoring\" style=\"color:#73bf69;font-weight:600;font-size:14px;text-decoration:none;\">\ud83d\udcbb System</a>\n  <span style=\"color:#555;\">|</span>\n  <a href=\"/d/cadvisor-monitoring\" style=\"color:#5794f2;font-weight:600;font-size:14px;text-decoration:none;\">\ud83d\udc33 Containers</a>\n  <span style=\"color:#555;\">|</span>\n  <a href=\"/d/promtail-monitoring\" style=\"color:#b877d9;font-weight:600;font-size:14px;text-decoration:none;\">\ud83d\udccb Logs</a>\n</div>"
+      },
+      "transparent": true
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -100,7 +116,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 2
       },
       "id": 1,
       "options": {
@@ -220,7 +236,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 4
+        "y": 6
       },
       "id": 2,
       "options": {
@@ -323,7 +339,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 4
+        "y": 6
       },
       "id": 3,
       "options": {
@@ -398,7 +414,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 12
+        "y": 14
       },
       "id": 4,
       "options": {
@@ -501,7 +517,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 12
+        "y": 14
       },
       "id": 5,
       "options": {

@@ -21,13 +21,29 @@
   "links": [],
   "panels": [
     {
+      "id": 99,
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;gap:16px;justify-content:center;align-items:center;padding:4px 0;\">\n  <a href=\"/d/homelabarr-v2-overview\" style=\"color:#ff9830;font-weight:600;font-size:14px;text-decoration:none;\">\ud83c\udfe0 Overview</a>\n  <span style=\"color:#555;\">|</span>\n  <a href=\"/d/node-exporter-monitoring\" style=\"color:#73bf69;font-weight:600;font-size:14px;text-decoration:none;\">\ud83d\udcbb System</a>\n  <span style=\"color:#555;\">|</span>\n  <a href=\"/d/cadvisor-monitoring\" style=\"color:#5794f2;font-weight:600;font-size:14px;text-decoration:none;\">\ud83d\udc33 Containers</a>\n  <span style=\"color:#555;\">|</span>\n  <a href=\"/d/promtail-monitoring\" style=\"color:#b877d9;font-weight:600;font-size:14px;text-decoration:none;\">\ud83d\udccb Logs</a>\n</div>"
+      },
+      "transparent": true
+    },
+    {
       "collapsed": false,
       "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 2
       },
       "id": 100,
       "panels": [],
@@ -81,7 +97,7 @@
         "h": 4,
         "w": 4,
         "x": 0,
-        "y": 1
+        "y": 3
       },
       "id": 1,
       "options": {
@@ -140,7 +156,7 @@
         "h": 4,
         "w": 4,
         "x": 4,
-        "y": 1
+        "y": 3
       },
       "id": 2,
       "options": {
@@ -199,7 +215,7 @@
         "h": 4,
         "w": 4,
         "x": 8,
-        "y": 1
+        "y": 3
       },
       "id": 3,
       "options": {
@@ -250,7 +266,7 @@
         "h": 4,
         "w": 4,
         "x": 12,
-        "y": 1
+        "y": 3
       },
       "id": 4,
       "options": {
@@ -309,7 +325,7 @@
         "h": 4,
         "w": 4,
         "x": 16,
-        "y": 1
+        "y": 3
       },
       "id": 5,
       "options": {
@@ -368,7 +384,7 @@
         "h": 4,
         "w": 4,
         "x": 20,
-        "y": 1
+        "y": 3
       },
       "id": 6,
       "options": {
@@ -402,7 +418,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 7
       },
       "id": 101,
       "panels": [],
@@ -466,7 +482,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 8
       },
       "id": 7,
       "options": {
@@ -547,7 +563,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 8
       },
       "id": 8,
       "options": {
@@ -583,7 +599,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 16
       },
       "id": 102,
       "panels": [],
@@ -647,7 +663,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 17
       },
       "id": 9,
       "options": {
@@ -733,7 +749,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 17
       },
       "id": 10,
       "options": {
@@ -764,7 +780,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 25
       },
       "id": 103,
       "panels": [],
@@ -828,7 +844,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 24
+        "y": 26
       },
       "id": 11,
       "options": {
@@ -914,7 +930,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 26
       },
       "id": 12,
       "options": {
@@ -955,7 +971,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 34
       },
       "id": 104,
       "panels": [],
@@ -995,7 +1011,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 35
       },
       "id": 13,
       "options": {
