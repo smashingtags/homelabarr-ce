@@ -6,8 +6,8 @@ FROM node:24-alpine3.23
 # Update Alpine packages to pick up latest security patches
 RUN apk upgrade --no-cache
 
-# Update npm to latest
-RUN npm install -g npm@latest
+# Update npm and suppress update notices
+RUN npm install -g npm@latest && npm config set update-notifier false
 
 # Set working directory
 WORKDIR /app
