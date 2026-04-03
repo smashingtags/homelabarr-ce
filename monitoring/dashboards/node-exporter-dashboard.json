@@ -31,7 +31,7 @@
       },
       "id": 100,
       "panels": [],
-      "title": "🖥️ System Overview",
+      "title": "\ud83d\udda5\ufe0f System Overview",
       "type": "row"
     },
     {
@@ -508,7 +508,7 @@
       },
       "id": 101,
       "panels": [],
-      "title": "💾 CPU and Memory",
+      "title": "\ud83d\udcbe CPU and Memory",
       "type": "row"
     },
     {
@@ -734,7 +734,7 @@
       },
       "id": 102,
       "panels": [],
-      "title": "💽 Disk and Storage",
+      "title": "\ud83d\udcbd Disk and Storage",
       "type": "row"
     },
     {
@@ -925,7 +925,7 @@
       },
       "id": 103,
       "panels": [],
-      "title": "🌐 Network Activity",
+      "title": "\ud83c\udf10 Network Activity",
       "type": "row"
     },
     {
@@ -1125,6 +1125,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "Node Exporter - System Monitoring",
-  "uid": "prometheus",
+  "uid": "node-exporter-monitoring",
   "version": 1
 }

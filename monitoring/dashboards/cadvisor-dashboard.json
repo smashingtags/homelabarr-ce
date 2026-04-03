@@ -31,7 +31,7 @@
       },
       "id": 100,
       "panels": [],
-      "title": "🐳 Container Overview",
+      "title": "\ud83d\udc33 Container Overview",
       "type": "row"
     },
     {
@@ -390,7 +390,7 @@
       },
       "id": 101,
       "panels": [],
-      "title": "📊 Container Resource Usage",
+      "title": "\ud83d\udcca Container Resource Usage",
       "type": "row"
     },
     {
@@ -566,7 +566,7 @@
       },
       "id": 102,
       "panels": [],
-      "title": "🌐 Container Network Activity",
+      "title": "\ud83c\udf10 Container Network Activity",
       "type": "row"
     },
     {
@@ -742,7 +742,7 @@
       },
       "id": 103,
       "panels": [],
-      "title": "💽 Container Storage Activity",
+      "title": "\ud83d\udcbd Container Storage Activity",
       "type": "row"
     },
     {
@@ -927,6 +927,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "cAdvisor - Container Monitoring",
-  "uid": "prometheus",
+  "uid": "cadvisor-monitoring",
   "version": 1
 }

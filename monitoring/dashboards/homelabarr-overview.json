@@ -29,7 +29,9 @@
       "icon": "external link",
       "includeVars": false,
       "keepTime": false,
-      "tags": ["homelabarr"],
+      "tags": [
+        "homelabarr"
+      ],
       "targetBlank": true,
       "title": "HomelabARR Documentation",
       "tooltip": "Open HomelabARR Documentation",
@@ -62,17 +64,17 @@
                 "healthy": {
                   "color": "green",
                   "index": 0,
-                  "text": "✅ Healthy"
+                  "text": "\u2705 Healthy"
                 },
                 "degraded": {
                   "color": "yellow",
                   "index": 1,
-                  "text": "⚠️ Degraded"
+                  "text": "\u26a0\ufe0f Degraded"
                 },
                 "unhealthy": {
                   "color": "red",
                   "index": 2,
-                  "text": "❌ Unhealthy"
+                  "text": "\u274c Unhealthy"
                 }
               },
               "type": "value"
@@ -117,7 +119,7 @@
           "refId": "A"
         }
       ],
-      "title": "🏠 HomelabARR v2.0 System Status",
+      "title": "\ud83c\udfe0 HomelabARR v2.0 System Status",
       "type": "table"
     },
     {
@@ -223,7 +225,10 @@
       "id": 2,
       "options": {
         "legend": {
-          "calcs": ["last", "max"],
+          "calcs": [
+            "last",
+            "max"
+          ],
           "displayMode": "list",
           "placement": "bottom"
         },
@@ -254,7 +259,7 @@
           "refId": "B"
         }
       ],
-      "title": "📊 System Performance",
+      "title": "\ud83d\udcca System Performance",
       "type": "timeseries"
     },
     {
@@ -323,7 +328,9 @@
       "id": 3,
       "options": {
         "legend": {
-          "calcs": ["last"],
+          "calcs": [
+            "last"
+          ],
           "displayMode": "list",
           "placement": "bottom"
         },
@@ -344,7 +351,7 @@
           "refId": "A"
         }
       ],
-      "title": "🐳 Container CPU Usage",
+      "title": "\ud83d\udc33 Container CPU Usage",
       "type": "timeseries"
     },
     {
@@ -411,7 +418,7 @@
           "refId": "A"
         }
       ],
-      "title": "💾 Storage Usage",
+      "title": "\ud83d\udcbe Storage Usage",
       "transformations": [
         {
           "id": "organize",
@@ -499,7 +506,10 @@
       "id": 5,
       "options": {
         "legend": {
-          "calcs": ["last", "max"],
+          "calcs": [
+            "last",
+            "max"
+          ],
           "displayMode": "list",
           "placement": "bottom"
         },
@@ -530,14 +540,18 @@
           "refId": "B"
         }
       ],
-      "title": "🌐 Network Traffic",
+      "title": "\ud83c\udf10 Network Traffic",
       "type": "timeseries"
     }
   ],
   "refresh": "30s",
   "schemaVersion": 36,
   "style": "dark",
-  "tags": ["homelabarr", "v2", "overview"],
+  "tags": [
+    "homelabarr",
+    "v2",
+    "overview"
+  ],
   "templating": {
     "list": []
   },
@@ -547,8 +561,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "🏠 HomelabARR v2.0 Infrastructure Overview",
-  "uid": "prometheus",
+  "title": "\ud83c\udfe0 HomelabARR v2.0 Infrastructure Overview",
+  "uid": "homelabarr-v2-overview",
   "version": 1,
   "weekStart": ""
 }
