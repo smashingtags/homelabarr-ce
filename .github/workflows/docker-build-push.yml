@@ -198,36 +198,6 @@ jobs:
           -d "${payload}" \
           "${DISCORD_WEBHOOK}" || echo "Discord webhook failed"
 
-    - name: Deploy to VM
-      if: success() && github.event_name == 'push' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/staging')
-      env:
-        SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-      run: |
-        # Determine target VM
-        BRANCH="${GITHUB_REF_NAME}"
-        case "$BRANCH" in
-          dev)     VM_IP="192.168.1.233" ; COMPOSE_FILE="docker-compose.ce-dev.yml" ;;
-          staging) VM_IP="192.168.1.232" ; COMPOSE_FILE="docker-compose.ce.yml" ;;
-          *)       echo "No deploy target for $BRANCH"; exit 0 ;;
-        esac
-
-        echo "Deploying $BRANCH to $VM_IP..."
-
-        # Write SSH key to temp file
-        echo "$SSH_KEY" > /tmp/deploy_key
-        chmod 600 /tmp/deploy_key
-
-        # Pull new images and restart
-        ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no "michael@$VM_IP" \
-          "cd /opt/appdata/compose && docker compose -f $COMPOSE_FILE pull && docker compose -f $COMPOSE_FILE up -d"
-
-        # Wait for containers to be healthy
-        sleep 15
-
-        # Health check
-        ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no "michael@$VM_IP" \
-          "docker ps --format '{{.Names}} {{.Status}}' | grep homelabarr"
-
-        # Clean up
-        rm -f /tmp/deploy_key
-        echo "Deploy to $VM_IP complete"
+    # Deploy is handled by Watchtower on each VM (polls GHCR every 5 min).
+    # GitHub Actions cannot reach private IPs (192.168.1.x).
+    # E2E tests wait and retry until the new container is live.
