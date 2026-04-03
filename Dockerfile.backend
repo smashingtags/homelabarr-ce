@@ -16,8 +16,8 @@ WORKDIR /app
 # Pull docker-cli from Alpine edge for latest security patches (29.3.0+)
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && \
     apk add --no-cache \
-    'docker-cli>29.2' \
-    'docker-cli-compose>2.40' \
+    'docker-cli>29.3' \
+    'docker-cli-compose>2.41' \
     git \
     bash \
     curl \
