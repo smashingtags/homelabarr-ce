@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const GRAFANA_URL = process.env.GRAFANA_URL || 'http://192.168.1.250:3000';
+const GRAFANA_URL = process.env.GRAFANA_URL || 'https://grafana-dev.homelabarr.com';
 const GRAFANA_USER = 'admin';
 const GRAFANA_PASS = 'admin';
 
