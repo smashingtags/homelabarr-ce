@@ -120,10 +120,14 @@ export default function App() {
       ]);
 
       const allApps: CLIApplication[] = [];
+      const seenIds = new Set<string>();
       if (catalogData.applications) {
         Object.entries(catalogData.applications).forEach(([category, apps]) => {
           (apps as CLIApplication[]).forEach(app => {
-            allApps.push({ ...app, category });
+            const appWithCategory = { ...app, category };
+            if (seenIds.has(appWithCategory.id)) return;
+            seenIds.add(appWithCategory.id);
+            allApps.push(appWithCategory);
           });
         });
       }
@@ -682,15 +686,15 @@ export default function App() {
           </div>
         )}
 
-        {/* Apps Grid */}
+        {/* Apps Grid — key on the container forces full remount on category change */}
         {filteredApps.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div key={activeCategory} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...filteredApps].sort((a, b) => {
               const cmp = a.name.localeCompare(b.name);
               return catalogSort === 'asc' ? cmp : -cmp;
-            }).map(app => (
+            }).map((app, i) => (
               <AppCard
-                key={app.id}
+                key={`${app.id}-${i}`}
                 app={app}
                 onDeploy={() => handleAppCardDeploy(app)}
                 starred={starredApps.has((app as any)._cliApp?.id || app.name)}
