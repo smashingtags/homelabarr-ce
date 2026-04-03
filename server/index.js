@@ -39,7 +39,7 @@ import { progressStream, StreamingCLIBridge } from './progress-stream.js';
 import { randomUUID } from 'crypto';
 import { initializeActivityLog, logActivity, getActivities } from './activity-logger.js';
 import { getUserStars, addStar, removeStar } from './stars.js';
-import { getUserPreferences, setHiddenCategories, resetPreferences } from './preferences.js';
+import { getUserPreferences, setHiddenCategories, resetPreferences, getMonitoringPreferences, setMonitoringPreferences } from './preferences.js';
 import { getCommunityApps, getCommunityApp, getCommunityCategories, getCommunityRepos } from './community-feed.js';
 import { generateCompose, generateComposeObject } from './template-generator.js';
 
@@ -607,6 +607,49 @@ app.post('/community/install/:appName', requireAuth(), async (req, res) => {
   } catch (err) {
     logger.error('Community app install error:', err);
     res.status(500).json({ error: 'Failed to install community app' });
+  }
+});
+
+// Monitoring stack management
+app.get('/monitoring/status', requireAuth(), (req, res) => {
+  if (!cliBridge) {
+    return res.json({ enabled: false, running: false, services: {} });
+  }
+  const prefs = getMonitoringPreferences();
+  const status = cliBridge.getMonitoringStatus(prefs.grafanaPort);
+  res.json(status);
+});
+
+app.post('/monitoring/enable', requireAuth('admin'), async (req, res) => {
+  try {
+    if (!cliBridge) {
+      return res.status(503).json({ error: 'CLI Bridge not available' });
+    }
+    const { enableLogs, grafanaPort } = req.body || {};
+    const prefs = setMonitoringPreferences({
+      enabled: true,
+      enableLogs: !!enableLogs,
+      grafanaPort: grafanaPort || 3000,
+    });
+    const result = await cliBridge.ensureMonitoringRunning(prefs);
+    res.json({ success: true, ...result, preferences: prefs });
+  } catch (err) {
+    logger.error('Failed to enable monitoring:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/monitoring/disable', requireAuth('admin'), async (req, res) => {
+  try {
+    if (!cliBridge) {
+      return res.status(503).json({ error: 'CLI Bridge not available' });
+    }
+    setMonitoringPreferences({ enabled: false });
+    const result = await cliBridge.stopMonitoring();
+    res.json({ success: true, ...result });
+  } catch (err) {
+    logger.error('Failed to disable monitoring:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 

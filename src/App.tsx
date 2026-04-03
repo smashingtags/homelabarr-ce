@@ -28,8 +28,9 @@ import {
   Search as SearchIcon,
   Star,
   SlidersHorizontal,
+  Activity,
 } from 'lucide-react';
-import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp, getUserPreferences, setHiddenCategories as apiSetHiddenCategories } from './lib/api';
+import { deployApp, getContainers, getApplicationCatalog, getDeploymentModes, getStars, starApp, unstarApp, getUserPreferences, setHiddenCategories as apiSetHiddenCategories, getMonitoringStatus } from './lib/api';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -105,9 +106,28 @@ export default function App() {
   const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(new Set());
   const [categorySettingsOpen, setCategorySettingsOpen] = useState(false);
 
+  const [monitoringStatus, setMonitoringStatus] = useState<{ running: boolean; grafanaUrl?: string } | null>(null);
+
   const { success, error: showError, info } = useNotifications();
   const { loading: deploymentInProgress } = useLoading();
   const { isAuthenticated } = useAuth();
+
+  // Poll monitoring status every 30s when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const data = await getMonitoringStatus();
+        if (!cancelled) setMonitoringStatus({ running: data.running, grafanaUrl: data.grafanaUrl });
+      } catch {
+        if (!cancelled) setMonitoringStatus(null);
+      }
+    };
+    poll();
+    const interval = setInterval(poll, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [isAuthenticated]);
 
   // Fetch CLI application catalog on mount
   const loadCatalog = useCallback(async () => {
@@ -759,6 +779,25 @@ export default function App() {
               aria-label="Help"
             >
               <HelpCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                if (monitoringStatus?.running && monitoringStatus.grafanaUrl) {
+                  window.open(monitoringStatus.grafanaUrl, '_blank');
+                } else {
+                  setSettingsModalOpen(true);
+                }
+              }}
+              aria-label="Monitoring"
+              title={monitoringStatus?.running ? 'Open Grafana' : 'Enable monitoring in Settings'}
+              className="relative"
+            >
+              <Activity className={`w-5 h-5 ${monitoringStatus?.running ? 'text-green-500' : 'text-gray-600 dark:text-gray-400'}`} />
+              {monitoringStatus?.running && (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-green-500" />
+              )}
             </Button>
             <ThemeToggle />
 
