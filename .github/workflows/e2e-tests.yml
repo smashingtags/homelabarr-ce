@@ -12,18 +12,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  e2e:
-    timeout-minutes: 20
+  setup:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target:
-          - name: dev
-            url: https://ce-dev.homelabarr.com
-          - name: staging
-            url: https://ce-staging.homelabarr.com
-
-    name: E2E (${{ matrix.target.name }})
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
 
@@ -38,8 +29,61 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests
-        run: npx playwright test --project=chromium
+      - name: Cache Playwright browsers
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+  test:
+    needs: setup
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: dev
+            url: https://ce-dev.homelabarr.com
+          - name: staging
+            url: https://ce-staging.homelabarr.com
+        suite:
+          - name: catalog
+            file: tests/e2e/catalog.spec.ts
+          - name: modals
+            file: tests/e2e/modals.spec.ts
+          - name: icons
+            file: tests/e2e/icons.spec.ts
+          - name: dark-mode
+            file: tests/e2e/dark-mode.spec.ts
+          - name: footer
+            file: tests/e2e/footer.spec.ts
+          - name: monitoring
+            file: tests/e2e/monitoring.spec.ts
+
+    name: ${{ matrix.suite.name }} (${{ matrix.target.name }})
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore Playwright browsers
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright browsers (if cache miss)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run ${{ matrix.suite.name }} tests
+        run: npx playwright test ${{ matrix.suite.file }} --project=chromium
         env:
           TEST_BASE_URL: ${{ matrix.target.url }}
 
@@ -47,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.target.name }}
+          name: report-${{ matrix.target.name }}-${{ matrix.suite.name }}
           path: playwright-report/
           retention-days: 14
 
@@ -55,6 +99,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: test-screenshots-${{ matrix.target.name }}
+          name: screenshots-${{ matrix.target.name }}-${{ matrix.suite.name }}
           path: test-results/
           retention-days: 14
