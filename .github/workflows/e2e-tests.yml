@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   e2e:
-    timeout-minutes: 10
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -26,11 +26,12 @@ jobs:
 
     name: E2E (${{ matrix.target.name }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
