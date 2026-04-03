@@ -5,6 +5,11 @@ on:
     branches: [dev, staging, main]
   push:
     branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   e2e:
