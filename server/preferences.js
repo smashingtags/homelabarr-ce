@@ -45,3 +45,17 @@ export function resetPreferences(userId) {
   delete prefs[userId];
   if (!savePreferences(prefs)) throw new Error('Failed to save preferences');
 }
+
+const MONITORING_KEY = '_monitoring';
+
+export function getMonitoringPreferences() {
+  const prefs = loadPreferences();
+  return prefs[MONITORING_KEY] || { enabled: false, enableLogs: false, grafanaPort: 3000 };
+}
+
+export function setMonitoringPreferences(monitoringPrefs) {
+  const prefs = loadPreferences();
+  prefs[MONITORING_KEY] = { ...getMonitoringPreferences(), ...monitoringPrefs };
+  if (!savePreferences(prefs)) throw new Error('Failed to save monitoring preferences');
+  return prefs[MONITORING_KEY];
+}

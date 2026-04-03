@@ -421,3 +421,31 @@ export async function disableEnhancedMountProvider(containerId: string, provider
   });
   return handleResponse(response);
 }
+
+// Monitoring Stack API functions
+export async function getMonitoringStatus() {
+  const response = await fetch(`${API_BASE_URL}/monitoring/status`, {
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}
+
+export async function enableMonitoring(options: { enableLogs?: boolean; grafanaPort?: number }) {
+  const response = await fetch(`${API_BASE_URL}/monitoring/enable`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify(options)
+  });
+  return handleResponse(response);
+}
+
+export async function disableMonitoring() {
+  const response = await fetch(`${API_BASE_URL}/monitoring/disable`, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  return handleResponse(response);
+}

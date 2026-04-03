@@ -72,6 +72,7 @@ export class CLIBridge {
     this.appsPath = process.env.TEMPLATES_PATH || path.join(this.cliPath, 'apps');
     this.scriptsPath = path.join(this.cliPath, 'scripts');
     this.traefik = path.join(this.cliPath, 'traefik');
+    this.monitoring = path.join(this.cliPath, 'monitoring');
 
     // Load community app index if available
     this.communityIndex = this.loadCommunityIndex();
@@ -477,6 +478,94 @@ export class CLIBridge {
         await this.executeDockerCompose(autheliaPath, 'up -d');
       }
     }
+  }
+
+  /**
+   * Start the monitoring stack (Prometheus, Grafana, Node Exporter, cAdvisor)
+   */
+  async ensureMonitoringRunning(options = {}) {
+    const composePath = path.join(this.monitoring, 'docker-compose.yml');
+    if (!fs.existsSync(composePath)) {
+      throw new Error(`Monitoring stack not found at ${composePath}`);
+    }
+
+    try {
+      execSync('docker ps --format "{{.Names}}" | grep -q "^hlr-prometheus$"', { stdio: 'pipe' });
+      // Already running
+      return { status: 'running', grafanaPort: options.grafanaPort || 3000 };
+    } catch {
+      // Not running — start it
+    }
+
+    const envVars = {
+      GRAFANA_PORT: String(options.grafanaPort || 3000),
+      COMPOSE_PROJECT_NAME: 'hlr-monitoring',
+    };
+
+    await this.executeDockerCompose(composePath, 'up -d', envVars);
+
+    if (options.enableLogs) {
+      const logsPath = path.join(this.monitoring, 'docker-compose.logs.yml');
+      if (fs.existsSync(logsPath)) {
+        await this.executeDockerCompose(logsPath, 'up -d', envVars);
+      }
+    }
+
+    return { status: 'started', grafanaPort: envVars.GRAFANA_PORT };
+  }
+
+  /**
+   * Stop the monitoring stack
+   */
+  async stopMonitoring() {
+    const composePath = path.join(this.monitoring, 'docker-compose.yml');
+    const logsPath = path.join(this.monitoring, 'docker-compose.logs.yml');
+
+    const envVars = { COMPOSE_PROJECT_NAME: 'hlr-monitoring' };
+
+    if (fs.existsSync(logsPath)) {
+      try {
+        await this.executeDockerCompose(logsPath, 'down', envVars);
+      } catch { /* logs stack may not be running */ }
+    }
+
+    if (fs.existsSync(composePath)) {
+      await this.executeDockerCompose(composePath, 'down', envVars);
+    }
+
+    return { status: 'stopped' };
+  }
+
+  /**
+   * Get monitoring stack status
+   */
+  getMonitoringStatus(grafanaPort = 3000) {
+    const services = ['hlr-prometheus', 'hlr-grafana', 'hlr-node-exporter', 'hlr-cadvisor', 'hlr-loki', 'hlr-promtail'];
+    const running = {};
+
+    try {
+      const output = execSync('docker ps --format "{{.Names}}"', { stdio: 'pipe' }).toString();
+      const names = output.split('\n').map(n => n.trim());
+      for (const svc of services) {
+        running[svc.replace('hlr-', '')] = names.includes(svc);
+      }
+    } catch {
+      for (const svc of services) {
+        running[svc.replace('hlr-', '')] = false;
+      }
+    }
+
+    const enabled = running.prometheus || running.grafana;
+    const logsEnabled = running.loki || running.promtail;
+
+    return {
+      enabled,
+      running: enabled,
+      logsEnabled,
+      services: running,
+      grafanaUrl: enabled ? `http://localhost:${grafanaPort}` : null,
+      grafanaPort,
+    };
   }
 
   /**

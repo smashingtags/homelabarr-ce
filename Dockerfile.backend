@@ -44,6 +44,8 @@ COPY apps/ ./apps/
 
 # Copy traefik templates (used by CLI Bridge for deployment)
 COPY traefik/ ./traefik/
+# Copy monitoring stack (optional sidecar — Prometheus, Grafana, Node Exporter, cAdvisor)
+COPY monitoring/ ./monitoring/
 COPY install.sh ./install.sh
 
 # Create CLI Bridge mount point (can be overridden with CLI_BRIDGE_HOST_PATH env)

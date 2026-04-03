@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Key, Users, Shield, Loader2, Trash2, KeyRound, Plus, RefreshCw, ListRestart } from 'lucide-react';
+import { X, Key, Users, Shield, Loader2, Trash2, KeyRound, Plus, RefreshCw, ListRestart, Activity as ActivityIcon, ExternalLink } from 'lucide-react';
+import { getMonitoringStatus, enableMonitoring, disableMonitoring } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -41,11 +42,20 @@ interface UserSettingsProps {
 }
 
 export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
-  const [activeTab, setActiveTab] = useState<'password' | 'users' | 'activity'>('password');
+  const [activeTab, setActiveTab] = useState<'password' | 'users' | 'activity' | 'monitoring'>('password');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Monitoring state
+  const [monitoringEnabled, setMonitoringEnabled] = useState(false);
+  const [monitoringRunning, setMonitoringRunning] = useState(false);
+  const [monitoringServices, setMonitoringServices] = useState<Record<string, string>>({});
+  const [monitoringGrafanaUrl, setMonitoringGrafanaUrl] = useState('');
+  const [monitoringGrafanaPort, setMonitoringGrafanaPort] = useState(3000);
+  const [monitoringEnableLogs, setMonitoringEnableLogs] = useState(false);
+  const [monitoringLoading, setMonitoringLoading] = useState(false);
 
   const { isAdmin, token, user } = useAuth();
   const { success, error } = useNotifications();
@@ -103,6 +113,19 @@ export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
     }
   }, [isAdmin, token, error]);
 
+  const fetchMonitoringStatus = useCallback(async () => {
+    try {
+      const data = await getMonitoringStatus();
+      setMonitoringEnabled(data.enabled);
+      setMonitoringRunning(data.running);
+      setMonitoringServices(data.services || {});
+      setMonitoringGrafanaUrl(data.grafanaUrl || '');
+      if (data.grafanaPort) setMonitoringGrafanaPort(data.grafanaPort);
+    } catch {
+      // Backend may not support monitoring yet
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen && activeTab === 'users' && isAdmin) {
       fetchUsers();
@@ -110,7 +133,28 @@ export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
     if (isOpen && activeTab === 'activity' && isAdmin) {
       fetchActivities(0);
     }
-  }, [isOpen, activeTab, isAdmin, fetchUsers, fetchActivities]);
+    if (isOpen && activeTab === 'monitoring') {
+      fetchMonitoringStatus();
+    }
+  }, [isOpen, activeTab, isAdmin, fetchUsers, fetchActivities, fetchMonitoringStatus]);
+
+  const handleToggleMonitoring = async (enable: boolean) => {
+    setMonitoringLoading(true);
+    try {
+      if (enable) {
+        await enableMonitoring({ enableLogs: monitoringEnableLogs, grafanaPort: monitoringGrafanaPort });
+        success('Monitoring Enabled', 'Monitoring stack is being deployed');
+      } else {
+        await disableMonitoring();
+        success('Monitoring Disabled', 'Monitoring stack has been stopped');
+      }
+      await fetchMonitoringStatus();
+    } catch (err) {
+      error('Error', err instanceof Error ? err.message : 'Failed to toggle monitoring');
+    } finally {
+      setMonitoringLoading(false);
+    }
+  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -304,6 +348,19 @@ export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
             >
               <ListRestart className="w-4 h-4 inline mr-2" />
               Activity Log
+            </button>
+          )}
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('monitoring')}
+              className={`px-6 py-3 text-sm font-medium border-b-2 ${
+                activeTab === 'monitoring'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <ActivityIcon className="w-4 h-4 inline mr-2" />
+              Monitoring
             </button>
           )}
         </div>
@@ -597,6 +654,92 @@ export function UserSettings({ isOpen, onClose }: UserSettingsProps) {
               onPageChange={fetchActivities}
               onRefresh={() => fetchActivities(activityOffset)}
             />
+          )}
+
+          {activeTab === 'monitoring' && isAdmin && (
+            <div className="space-y-6">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Enable Monitoring Stack</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      Deploys Prometheus, Grafana, Node Exporter, and cAdvisor (~500MB RAM)
+                    </p>
+                  </div>
+                  <Button
+                    variant={monitoringEnabled ? 'destructive' : 'default'}
+                    size="sm"
+                    onClick={() => handleToggleMonitoring(!monitoringEnabled)}
+                    disabled={monitoringLoading}
+                  >
+                    {monitoringLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    {monitoringEnabled ? 'Disable' : 'Enable'}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-gray-900 dark:text-white">Enable Log Collection</Label>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      Adds Loki and Promtail for container log aggregation
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMonitoringEnableLogs(!monitoringEnableLogs)}
+                    className={monitoringEnableLogs ? 'border-green-500 text-green-600 dark:text-green-400' : ''}
+                    disabled={monitoringLoading}
+                  >
+                    {monitoringEnableLogs ? 'On' : 'Off'}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <Label htmlFor="grafana-port" className="text-gray-900 dark:text-white">Grafana Port</Label>
+                <Input
+                  id="grafana-port"
+                  type="number"
+                  value={monitoringGrafanaPort}
+                  onChange={(e) => setMonitoringGrafanaPort(Number(e.target.value))}
+                  className="mt-1 w-32 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  disabled={monitoringLoading || monitoringEnabled}
+                />
+              </div>
+
+              {monitoringEnabled && Object.keys(monitoringServices).length > 0 && (
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <Label className="text-gray-900 dark:text-white mb-3 block">Service Status</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(monitoringServices).map(([name, status]) => (
+                      <Badge
+                        key={name}
+                        variant={status === 'running' ? 'default' : 'destructive'}
+                        className={status === 'running' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : ''}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 inline-block ${status === 'running' ? 'bg-green-500' : 'bg-red-500'}`} />
+                        {name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {monitoringRunning && monitoringGrafanaUrl && (
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <Button
+                    onClick={() => window.open(monitoringGrafanaUrl, '_blank')}
+                    className="bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Open Grafana
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
