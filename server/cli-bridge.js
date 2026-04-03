@@ -511,6 +511,14 @@ export class CLIBridge {
       }
     }
 
+    // Star all dashboards in Grafana after startup
+    const initScript = path.join(this.monitoring, 'grafana-init.sh');
+    if (fs.existsSync(initScript)) {
+      try {
+        execSync(`bash ${initScript}`, { stdio: 'pipe', timeout: 45000 });
+      } catch { /* non-critical */ }
+    }
+
     return { status: 'started', grafanaPort: envVars.GRAFANA_PORT };
   }
 

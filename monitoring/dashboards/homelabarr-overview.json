@@ -42,7 +42,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus-homelabarr"
+        "uid": "prometheus"
       },
       "description": "Overall system status from HomelabARR v2-POC Health API",
       "fieldConfig": {
@@ -109,7 +109,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus-homelabarr"
+            "uid": "prometheus"
           },
           "expr": "up{job=\"homelabarr-v2-health\"}",
           "interval": "",
@@ -123,7 +123,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus-homelabarr"
+        "uid": "prometheus"
       },
       "description": "Real-time system performance metrics",
       "fieldConfig": {
@@ -236,7 +236,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus-homelabarr"
+            "uid": "prometheus"
           },
           "expr": "100 - (avg by(instance) (irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
           "interval": "",
@@ -246,7 +246,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus-homelabarr"
+            "uid": "prometheus"
           },
           "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
           "interval": "",
@@ -260,7 +260,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus-homelabarr"
+        "uid": "prometheus"
       },
       "description": "Container resource usage and health status",
       "fieldConfig": {
@@ -336,7 +336,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus-homelabarr"
+            "uid": "prometheus"
           },
           "expr": "rate(container_cpu_usage_seconds_total{name!=\"\"}[5m]) * 100",
           "interval": "",
@@ -350,7 +350,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus-homelabarr"
+        "uid": "prometheus"
       },
       "description": "Storage utilization across all mounted filesystems",
       "fieldConfig": {
@@ -402,7 +402,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus-homelabarr"
+            "uid": "prometheus"
           },
           "expr": "100 - ((node_filesystem_avail_bytes{mountpoint!~\"/boot|/dev\"} / node_filesystem_size_bytes{mountpoint!~\"/boot|/dev\"}) * 100)",
           "format": "table",
@@ -436,7 +436,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus-homelabarr"
+        "uid": "prometheus"
       },
       "description": "Network traffic monitoring",
       "fieldConfig": {
@@ -512,7 +512,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus-homelabarr"
+            "uid": "prometheus"
           },
           "expr": "rate(node_network_receive_bytes_total[5m])",
           "interval": "",
@@ -522,7 +522,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus-homelabarr"
+            "uid": "prometheus"
           },
           "expr": "rate(node_network_transmit_bytes_total[5m])",
           "interval": "",
@@ -548,7 +548,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "🏠 HomelabARR v2.0 Infrastructure Overview",
-  "uid": "homelabarr-v2-overview",
+  "uid": "prometheus",
   "version": 1,
   "weekStart": ""
 }

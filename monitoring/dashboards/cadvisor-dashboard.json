@@ -927,6 +927,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "cAdvisor - Container Monitoring",
-  "uid": "cadvisor-monitoring",
+  "uid": "prometheus",
   "version": 1
 }

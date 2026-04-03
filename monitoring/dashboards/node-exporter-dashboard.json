@@ -1125,6 +1125,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "Node Exporter - System Monitoring",
-  "uid": "node-exporter-monitoring",
+  "uid": "prometheus",
   "version": 1
 }
