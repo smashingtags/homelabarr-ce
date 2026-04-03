@@ -304,7 +304,7 @@ export class CLIBridge {
       const content = fs.readFileSync(appPath, 'utf8');
       const doc = yaml.parse(content);
       this.injectGpuConfig(doc, config.gpuType);
-      const tmpPath = appPath.replace('.yml', '-gpu.yml');
+      const tmpPath = path.join(process.cwd(), 'server', 'data', path.basename(appPath, '.yml') + '-gpu.yml');
       fs.writeFileSync(tmpPath, yaml.stringify(doc));
       try {
         return await this.executeDockerCompose(tmpPath, 'up -d', { ...config, DOCKERNETWORK: 'proxy' });
@@ -355,7 +355,9 @@ export class CLIBridge {
       this.injectGpuConfig(doc, config.gpuType);
     }
 
-    const tmpPath = appPath.replace('.yml', '-local.yml');
+    const tmpDir = path.join(process.cwd(), 'server', 'data');
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+    const tmpPath = path.join(tmpDir, `${path.basename(appPath, '.yml')}-local.yml`);
     fs.writeFileSync(tmpPath, yaml.stringify(doc));
 
     DeploymentLogger.logNetworkActivity('Local mode: rewrote compose file', {
@@ -386,7 +388,7 @@ export class CLIBridge {
       const content = fs.readFileSync(appPath, 'utf8');
       const doc = yaml.parse(content);
       this.injectGpuConfig(doc, config.gpuType);
-      const tmpPath = appPath.replace('.yml', '-gpu.yml');
+      const tmpPath = path.join(process.cwd(), 'server', 'data', path.basename(appPath, '.yml') + '-gpu.yml');
       fs.writeFileSync(tmpPath, yaml.stringify(doc));
       try {
         return await this.executeDockerCompose(tmpPath, 'up -d', { ...config, DOCKERNETWORK: 'proxy' });
