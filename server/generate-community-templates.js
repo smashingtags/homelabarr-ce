@@ -49,6 +49,36 @@ const CATEGORY_MAP = {
   'Tools / Utilities': 'tools',
 };
 
+const KEYWORD_CATEGORIES = [
+  { pattern: /\b(plex|jellyfin|emby|tautulli|navidrome|kodi|subsonic|airsonic|funkwhale|mstream)\b/i, category: 'media-servers' },
+  { pattern: /\b(sonarr|radarr|lidarr|bazarr|prowlarr|jackett|readarr|whisparr|recyclarr|kometa|overseerr|jellyseerr|ombi|petio|traktarr|autobrr|flaresolverr)\b/i, category: 'media-management' },
+  { pattern: /\b(immich|photoprism|lychee|pigallery|librephotos|photoview|photostructure)\b/i, category: 'media-management' },
+  { pattern: /\b(torrent|nzb|qbit|transmission|deluge|sabnzbd|usenet|rtorrent|rutorrent|flood|aria2)\b/i, category: 'downloads' },
+  { pattern: /\b(backup|duplicati|restic|borg|rsync|duplicacy|urbackup|bacula|veeam|kopia)\b/i, category: 'backup' },
+  { pattern: /\b(vpn|wireguard|openvpn|tailscale|zerotier|gluetun|wg-easy)\b/i, category: 'networking' },
+  { pattern: /\b(dns|pihole|adguard|nginx|caddy|traefik|proxy|haproxy|swag|duckdns|cloudflared|unbound)\b/i, category: 'networking' },
+  { pattern: /\b(monitor|grafana|prometheus|uptime|netdata|zabbix|checkmk|healthcheck|smokeping|speedtest|vnstat|tauticord|scrutiny)\b/i, category: 'monitoring' },
+  { pattern: /\b(minecraft|valheim|satisfactory|terraria|factorio|palworld|enshrouded|7.?days|ark\b|rust\b|csgo|counter.?strike)\b/i, category: 'game-servers' },
+  { pattern: /\b(home.?assist|hass|zigbee|mqtt|node.?red|z.?wave|frigate|scrypted|esphome|tasmota)\b/i, category: 'home-automation' },
+  { pattern: /\b(nextcloud|seafile|syncthing|owncloud|filerun|filebrowser)\b/i, category: 'cloud' },
+  { pattern: /\b(password|vault|auth|2fa|ldap|keycloak|authelia|crowdsec|fail2ban|bitwarden)\b/i, category: 'security' },
+  { pattern: /\b(ollama|llm|whisper|stable.?diff|comfyui|gpt|openai|langchain|text.?gen|kobold|localai)\b/i, category: 'ai' },
+  { pattern: /\b(wiki|bookstack|outline|paperless|invoice|docspell|stirling|mealie|recipes|tandoor|grocy)\b/i, category: 'productivity' },
+  { pattern: /\b(git|gitea|gitlab|forgejo|jenkins|drone|woodpecker|code.?server|coder)\b/i, category: 'tools' },
+  { pattern: /\b(docker|portainer|watchtower|dozzle|yacht|container)\b/i, category: 'tools' },
+  { pattern: /\b(postgres|mysql|mariadb|redis|mongo|influxdb|sqlite|cockroach)\b/i, category: 'tools' },
+  { pattern: /\b(mail|smtp|imap|roundcube|mailu|stalwart|postal|maddy)\b/i, category: 'productivity' },
+  { pattern: /\b(wordpress|ghost|hugo|jekyll|blog|cms)\b/i, category: 'productivity' },
+];
+
+function inferCategory(name, overview) {
+  const text = `${name || ''} ${overview || ''}`;
+  for (const { pattern, category } of KEYWORD_CATEGORIES) {
+    if (pattern.test(text)) return category;
+  }
+  return null;
+}
+
 function sanitizeName(name) {
   return (name || 'unknown').toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
@@ -91,7 +121,13 @@ for (const app of apps) {
   const appConfigs = configs.all(app.id);
   const categories = appCats.all(app.id).map(r => r.description);
   const primaryCategory = categories[0] || 'Other';
-  const dirName = CATEGORY_MAP[primaryCategory] || sanitizeName(primaryCategory);
+  let dirName = CATEGORY_MAP[primaryCategory] || sanitizeName(primaryCategory);
+
+  // If mapped to 'other', try keyword inference
+  if (dirName === 'other') {
+    const inferred = inferCategory(app.name, app.overview);
+    if (inferred) dirName = inferred;
+  }
 
   // Build the feed-format object that template-generator expects
   const feedApp = {
