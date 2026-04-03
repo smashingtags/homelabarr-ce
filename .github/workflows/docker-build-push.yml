@@ -198,6 +198,41 @@ jobs:
           -d "${payload}" \
           "${DISCORD_WEBHOOK}" || echo "Discord webhook failed"
 
-    # Deploy is handled by Watchtower on each VM (polls GHCR every 5 min).
-    # GitHub Actions cannot reach private IPs (192.168.1.x).
-    # E2E tests wait and retry until the new container is live.
+    - name: Deploy to VM via Cloudflare Tunnel
+      if: success() && github.event_name == 'push' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/staging')
+      env:
+        SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      run: |
+        # Install cloudflared for SSH tunneling
+        curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared
+        chmod +x /usr/local/bin/cloudflared
+
+        # Determine target
+        BRANCH="${GITHUB_REF_NAME}"
+        case "$BRANCH" in
+          dev)     SSH_HOST="ssh-dev.homelabarr.com" ; COMPOSE_FILE="docker-compose.ce-dev.yml" ;;
+          staging) SSH_HOST="ssh-staging.homelabarr.com" ; COMPOSE_FILE="docker-compose.ce.yml" ;;
+          *)       echo "No deploy target for $BRANCH"; exit 0 ;;
+        esac
+
+        echo "Deploying $BRANCH via $SSH_HOST..."
+
+        echo "$SSH_KEY" > /tmp/deploy_key
+        chmod 600 /tmp/deploy_key
+
+        ssh -i /tmp/deploy_key \
+          -o StrictHostKeyChecking=no \
+          -o ProxyCommand="cloudflared access ssh --hostname %h" \
+          "michael@$SSH_HOST" \
+          "cd /opt/appdata/compose && docker compose -f $COMPOSE_FILE pull && docker compose -f $COMPOSE_FILE up -d"
+
+        sleep 15
+
+        ssh -i /tmp/deploy_key \
+          -o StrictHostKeyChecking=no \
+          -o ProxyCommand="cloudflared access ssh --hostname %h" \
+          "michael@$SSH_HOST" \
+          "docker ps --format '{{.Names}} {{.Status}}' | grep homelabarr"
+
+        rm -f /tmp/deploy_key
+        echo "Deploy complete"
