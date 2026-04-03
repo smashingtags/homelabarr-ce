@@ -13,29 +13,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  verify-deploy:
-    # Only run if the build succeeded (skip if it failed or was cancelled)
+  wait-for-watchtower:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
+      - name: Wait for Watchtower to pull new images
+        run: |
+          echo "Build completed. Waiting 10 minutes for Watchtower to pull and deploy..."
+          sleep 600
+
       - name: Verify dev is reachable
         run: |
-          echo "Build deployed new containers. Verifying sites are up..."
           for i in 1 2 3 4 5; do
             STATUS=$(curl -sf -o /dev/null -w '%{http_code}' https://ce-dev.homelabarr.com/ --max-time 10 || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "ce-dev.homelabarr.com: 200 OK"
               exit 0
             fi
-            echo "Attempt $i: HTTP $STATUS — retrying in 15s..."
-            sleep 15
+            echo "Attempt $i: HTTP $STATUS — retrying in 30s..."
+            sleep 30
           done
           echo "ce-dev.homelabarr.com not reachable after 5 attempts"
           exit 1
 
   setup:
-    needs: verify-deploy
+    needs: wait-for-watchtower
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
