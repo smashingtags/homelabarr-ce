@@ -2,7 +2,7 @@ services:
   loki:
     hostname: loki
     container_name: hlr-loki
-    image: grafana/loki:latest
+    image: grafana/loki:2.9.10
     restart: unless-stopped
     deploy:
       resources:
@@ -68,6 +68,7 @@ volumes:
 
 networks:
   monitoring:
-    driver: bridge
+    name: homelabarr-monitoring_monitoring
+    external: true
   homelabarr:
     external: true
