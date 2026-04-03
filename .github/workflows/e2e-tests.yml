@@ -20,9 +20,8 @@ jobs:
         target:
           - name: dev
             url: https://ce-dev.homelabarr.com
-          # Uncomment when staging is stable:
-          # - name: staging
-          #   url: https://ce-staging.homelabarr.com
+          - name: staging
+            url: https://ce-staging.homelabarr.com
 
     name: E2E (${{ matrix.target.name }})
     steps:
