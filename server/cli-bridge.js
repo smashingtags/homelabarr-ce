@@ -237,24 +237,7 @@ export class CLIBridge {
    * Deploy application using CLI infrastructure
    */
   async deployApplication(appId, config, deploymentMode) {
-    const dashIndex = appId.indexOf('-');
-    const category = appId.substring(0, dashIndex);
-    const appName = appId.substring(dashIndex + 1);
-    let appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
-
-    // Community apps: search all community subdirectories
-    if (!fs.existsSync(appPath) && category === 'community') {
-      const communityDir = path.join(this.appsPath, 'community');
-      if (fs.existsSync(communityDir)) {
-        const dirs = fs.readdirSync(communityDir).filter(d => {
-          try { return fs.statSync(path.join(communityDir, d)).isDirectory(); } catch { return false; }
-        });
-        for (const dir of dirs) {
-          const candidate = path.join(communityDir, dir, `${sanitizePathComponent(appName)}.yml`);
-          if (fs.existsSync(candidate)) { appPath = candidate; break; }
-        }
-      }
-    }
+    const appPath = this.resolveAppPath(appId);
 
     if (!fs.existsSync(appPath)) {
       throw new Error(`Application ${appId} not found at ${appPath}`);
@@ -527,34 +510,49 @@ export class CLIBridge {
   }
 
   /**
+   * Resolve the YAML file path for an app ID, searching community subdirs if needed.
+   */
+  resolveAppPath(appId) {
+    const dashIndex = appId.indexOf('-');
+    const category = appId.substring(0, dashIndex);
+    const appName = appId.substring(dashIndex + 1);
+    let appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
+
+    if (!fs.existsSync(appPath) && category === 'community') {
+      const communityDir = path.join(this.appsPath, 'community');
+      if (fs.existsSync(communityDir)) {
+        const dirs = fs.readdirSync(communityDir).filter(d => {
+          try { return fs.statSync(path.join(communityDir, d)).isDirectory(); } catch { return false; }
+        });
+        for (const dir of dirs) {
+          const candidate = path.join(communityDir, dir, `${sanitizePathComponent(appName)}.yml`);
+          if (fs.existsSync(candidate)) { appPath = candidate; break; }
+        }
+      }
+    }
+
+    return appPath;
+  }
+
+  /**
    * Stop application using CLI
    */
   async stopApplication(appId) {
-    const [category, appName] = appId.split('-');
-    const appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
-    
-    return await this.executeDockerCompose(appPath, 'down');
+    return await this.executeDockerCompose(this.resolveAppPath(appId), 'down');
   }
 
   /**
    * Remove application and cleanup
    */
   async removeApplication(appId, removeVolumes = false) {
-    const [category, appName] = appId.split('-');
-    const appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
-    
-    const command = removeVolumes ? 'down -v' : 'down';
-    return await this.executeDockerCompose(appPath, command);
+    return await this.executeDockerCompose(this.resolveAppPath(appId), removeVolumes ? 'down -v' : 'down');
   }
 
   /**
    * Get application logs
    */
   async getApplicationLogs(appId, lines = 100) {
-    const [category, appName] = appId.split('-');
-    const appPath = path.join(this.appsPath, sanitizePathComponent(category), `${sanitizePathComponent(appName)}.yml`);
-    
-    return await this.executeDockerCompose(appPath, `logs --tail=${lines}`);
+    return await this.executeDockerCompose(this.resolveAppPath(appId), `logs --tail=${lines}`);
   }
 
   // Helper methods for parsing application configurations
