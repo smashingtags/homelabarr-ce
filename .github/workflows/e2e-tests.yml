@@ -1,22 +1,53 @@
 name: E2E Tests
 
 on:
-  pull_request:
-    branches: [dev, staging, main]
-  push:
-    branches: [dev]
+  # Only runs AFTER the Docker build completes successfully
+  workflow_run:
+    workflows: ["Build and Push Docker Images"]
+    types: [completed]
+    branches: [dev, staging]
   workflow_dispatch:
 
 concurrency:
-  group: e2e-${{ github.ref }}
+  group: e2e-${{ github.ref || github.event.workflow_run.head_branch }}
   cancel-in-progress: false
 
 jobs:
+  wait-for-deploy:
+    # Only run if the build succeeded (skip if it failed or was cancelled)
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for Watchtower to pull new images
+        run: |
+          echo "Build completed. Waiting 10 minutes for Watchtower to pull new containers..."
+          echo "Watchtower polls every 5 minutes. 10 min ensures at least one full cycle + container startup."
+          sleep 600
+          echo "Wait complete. Containers should be running the new image."
+
+      - name: Verify dev is reachable
+        run: |
+          for i in 1 2 3; do
+            STATUS=$(curl -sf -o /dev/null -w '%{http_code}' https://ce-dev.homelabarr.com/ --max-time 10 || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "ce-dev.homelabarr.com: 200 OK"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS — retrying in 30s..."
+            sleep 30
+          done
+          echo "ce-dev.homelabarr.com not reachable after 3 attempts"
+          exit 1
+
   setup:
+    needs: wait-for-deploy
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
 
       - uses: actions/setup-node@v5
         with:
@@ -64,6 +95,8 @@ jobs:
     name: ${{ matrix.suite.name }} (${{ matrix.target.name }})
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
 
       - uses: actions/setup-node@v5
         with:
