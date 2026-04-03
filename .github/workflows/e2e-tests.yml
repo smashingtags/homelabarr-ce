@@ -1,20 +1,18 @@
 name: E2E Tests
 
 on:
-  # Only runs AFTER the Docker build completes successfully
-  workflow_run:
-    workflows: ["Build and Push Docker Images"]
-    types: [completed]
-    branches: [dev, staging]
+  pull_request:
+    branches: [dev, staging, main]
+  push:
+    branches: [dev]
   workflow_dispatch:
 
 concurrency:
-  group: e2e-${{ github.ref || github.event.workflow_run.head_branch }}
+  group: e2e-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   verify-deploy:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -40,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
+          ref: ${{ github.ref }}
 
       - uses: actions/setup-node@v5
         with:
@@ -89,7 +87,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
+          ref: ${{ github.ref }}
 
       - uses: actions/setup-node@v5
         with:
