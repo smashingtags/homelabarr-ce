@@ -40,7 +40,7 @@ test.describe('App Catalog', () => {
     ];
 
     for (const tab of expectedTabs) {
-      await expect(page.getByRole('tab', { name: tab })).toBeVisible();
+      await expect(page.getByRole('tab', { name: tab, exact: true })).toBeVisible();
     }
   });
 
