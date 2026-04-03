@@ -95,7 +95,7 @@ Open your web browser and go to:
 http://YOUR-SERVER-IP:8084
 ```
 
-You should see the HomelabARR dashboard with 110+ apps ready to deploy.
+You should see the HomelabARR dashboard with 3,000+ apps ready to deploy.
 
 ### Step 6: Log in and change your password
 
@@ -152,7 +152,7 @@ The script will:
 
 You've got HomelabARR running. Here's what to explore next:
 
-- **Browse the dashboard** — check out all 10 categories of apps
+- **Browse the dashboard** — check out all 18 categories of apps
 - **[Web Dashboard Guide](web-dashboard.md)** — learn what every button does
 - **[Configuration](configuration.md)** — customise ports, paths, and settings
 - **Want apps on a custom domain with SSL?** → [Traefik & Domain Setup](traefik-setup.md)
