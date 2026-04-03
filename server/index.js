@@ -1298,15 +1298,34 @@ app.get('/applications', optionalAuth, async (req, res) => {
       }));
     }
 
-    // Merge community apps into the unified catalog
+    // Merge community apps, skipping duplicates that already exist as official templates
     try {
+      const officialNames = new Set();
+      for (const apps of Object.values(applications)) {
+        for (const app of apps) {
+          officialNames.add(app.name?.toLowerCase());
+        }
+      }
+
       const communityResult = await getCommunityApps({ perPage: 10000 });
       const communityApps = (communityResult.apps || []).map(convertCommunityApp);
+      let dedupSkipped = 0;
       for (const app of communityApps) {
+        const normalizedName = app.name?.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const officialMatch = [...officialNames].some(n =>
+          n && n.replace(/[^a-z0-9]/g, '') === normalizedName
+        );
+        if (officialMatch) {
+          dedupSkipped++;
+          continue;
+        }
         if (!applications[app.category]) {
           applications[app.category] = [];
         }
         applications[app.category].push(app);
+      }
+      if (dedupSkipped > 0) {
+        logger.info(`Unified catalog: skipped ${dedupSkipped} community apps that duplicate official templates`);
       }
     } catch (err) {
       logger.warn('Failed to load community apps for unified catalog:', err.message);
